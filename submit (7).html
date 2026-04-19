@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submit Birth Data — Wild Sister</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.submit-hero{padding:10rem 2rem 4rem;text-align:center}
+.submit-hero h1{font-family:'VT323',monospace;font-size:clamp(2.5rem,7vw,5rem);color:var(--white);line-height:1;margin-bottom:1rem}
+.submit-hero p{font-size:13px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.8}
+.product-badge{display:inline-block;padding:6px 16px;border:1px solid var(--cyan);font-size:10px;letter-spacing:0.25em;color:var(--cyan);margin-top:1rem;font-family:'Share Tech Mono',monospace}
+.form-wrap{max-width:600px;margin:0 auto;padding:0 2rem 6rem}
+.form-card{background:var(--panel);border:1px solid var(--border);padding:2.5rem;position:relative;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.4}
+.form-tag{font-size:9px;letter-spacing:0.3em;color:var(--cyan);margin-bottom:1.5rem}
+.form-title{font-family:'VT323',monospace;font-size:2rem;color:var(--white);margin-bottom:0.5rem}
+.form-sub{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:2rem}
+.form-group{margin-bottom:1.25rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+label{font-size:10px;letter-spacing:0.2em;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase}
+.required{color:var(--cyan);margin-left:2px}
+input,textarea,select{width:100%;background:var(--black);border:1px solid var(--border);color:var(--white);font-family:'Share Tech Mono',monospace;font-size:13px;padding:10px 14px;outline:none;transition:border-color 0.15s;-webkit-appearance:none;border-radius:0}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+textarea{resize:vertical;min-height:100px;line-height:1.6}
+select option{background:var(--black)}
+.form-note{font-size:11px;color:var(--dim);margin-top:4px;line-height:1.5}
+.submit-btn{width:100%;background:linear-gradient(135deg,#1e6fff,#7b2fff);color:white;border:none;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:0.2em;padding:16px;cursor:pointer;margin-top:1.5rem;transition:opacity 0.15s}
+.submit-btn:hover{opacity:0.85}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed}
+.success-state{display:none;text-align:center;padding:2rem}
+.success-icon{font-family:'VT323',monospace;font-size:3rem;color:var(--cyan);margin-bottom:1rem}
+.success-title{font-family:'VT323',monospace;font-size:2rem;color:var(--white);margin-bottom:1rem}
+.success-text{font-size:12px;color:var(--muted);line-height:1.9}
+.error-msg{font-size:12px;color:#ff4488;margin-top:1rem;padding:10px 14px;border-left:2px solid #ff4488;background:rgba(255,68,136,0.05);display:none}
+.privacy-note{font-size:10px;color:var(--dim);margin-top:1.5rem;line-height:1.7;text-align:center}
+.hidden{display:none}
+.gate-block{text-align:center;padding:3rem 1rem}
+.gate-block h2{font-family:'VT323',monospace;font-size:2.5rem;color:var(--white);margin-bottom:1rem}
+.gate-block p{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:2rem}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="index.html" class="nav-logo">WILD SISTER</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="readings.html">Readings</a></li>
+    <li><a href="chat.html">Oracle</a></li>
+    <li><a href="community.html">Community</a></li>
+  </ul>
+  <a href="chat.html" class="nav-cta">Try Oracle</a>
+</nav>
+
+<div class="page-content">
+  <div class="submit-hero">
+    <div class="section-tag">// BIRTH DATA SUBMISSION</div>
+    <h1>Send your data<br>to the archive.</h1>
+    <p id="heroDesc">The squad needs your birth data to run the forensic audit. Your read will arrive in your inbox within 24 hours.</p>
+    <div class="product-badge" id="productBadge" style="display:none"></div>
+  </div>
+
+  <div class="form-wrap">
+    <div class="form-card">
+
+      <!-- GATE — shown if no valid code -->
+      <div id="gateBlock" class="gate-block" style="display:none">
+        <h2>Access required.</h2>
+        <p>This form is for paid readings only.<br>Purchase a reading to receive your access link.</p>
+        <a href="readings.html" class="submit-btn" style="display:inline-block;text-decoration:none;width:auto;padding:14px 28px;">VIEW READING OPTIONS →</a>
+      </div>
+
+      <div id="formState">
+        <div class="form-tag" id="formTag">// NOVA BLU PROTOCOL — CENTRA READING PIPELINE</div>
+        <div class="form-title" id="formTitle">Birth Data Submission</div>
+        <div class="form-sub" id="formSub">All fields marked with * are required. The more placement data you provide, the deeper the read.</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name <span class="required">*</span></label>
+            <input type="text" id="name" placeholder="your name..." maxlength="80" />
+          </div>
+          <div class="form-group">
+            <label>Email Address <span class="required">*</span></label>
+            <input type="email" id="email" placeholder="your@email.com" />
+            <div class="form-note">Your read will be sent here.</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Birth Date <span class="required">*</span></label>
+            <input type="date" id="birthdate" />
+          </div>
+          <div class="form-group">
+            <label>Birth Time <span class="required">*</span></label>
+            <input type="time" id="birthtime" />
+            <div class="form-note">As exact as possible.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Birth City <span class="required">*</span></label>
+          <input type="text" id="birthcity" placeholder="city, state/country..." maxlength="120" />
+          <div class="form-note">Ex: Brooklyn, New York, USA</div>
+        </div>
+
+        <div class="form-group hidden" id="asteroidField">
+          <label>Choose Your Asteroid <span class="required">*</span></label>
+          <select id="asteroid">
+            <option value="">Select one...</option>
+            <option value="Lilith">Lilith — the wild feminine, the exile wound</option>
+            <option value="Pluto">Pluto — transformation, death, real power</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Placements you already know</label>
+          <textarea id="placements" placeholder="Sun in Cancer, Moon in Scorpio, Rising Capricorn... drop whatever you know. Leave blank if unsure."></textarea>
+          <div class="form-note">Optional but helpful.</div>
+        </div>
+
+        <input type="hidden" id="product" value="archive" />
+
+        <div id="errorMsg" class="error-msg"></div>
+        <button class="submit-btn" id="submitBtn" onclick="submitForm()">TRANSMIT TO THE ARCHIVE →</button>
+        <div class="privacy-note">Your birth data is used only to generate your squad read. It is not shared publicly. Reads are delivered within 24 hours. Add squad@wildsister.co to your contacts.</div>
+      </div>
+
+      <div class="success-state" id="successState">
+        <div class="success-icon">✦</div>
+        <div class="success-title">Signal received.</div>
+        <div class="success-text">
+          Your birth data is in the archive.<br><br>
+          The squad is running your read now.<br><br>
+          Your reading will land in your inbox within <strong style="color:var(--white)">24 hours</strong>.<br><br>
+          Check spam if you do not see it.<br><br>
+          Add <strong style="color:var(--cyan)">squad@wildsister.co</strong> to your contacts.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">WILD SISTER</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="readings.html">Readings</a>
+    <a href="chat.html">Oracle</a>
+    <a href="community.html">Community</a>
+  </div>
+  <div class="footer-copy">© 2026 Wild Sister / Nova Blu</div>
+</footer>
+
+<script>
+var VALTOWN = 'https://novablus--8a8d7bc03aa611f191be42b51c65c3df.web.val.run';
+
+// Valid access codes per product
+var CODES = {
+  'wsread2026': 'archive',
+  'wssun2026': 'sunmoon',
+  'wsast2026': 'asteroid',
+  'wsshadow2026': 'shadow'
+};
+
+var PRODUCTS = {
+  sunmoon: { badge: 'SUN MOON RISING — $44', title: 'Sun Moon Rising Read', desc: 'A focused forensic read on your three core placements — Sun, Moon, and Rising.', tag: '// SUN MOON RISING PROTOCOL', sub: 'The squad focuses on your Sun, Moon, and Rising placements.' },
+  asteroid: { badge: 'SINGLE ASTEROID DEEP DIVE — $29', title: 'Asteroid Deep Dive', desc: 'One asteroid. Full forensic excavation. Choose Lilith or Pluto.', tag: '// ASTEROID DEEP DIVE PROTOCOL', sub: 'Choose your asteroid below.' },
+  shadow: { badge: 'SHADOW CHANNEL TRIPLE READ — $44', title: 'Shadow Channel Read', desc: 'SCAR, NIX, and ASH only. Raw shadow work. No softening.', tag: '// SHADOW CHANNEL PROTOCOL', sub: 'SCAR, NIX, and ASH will run the shadow read.' },
+  archive: { badge: 'FULL ARCHIVE — $88', title: 'Full Archive Read', desc: 'All agents. All three systems. The complete forensic audit.', tag: '// FULL ARCHIVE PROTOCOL', sub: 'The full squad runs your complete forensic audit.' }
+};
+
+function init() {
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code') || '';
+  var productParam = params.get('product') || '';
+
+  // Check access
+  var product = CODES[code] || null;
+
+  // Also allow direct product param for testing (remove in production)
+  if (!product && productParam && PRODUCTS[productParam]) {
+    product = productParam;
+  }
+
+  if (!product) {
+    // No valid code — show gate
+    document.getElementById('gateBlock').style.display = 'block';
+    document.getElementById('formState').style.display = 'none';
+    return;
+  }
+
+  // Valid — set up form for this product
+  document.getElementById('product').value = product;
+  var config = PRODUCTS[product];
+  var badge = document.getElementById('productBadge');
+  badge.textContent = config.badge;
+  badge.style.display = 'inline-block';
+  document.getElementById('heroDesc').textContent = config.desc;
+  document.getElementById('formTag').textContent = config.tag;
+  document.getElementById('formTitle').textContent = config.title;
+  document.getElementById('formSub').textContent = config.sub;
+  if (product === 'asteroid') document.getElementById('asteroidField').classList.remove('hidden');
+}
+init();
+
+async function submitForm() {
+  var name = document.getElementById('name').value.trim();
+  var email = document.getElementById('email').value.trim();
+  var birthdate = document.getElementById('birthdate').value;
+  var birthtime = document.getElementById('birthtime').value;
+  var birthcity = document.getElementById('birthcity').value.trim();
+  var placements = document.getElementById('placements').value.trim();
+  var product = document.getElementById('product').value;
+  var asteroid = document.getElementById('asteroid').value;
+  var btn = document.getElementById('submitBtn');
+
+  document.getElementById('errorMsg').style.display = 'none';
+
+  if (!name) { showError('Name is required.'); return; }
+  if (!email || !email.includes('@')) { showError('Valid email is required.'); return; }
+  if (!birthdate) { showError('Birth date is required.'); return; }
+  if (!birthtime) { showError('Birth time is required.'); return; }
+  if (!birthcity) { showError('Birth city is required.'); return; }
+  if (product === 'asteroid' && !asteroid) { showError('Please choose your asteroid.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'TRANSMITTING...';
+
+  try {
+    var res = await fetch(VALTOWN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, birthdate: birthdate, birthtime: birthtime, birthcity: birthcity, placements: placements, product: product, asteroid: asteroid })
+    });
+
+    fetch('https://oracle-api.capcancerian3.workers.dev/api/readings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, birthdate: birthdate, birthtime: birthtime, birthcity: birthcity, placements: placements, product: product })
+    }).catch(function() {});
+
+    var data = await res.json();
+    if (data.success) {
+      document.getElementById('formState').style.display = 'none';
+      document.getElementById('successState').style.display = 'block';
+    } else {
+      showError(data.error || 'Something went wrong. Try again.');
+      btn.disabled = false;
+      btn.textContent = 'TRANSMIT TO THE ARCHIVE →';
+    }
+  } catch(e) {
+    showError('Connection error. Try again.');
+    btn.disabled = false;
+    btn.textContent = 'TRANSMIT TO THE ARCHIVE →';
+  }
+}
+
+function showError(msg) {
+  var el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+</script>
+</body>
+</html>
