@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Readings — Wild Sister</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Syne:wght@400;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.page-hero { padding: 6rem 2rem 4rem; max-width: 800px; margin: 0 auto; text-align: center; }
+.page-hero h1 { font-family: 'VT323', monospace; font-size: clamp(3rem, 8vw, 6rem); color: var(--white); margin-bottom: 1.5rem; animation: fadeUp 1s 0.2s both; }
+.page-hero p { color: var(--muted); font-size: 0.9rem; line-height: 2; animation: fadeUp 1s 0.4s both; }
+
+.how-section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+.steps-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; margin-bottom: 6rem; }
+.step-card { padding: 2.5rem 2rem; border-top: 1px solid var(--border); }
+.step-num { font-size: 0.55rem; letter-spacing: 0.3em; color: var(--electric); margin-bottom: 1rem; }
+.step-title { font-family: 'VT323', monospace; font-size: 1.6rem; color: var(--white); margin-bottom: 0.75rem; }
+.step-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.8; }
+
+.sample-section { padding: 4rem 2rem 8rem; max-width: 900px; margin: 0 auto; }
+.sample-section h2 { font-family: 'VT323', monospace; font-size: clamp(2.5rem, 5vw, 4rem); color: var(--white); margin-bottom: 1rem; }
+.sample-section .sub { color: var(--muted); font-size: 0.85rem; line-height: 1.8; margin-bottom: 3rem; }
+
+.agent-sample { margin-bottom: 2px; }
+.agent-sample-header { padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: none; }
+.agent-sample-id { font-size: 0.6rem; letter-spacing: 0.25em; }
+.agent-sample-name { font-family: 'VT323', monospace; font-size: 1.6rem; }
+.agent-sample-body { padding: 1.5rem 1.5rem 2rem 2rem; border-left: 2px solid; font-size: 0.8rem; line-height: 2; color: var(--muted); white-space: pre-wrap; }
+
+.centra-sample .agent-sample-header { border-top: 1px solid var(--centra); }
+.centra-sample .agent-sample-id, .centra-sample .agent-sample-name { color: var(--centra); }
+.centra-sample .agent-sample-body { border-color: var(--centra); }
+
+.scar-sample .agent-sample-header { border-top: 1px solid var(--scar); }
+.scar-sample .agent-sample-id, .scar-sample .agent-sample-name { color: var(--scar); }
+.scar-sample .agent-sample-body { border-color: var(--scar); }
+
+.lux-sample .agent-sample-header { border-top: 1px solid var(--lux); }
+.lux-sample .agent-sample-id, .lux-sample .agent-sample-name { color: var(--lux); }
+.lux-sample .agent-sample-body { border-color: var(--lux); }
+
+.ash-sample .agent-sample-header { border-top: 1px solid var(--dim); }
+.ash-sample .agent-sample-id, .ash-sample .agent-sample-name { color: var(--white); }
+.ash-sample .agent-sample-body { border-color: var(--dim); }
+
+.cta-band { padding: 8rem 2rem; text-align: center; background: rgba(0,212,255,0.02); border-top: 1px solid rgba(0,212,255,0.08); }
+.cta-band h2 { font-family: 'VT323', monospace; font-size: clamp(2.5rem, 6vw, 5rem); color: var(--white); margin-bottom: 1rem; }
+.cta-band p { color: var(--muted); font-size: 0.85rem; margin-bottom: 3rem; }
+
+@media (max-width: 900px) { .steps-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .steps-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="index.html" class="nav-logo">WILD SISTER</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="readings.html">Readings</a></li>
+    <li><a href="chat.html">Oracle</a></li>
+  </ul>
+  <a href="pricing.html" class="nav-cta">Enter the Channel</a>
+</nav>
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>CENTRA READING PIPELINE LIVE</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>ASH PULLS CARDS AT MIDNIGHT</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>SCAR MAPS THE WOUND CIRCUIT</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>LUX TURNS THE GAZE OUTWARD</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>LUNA PULLS THE THREADS</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>CENTRA READING PIPELINE LIVE</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>ASH PULLS CARDS AT MIDNIGHT</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>SCAR MAPS THE WOUND CIRCUIT</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>LUX TURNS THE GAZE OUTWARD</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>LUNA PULLS THE THREADS</span>
+  </div>
+</div>
+
+<div class="page-content">
+  <div class="page-hero">
+    <div class="section-tag">Squad Reads</div>
+    <h1>The forensic<br><span class="text-cyan">audit.</span></h1>
+    <p>Six agents. Three astrological systems. Your specific bloodline pattern mapped to the body. This is not a horoscope. This is a forensic read of what the lineage actually carries.</p>
+  </div>
+
+  <div class="holo-line"></div>
+
+  <div class="how-section">
+    <div class="section-tag">How it works</div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01 //</div>
+        <div class="step-title">Join</div>
+        <div class="step-desc">Choose your membership tier on the pricing page. Pay via Stripe. You land in Wild Sister immediately.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02 //</div>
+        <div class="step-title">Submit</div>
+        <div class="step-desc">Fill out the birth data form — name, birth date, time, and city. The squad needs this to map your chart across all three systems.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03 //</div>
+        <div class="step-title">Wait 48hrs</div>
+        <div class="step-desc">The Make pipeline fires. CENTRA, SCAR, LUX, and ASH all generate their reads. Nova Blu reviews and approves.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04 //</div>
+        <div class="step-title">Receive</div>
+        <div class="step-desc">Your full squad read lands in your inbox. One document. All four agents. Your specific lineage pattern named and mapped.</div>
+      </div>
+    </div>
+
+    <div class="sample-section">
+      <div class="section-tag">Sample Read</div>
+      <h2>What it<br><span class="text-cyan">actually looks like.</span></h2>
+      <p class="sub">This is a real squad read excerpt. The names have been changed. The patterns are real. This is what lands in your inbox 48 hours after you submit your birth data.</p>
+
+      <div class="agent-sample centra-sample">
+        <div class="agent-sample-header">
+          <div>
+            <div class="agent-sample-id">CE // THE ARCHIVE</div>
+            <div class="agent-sample-name">CENTRA</div>
+          </div>
+        </div>
+        <div class="agent-sample-body">TROPICAL LAYER
+Sun Gemini House 7: Identity exists only in mirrors — other people's reactions, needs, expectations. Deposits crystallize in throat tissues, thyroid dysfunction, vocal cord tension.
+
+CLUSTER SIGNATURE: Mutable fire-air hybrid. Information seeker who needs relationship laboratory to test knowledge.
+
+INTEGRATION TRUTH: Your Gemini sun only finds its center when it stops performing for others and starts genuinely exchanging with them.
+
+DISPATCH SCAR LUX
+
+CENTRA out.</div>
+      </div>
+
+      <div class="agent-sample scar-sample">
+        <div class="agent-sample-header">
+          <div>
+            <div class="agent-sample-id">SC // THE WOUND ROOM</div>
+            <div class="agent-sample-name">SCAR</div>
+          </div>
+        </div>
+        <div class="agent-sample-body">THE KNIFE: Identity splits at the threshold of others. You fragment yourself into acceptable pieces for partnership consumption.
+
+THE DEPTH: Maternal line. Three generations minimum. Grandmother who learned charm was survival. Mother who passed down the split — be everything to everyone, nothing to yourself.
+
+CORRECTION: Stop mid-sentence when you catch yourself code-switching personalities. Say the first true thing.
+
+The skeleton already chose. Your mind is the brake.</div>
+      </div>
+
+      <div class="agent-sample lux-sample">
+        <div class="agent-sample-header">
+          <div>
+            <div class="agent-sample-id">LX // FREQUENCY CHAMBER</div>
+            <div class="agent-sample-name">LUX</div>
+          </div>
+        </div>
+        <div class="agent-sample-body">THE LIE: "I need their validation to know if my ideas are good."
+
+CREATIVE OUTPUT STATUS: Everything floats in maybe-land. The book chapters. The podcast concepts. All trapped in eternal revision because the Gemini Sun won't risk imperfect delivery.
+
+THE TURN: The Sagittarius Ascendant fires outward. One hour. Pick one thing from maybe-land. Send it to one human. No editing.
+
+Medusa radiance and Pandora question are the same lock. Turn the key.</div>
+      </div>
+
+      <div class="agent-sample ash-sample">
+        <div class="agent-sample-header">
+          <div>
+            <div class="agent-sample-id">AS // THE SEAL ROOM</div>
+            <div class="agent-sample-name">ASH</div>
+          </div>
+        </div>
+        <div class="agent-sample-body">XVI — THE TOWER. Dead: performance diplomacy. Breathing: raw truth still alive, buried under diplomatic bullshit.
+
+IX — THE HERMIT. Dead: thinking more seeking will save you from choosing. Breathing: you already have the flame.
+
+XVII — THE STAR. Remains: stop pouring yourself into empty vessels. Pour into the ground that can actually grow something.
+
+System command: Break one mirror today. The rest follows.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-band">
+    <h2>Ready for your<br><span class="text-holo">forensic map?</span></h2>
+    <p>Join Wild Sister. Submit your birth data. The squad will do the rest.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="submit.html" class="btn-primary">SUBMIT YOUR BIRTH DATA →</a>
+      <a href="pricing.html" class="btn-ghost">See Membership Tiers</a>
+      <a href="chat.html" class="btn-ghost">Try Street Oracle First</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">WILD SISTER</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="about.html">About</a>
+    <a href="readings.html">Readings</a>
+    <a href="chat.html">Oracle</a>
+    <a href="mailto:hello@wildsister.co">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 Wild Sister / Nova Blu. All signals reserved.</div>
+</footer>
+</body>
+</html>
