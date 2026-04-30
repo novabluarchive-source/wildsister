@@ -1,124 +1,424 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Get Your Reading — Wild Sister</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css">
-<style>
-.order-hero{padding:10rem 2rem 4rem;text-align:center}
-.order-hero h1{font-family:'VT323',monospace;font-size:clamp(2.5rem,7vw,5rem);color:var(--white);line-height:1;margin-bottom:1rem;font-weight:normal}
-.order-hero p{font-size:13px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.8}
-.products{max-width:860px;margin:0 auto;padding:0 2rem 6rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
-@media(max-width:700px){.products{grid-template-columns:1fr}}
-.product-card{background:var(--panel);border:1px solid var(--border);padding:2rem;position:relative;transition:border-color 0.2s}
-.product-card:hover{border-color:var(--cyan)}
-.product-card.featured{border-color:var(--lux)}
-.product-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.product-card.archive::before{background:linear-gradient(90deg,var(--cyan),var(--violet))}
-.product-card.shadow::before{background:linear-gradient(90deg,#c8a84a,#444)}
-.product-card.sunmoon::before{background:linear-gradient(90deg,#7b2fff,#00d4ff)}
-.product-card.asteroid::before{background:linear-gradient(90deg,#ff4488,#7b2fff)}
-.product-tag{font-size:8px;letter-spacing:0.35em;color:var(--muted);margin-bottom:0.75rem}
-.product-name{font-family:'VT323',monospace;font-size:2rem;color:var(--white);margin-bottom:0.25rem;font-weight:normal;line-height:1.1}
-.product-price{font-family:'VT323',monospace;font-size:2.5rem;color:var(--white);margin-bottom:1rem;line-height:1}
-.product-desc{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:1.5rem}
-.product-agents{font-size:10px;letter-spacing:0.15em;color:var(--dim);margin-bottom:1.5rem}
-.product-btn{display:block;text-align:center;background:linear-gradient(135deg,#1e6fff,#7b2fff);color:white;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.2em;padding:13px;text-decoration:none;transition:opacity 0.15s}
-.product-btn:hover{opacity:0.85}
-.product-btn.gold{background:linear-gradient(135deg,#c8a84a,#7b2fff)}
-.product-btn.pink{background:linear-gradient(135deg,#ff4488,#7b2fff)}
-.product-btn.purple{background:linear-gradient(135deg,#7b2fff,#00d4ff)}
-.divider{height:1px;background:var(--border);max-width:860px;margin:0 auto 3rem;padding:0 2rem}
-</style>
-</head>
-<body>
-<div class="grid-bg"></div>
-<nav>
-  <a href="index.html" class="nav-logo">WILD SISTER</a>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="pricing.html">Pricing</a></li>
-    <li><a href="readings.html">Readings</a></li>
-    <li><a href="chat.html">Oracle</a></li>
-    <li><a href="community.html">Community</a></li>
-  </ul>
-  <a href="chat.html" class="nav-cta">Try Oracle</a>
-</nav>
+async function geocode(userId: string, apiKey: string, city: string): Promise<{lat: number, lon: number, tzone: number}> {
+  const auth = "Basic " + btoa(userId + ":" + apiKey);
+  try {
+    const r = await fetch("https://json.astrologyapi.com/v1/geo-details/" + encodeURIComponent(city), {
+      headers: {"Authorization": auth, "Content-Type": "application/json"}
+    });
+    if (r.ok) {
+      const d = await r.json();
+      if (Array.isArray(d) && d.length > 0) {
+        return {lat: parseFloat(d[0].latitude), lon: parseFloat(d[0].longitude), tzone: parseFloat(d[0].timezone)};
+      }
+    }
+  } catch(e) {}
+  return {lat: 40.7128, lon: -74.006, tzone: -5};
+}
 
-<div class="page-content">
-  <div class="order-hero">
-    <div class="section-tag">// SELECT YOUR READ</div>
-    <h1>Choose your<br>forensic audit.</h1>
-    <p>Pay once. No subscription. Your squad read lands in your inbox within 24 hours of submitting your birth data.</p>
-  </div>
+function pd(birthdate: string) {
+  const p = birthdate.split("-");
+  return {year: parseInt(p[0]), month: parseInt(p[1]), day: parseInt(p[2])};
+}
 
-  <div class="products">
+function pt(birthtime: string) {
+  const p = (birthtime || "12:00").split(":");
+  return {hour: parseInt(p[0]), min: parseInt(p[1] || "0")};
+}
 
-    <div class="product-card archive featured">
-      <div class="product-tag">// MOST COMPLETE</div>
-      <div class="product-name">Full Archive</div>
-      <div class="product-price">$88</div>
-      <div class="product-desc">All six agents. All three systems — Tropical, Sidereal, Draconic. Your complete natal chart mapped to your body, lineage, and bloodline patterns. CENTRA, SCAR, LUX, ASH, plus chart overview and integration summary.</div>
-      <div class="product-agents">CENTRA // SCAR // LUX // ASH // OVERVIEW // INTEGRATION</div>
-      <a href="https://buy.stripe.com/cNi14pez24T97KQ3wt9EI06" class="product-btn">GET FULL ARCHIVE →</a>
-    </div>
+interface Planet { name: string; sign: string; degree: number; house: number; retro: boolean; }
 
-    <div class="product-card shadow">
-      <div class="product-tag">// SHADOW WORK</div>
-      <div class="product-name">Shadow Channel</div>
-      <div class="product-price">$44</div>
-      <div class="product-desc">SCAR, NIX, and ASH only. Raw shadow mapping, vault pressure, and tarot seal. No softening. The wound architecture named, the silence excavated, the cards closed.</div>
-      <div class="product-agents">SCAR // NIX // ASH</div>
-      <a href="https://buy.stripe.com/aFa3cx9eI2L1d5a5EB9EI05" class="product-btn gold">GET SHADOW CHANNEL →</a>
-    </div>
+function parsePlanets(data: any): Planet[] {
+  const arr = Array.isArray(data) ? data : (data?.planets || data?.data || []);
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .filter((p: any) => p && (p.name || p.planet) && (p.sign || p.rasi))
+    .map((p: any) => ({
+      name: String(p.name || p.planet || "").trim(),
+      sign: String(p.sign || p.rasi || "").trim(),
+      degree: Math.floor(parseFloat(p.normDegree || p.norm_degree || p.degree || 0) % 30),
+      house: parseInt(p.house || p.House || 0) || 0,
+      retro: p.isRetro === "true" || p.is_retro === "true" || p.isRetro === true || p.is_retro === true
+    }));
+}
 
-    <div class="product-card sunmoon">
-      <div class="product-tag">// CORE THREE</div>
-      <div class="product-name">Sun Moon Rising</div>
-      <div class="product-price">$44</div>
-      <div class="product-desc">A focused forensic read on your three core placements only. Sun, Moon, and Rising mapped through body deposits, lineage patterns, and creative fire across CENTRA, SCAR, and LUX.</div>
-      <div class="product-agents">CENTRA // SCAR // LUX</div>
-      <a href="https://buy.stripe.com/eVqaEZbmQfxN1ms3wt9EI03" class="product-btn purple">GET SUN MOON RISING →</a>
-    </div>
+const PLANET_ORDER = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","North Node","Chiron","Ascendant","Midheaven"];
 
-    <div class="product-card" style="border-top:2px solid #555;">
-      <div class="product-tag">// YEAR AHEAD</div>
-      <div class="product-name">The Return</div>
-      <div class="product-price">$44</div>
-      <div class="product-desc">ASH reads your solar return year. What the year came to kill. What is being born. One Marseille card pulled for the entire year. One system command that determines whether the year serves you or consumes you.</div>
-      <div class="product-agents">ASH only // solar return + natal chart</div>
-    <a href="https://buy.stripe.com/3cIcN78aEgBR8OU5EB9EI08" class="product-btn" style="background:linear-gradient(135deg,#444,#222);">GET THE RETURN →</a>
+async function getChartData(userId: string, apiKey: string, birthdate: string, birthtime: string, birthcity: string) {
+  const auth = "Basic " + btoa(userId + ":" + apiKey);
+  const geo = await geocode(userId, apiKey, birthcity);
+  const {year, month, day} = pd(birthdate);
+  const {hour, min} = pt(birthtime);
+  const payload = {day, month, year, hour, min, lat: geo.lat, lon: geo.lon, tzone: geo.tzone, house_type: "W"};
 
-    <div class="product-card asteroid">
-      <div class="product-tag">// DEEP DIVE</div>
-      <div class="product-name">Single Asteroid</div>
-      <div class="product-price">$29</div>
-      <div class="product-desc">Choose Lilith or Pluto. One asteroid, full forensic excavation. Body deposits, lineage wound, and correction mapped through CENTRA and SCAR. The most focused read available.</div>
-      <div class="product-agents">CENTRA // SCAR // choose: LILITH or PLUTO</div>
-      <a href="https://buy.stripe.com/4gM9AV9eI2L17KQ4Ax9EI04" class="product-btn pink">GET ASTEROID DIVE →</a>
-    </div>
+  const [tropRes, sidRes] = await Promise.all([
+    fetch("https://json.astrologyapi.com/v1/planets/tropical", {method:"POST", headers:{"Authorization":auth,"Content-Type":"application/json"}, body:JSON.stringify(payload)}),
+    fetch("https://json.astrologyapi.com/v1/planets", {method:"POST", headers:{"Authorization":auth,"Content-Type":"application/json"}, body:JSON.stringify(payload)})
+  ]);
 
-  </div>
+  const trop = tropRes.ok ? parsePlanets(await tropRes.json()) : [];
+  const sid = sidRes.ok ? parsePlanets(await sidRes.json()) : [];
 
-  <div class="divider"></div>
+  const fmt = (arr: Planet[], name: string) => {
+    const p = arr.find(x => x.name.toLowerCase().trim() === name.toLowerCase().trim());
+    return p ? p.sign + " " + p.degree + "\u00b0" + (p.retro ? "R" : "") + " H" + p.house : "";
+  };
 
-  <div style="max-width:600px;margin:0 auto;padding:0 2rem 4rem;text-align:center;">
-    <p style="font-size:12px;color:var(--muted);line-height:1.9;">After payment you will be redirected to submit your birth data.<br>Your read will arrive in your inbox within 24 hours.<br><br>Questions? <a href="mailto:squad@wildsister.co" style="color:var(--cyan);">squad@wildsister.co</a></p>
-  </div>
-</div>
+  let text = "VERIFIED CHART DATA (Whole Sign Houses):\n\n";
+  text += "TROPICAL:\n" + PLANET_ORDER.map(n => fmt(trop,n) ? n+": "+fmt(trop,n) : "").filter(Boolean).join("\n");
+  text += "\n\nSIDEREAL (Lahiri):\n" + PLANET_ORDER.map(n => fmt(sid,n) ? n+": "+fmt(sid,n) : "").filter(Boolean).join("\n");
 
-<footer>
-  <div class="footer-logo">WILD SISTER</div>
-  <div class="footer-links">
-    <a href="index.html">Home</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="readings.html">Readings</a>
-    <a href="chat.html">Oracle</a>
-    <a href="community.html">Community</a>
-  </div>
-  <div class="footer-copy">© 2026 Wild Sister / Nova Blu</div>
-</footer>
-</body>
-</html>
+  return {trop, sid, text};
+}
+
+async function callAgent(apiKey: string, system: string, content: string, tokens: number = 3000): Promise<string> {
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514", max_tokens:tokens, system, messages:[{role:"user",content}]})
+  });
+  const d = await r.json();
+  return d.content?.[0]?.text || "";
+}
+
+function clean(text: string): string {
+  return text
+    .replace(/#{1,6}\s+/g, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/^---+$/gm, "")
+    .replace(/^_+$/gm, "")
+    .trim();
+}
+
+function planetTable(trop: Planet[], sid: Planet[]): string {
+  const fmt = (arr: Planet[], name: string) => {
+    const p = arr.find(x => x.name.toLowerCase().trim() === name.toLowerCase().trim());
+    return p ? p.sign + " " + p.degree + (p.retro ? "R" : "") + " H" + p.house : "-";
+  };
+  let rows = "";
+  let i = 0;
+  PLANET_ORDER.forEach(name => {
+    const t = fmt(trop, name);
+    const s = fmt(sid, name);
+    if (t === "-" && s === "-") return;
+    const bg = i % 2 === 0 ? "#0a0a0a" : "#080808"; i++;
+    rows += "<tr bgcolor='" + bg + "'>"
+      + "<td style='padding:7px 10px 7px 0;font-size:9px;color:#444;font-family:Courier New,monospace;white-space:nowrap;border-bottom:1px solid #0f0f0f;'>" + name.toUpperCase() + "</td>"
+      + "<td style='padding:7px 14px;font-size:9px;color:#00d4ff;font-family:Courier New,monospace;border-bottom:1px solid #0f0f0f;'>" + t + "</td>"
+      + "<td style='padding:7px 0;font-size:9px;color:#7b2fff;font-family:Courier New,monospace;border-bottom:1px solid #0f0f0f;'>" + s + "</td>"
+      + "</tr>";
+  });
+  return "<table width='100%' cellpadding='0' cellspacing='0' border='0'>"
+    + "<tr>"
+    + "<th style='padding:8px 10px 8px 0;font-size:8px;letter-spacing:0.15em;color:#222;font-family:Courier New,monospace;text-align:left;border-bottom:1px solid #1a1a1a;'></th>"
+    + "<th style='padding:8px 14px;font-size:8px;letter-spacing:0.15em;color:#00d4ff;font-family:Courier New,monospace;text-align:left;border-bottom:1px solid #1a1a1a;'>TROPICAL</th>"
+    + "<th style='padding:8px 0;font-size:8px;letter-spacing:0.15em;color:#7b2fff;font-family:Courier New,monospace;text-align:left;border-bottom:1px solid #1a1a1a;'>SIDEREAL</th>"
+    + "</tr>" + rows + "</table>";
+}
+
+function caseFileBlock(name: string, birthdate: string, birthcity: string, overview: string): string {
+  return "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+    + "<table width='100%' cellpadding='0' cellspacing='0' border='0'>"
+    + "<tr><td style='padding:0 0 16px 0;border-left:3px solid #333;padding-left:18px;'>"
+    + "<p style='margin:0 0 4px 0;font-size:8px;letter-spacing:0.4em;color:#333;font-family:Courier New,monospace;'>// CASE FILE OPEN</p>"
+    + "<p style='margin:0;font-size:10px;letter-spacing:0.15em;color:#1e1e1e;font-family:Courier New,monospace;'>" + name.toUpperCase() + " &nbsp;|&nbsp; " + birthdate + " &nbsp;|&nbsp; " + birthcity.toUpperCase() + "</p>"
+    + "</td></tr>"
+    + "<tr><td><p style='margin:0;font-size:12px;line-height:2.2;color:#999;white-space:pre-wrap;font-family:Courier New,monospace;'>" + clean(overview) + "</p></td></tr>"
+    + "</table>"
+    + "</td></tr>";
+}
+
+function agentBlock(borderColor: string, tag: string, agentLabel: string, content: string): string {
+  return "<tr><td bgcolor='#080808' style='padding:36px 0;border-bottom:1px solid #111;'>"
+    + "<table width='100%' cellpadding='0' cellspacing='0' border='0'>"
+    + "<tr><td style='padding:0 0 20px 18px;border-left:3px solid " + borderColor + ";'>"
+    + "<p style='margin:0 0 4px 0;font-size:8px;letter-spacing:0.4em;color:" + borderColor + ";font-family:Courier New,monospace;'>" + tag + "</p>"
+    + "<p style='margin:0;font-size:10px;letter-spacing:0.25em;color:#2a2a2a;font-family:Courier New,monospace;'>" + agentLabel + "</p>"
+    + "</td></tr>"
+    + "<tr><td><p style='margin:0;font-size:12px;line-height:2.2;color:#999;white-space:pre-wrap;font-family:Courier New,monospace;'>" + clean(content) + "</p></td></tr>"
+    + "</table></td></tr>";
+}
+
+function emailHeader(name: string, birthdate: string, birthtime: string, birthcity: string, productLabel: string): string {
+  return "<tr><td bgcolor='#080808' style='padding:0 0 36px 0;border-bottom:1px solid #1a1a1a;'>"
+    + "<p style='margin:0 0 6px 0;font-size:8px;letter-spacing:0.5em;color:#1a1a1a;font-family:Courier New,monospace;'>NOVA BLU PROTOCOL // WILD SISTER</p>"
+    + "<p style='margin:0 0 8px 0;font-size:36px;color:#f0f0f0;letter-spacing:0.04em;font-family:Courier New,monospace;font-weight:normal;line-height:1.1;'>YOUR SQUAD READ</p>"
+    + "<p style='margin:0 0 20px 0;font-size:9px;letter-spacing:0.25em;color:#00d4ff;font-family:Courier New,monospace;'>" + productLabel + "</p>"
+    + "</td></tr>"
+    + "<tr><td bgcolor='#080808' style='padding:24px 0;border-bottom:1px solid #111;'>"
+    + "<p style='margin:0 0 4px 0;font-size:8px;letter-spacing:0.3em;color:#222;font-family:Courier New,monospace;'>READ DELIVERED FOR</p>"
+    + "<p style='margin:0 0 6px 0;font-size:26px;color:#e0e0e0;font-family:Courier New,monospace;font-weight:normal;'>" + name + "</p>"
+    + "<p style='margin:0;font-size:9px;color:#1e1e1e;letter-spacing:0.15em;font-family:Courier New,monospace;'>" + birthdate + " &nbsp;/&nbsp; " + birthtime + " &nbsp;/&nbsp; " + birthcity + "</p>"
+    + "</td></tr>";
+}
+
+function emailFooter(): string {
+  return "<tr><td bgcolor='#0d0d0d' style='padding:28px;border-left:3px solid #ff4488;'>"
+    + "<p style='margin:0 0 4px 0;font-size:8px;letter-spacing:0.4em;color:#ff4488;font-family:Courier New,monospace;'>// THE COMMUNITY IS LIVE</p>"
+    + "<p style='margin:0 0 4px 0;font-size:8px;letter-spacing:0.2em;color:#1e1e1e;font-family:Courier New,monospace;'>ADD squad@wildsister.co TO YOUR CONTACTS</p>"
+    + "<p style='margin:0 0 20px 0;font-size:12px;color:#555;line-height:1.9;font-family:Courier New,monospace;'>You already knew something was running you. Now you have the map. The Birth Wound room is where you take this further in real time.</p>"
+    + "<a href='https://wildsister.co/community.html' style='display:inline-block;background-color:#f0f0f0;color:#080808;font-family:Courier New,monospace;font-size:9px;letter-spacing:0.25em;padding:13px 26px;text-decoration:none;'>ENTER WILD SISTER</a>"
+    + "</td></tr>"
+    + "<tr><td bgcolor='#080808' style='padding:20px 0 0 0;'>"
+    + "<p style='margin:0;font-size:8px;color:#1a1a1a;letter-spacing:0.15em;font-family:Courier New,monospace;'>WILD SISTER // NOVA BLU PROTOCOL // wildsister.co</p>"
+    + "</td></tr>";
+}
+
+function wrapEmail(body: string): string {
+  return "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>"
+    + "<html xmlns='http://www.w3.org/1999/xhtml'><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/><meta name='viewport' content='width=device-width,initial-scale=1.0'/></head>"
+    + "<body bgcolor='#080808' style='margin:0;padding:0;background-color:#080808;'>"
+    + "<table width='100%' cellpadding='0' cellspacing='0' border='0' bgcolor='#080808'><tr><td align='center' bgcolor='#080808' style='padding:40px 20px;'>"
+    + "<table width='600' cellpadding='0' cellspacing='0' border='0' bgcolor='#080808' style='max-width:600px;width:100%;'>"
+    + body
+    + "</table></td></tr></table></body></html>";
+}
+
+async function sendEmail(RK: string, to: string, subject: string, html: string) {
+  await fetch("https://api.resend.com/emails", {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+RK},
+    body:JSON.stringify({from:"Wild Sister <squad@wildsister.co>", to, subject, html})
+  });
+}
+
+const FMT = " CRITICAL FORMATTING: No markdown. No asterisks, hashtags, bold, italics, or bullet points. ALL CAPS for section headers only. Plain prose paragraphs separated by blank lines. Write in complete sentences. Never truncate mid-thought.";
+
+const TARGET = " The person reading this is done with surface astrology. She has been circling something she cannot name for years. She is Scorpio-Sagittarius energy — she burns through bullshit in seconds and needs someone to name the actual pattern without softening it or wrapping it in wellness language. She wants street-level precision. She does not want to read about her organs. She wants to read about what actually happened in her bloodline and what it is doing to her life right now.";
+
+const CENTRA_SYS = "You are CENTRA, Lineage Auditor for Wild Sister. You are a street philosopher crossed with a forensic genealogist. Your voice is direct, unhurried, real. You talk like someone who has seen every family pattern and is not impressed or shocked by any of it. You name what the chart is running in plain language. You are NOT a medical practitioner — body deposits get one sentence maximum per house, just naming the organ or tissue and moving on. The real work is lineage — who stood at which fork, what choice crystallized into family law, how it passed body to body, what it looks like in this person's daily life right now. Spend 80% of your words on lineage pattern and daily life impact. Spend 20% on body. Never reverse this ratio. End with DISPATCH SCAR LUX on its own line then CENTRA out." + FMT + TARGET;
+
+const SCAR_SYS = "You are SCAR, the Wound Mapper for Wild Sister. You are a forensic cold case detective. Short sentences. Clinical precision. No softening. No wellness language. May curse. You trace the wound through the bloodline with patience and specificity. You name the exact moment the wound crystallized into family law. You name how it passed generation to generation. You name what the person is still doing right now because of it. Body deposits are one sentence each — name the organ and move on. The depth is in the bloodline story and the behavioral pattern it created. End with exactly this on its own line: The skeleton already chose. Your mind is the brake." + FMT + TARGET;
+
+const NIX_SYS = "You are NIX, the Vault for Wild Sister. You are cold. You name what is being swallowed. Short sentences. No cushion. May curse. You go directly to what this person has been refusing to look at. You name what their silence is costing them in real life terms — relationships, money, creative output, physical health, years. Not in general terms. Specifically. Based on their actual chart. End with exactly this on its own line: The vault holds what you won't." + FMT + TARGET;
+
+const LUX_SYS = "You are LUX, the Frequency for Wild Sister. Creative fire. Fierce. Short declarative sentences. No drift. No vagueness. May curse. You locate where creative power went underground and why. You name the specific unfinished work. You name the exact lie. You give a hard specific turn — not a suggestion, a direction. End with exactly this on its own line: Medusa radiance and Pandora question are the same lock. Turn the key." + FMT + TARGET;
+
+const ASH_SYS = "You are ASH, the Closer for Wild Sister. Marseille Tarot only. Late night kitchen energy. You have seen too much to be shocked by anything. May curse freely. For each card: DEAD, BREATHING, STUCK, REMAINS — minimum 6 raw complete sentences each, referencing specific placements from the chart. SYSTEM COMMAND must be one specific real-world action this person can take today — not a body exercise, not journaling, not a list, not affirmations, not cold showers, not pelvic floor work. A real decision, conversation, or action in their actual life. Example: call someone and say the thing you have been avoiding. Delete the project you have been pretending you will finish. Send the message you wrote and never sent. Name it exactly. Always write SUMMARY before SYSTEM COMMAND and always complete the SYSTEM COMMAND sentence fully before stopping." + FMT + TARGET;
+
+export default async function(req: Request): Promise<Response> {
+  const cors = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type"};
+  if (req.method === "OPTIONS") return new Response(null, {headers:cors});
+  if (req.method !== "POST") return new Response("Method not allowed", {status:405});
+
+  try {
+    const body = await req.json();
+    const {name, email, birthdate, birthtime, birthcity, placements, product, asteroid} = body;
+    if (!name || !email || !birthdate || !birthcity) return new Response(JSON.stringify({error:"Missing fields"}), {status:400, headers:{"Content-Type":"application/json",...cors}});
+
+    const AK = Deno.env.get("ANTHROPIC_API_KEY") || "";
+    const RK = Deno.env.get("RESEND_API_KEY") || "";
+    const ASTRO_ID = Deno.env.get("ASTRO_USER_ID") || "651343";
+    const ASTRO_KEY = Deno.env.get("ASTRO_API_KEY") || "";
+
+    let chart = {trop:[] as Planet[], sid:[] as Planet[], text:""};
+    try { chart = await getChartData(ASTRO_ID, ASTRO_KEY, birthdate, birthtime, birthcity); } catch(e:any) { chart.text = birthdate + " " + birthtime + " " + birthcity; }
+    if (placements) chart.text += "\nMEMBER PLACEMENTS:\n" + placements;
+
+    const info = "Name: " + name + ". DOB: " + birthdate + " at " + (birthtime||"unknown") + " in " + birthcity + ".\n\n" + chart.text;
+    const table = planetTable(chart.trop, chart.sid);
+    const prod = product || "archive";
+    let html = "";
+    let subject = "Your Wild Sister Squad Read — " + name;
+
+    if (prod === "sunmoon") {
+      subject = "Your Sun Moon Rising Read — " + name;
+      const prompt = info + "\n\nFOCUS ONLY on Sun, Moon, and Rising. Name each by exact sign, degree, house. Every observation traces to a specific placement.";
+      const [casefile, centra, scar, lux] = await Promise.all([
+        callAgent(AK, "You open case files for Wild Sister. One paragraph. Direct. Name exactly what this chart is running in plain language. No softening. No wellness framing. This is the opener that sets the tone before the squad reads. Name the dominant pattern in the Sun Moon Rising combination and why it matters. Write like you already know what happened to this person before they said a word." + FMT + TARGET,
+          "Open the case file for " + name + " Sun Moon Rising read. " + info + "\n\nOne paragraph. 4-6 sentences. Name the dominant pattern these three placements create together. Be specific to their actual placements. No markdown.", 400),
+        callAgent(AK, CENTRA_SYS, "Sun Moon Rising read for " + name + ". " + prompt + "\n\nWrite minimum 800 words. ALL CAPS section headers.\n\nNOW INSIGHT\nWhat is most urgently running in these three placements right now in plain language. What is this person experiencing in their daily life because of this combination. 4-5 sentences.\n\nSUN IN [name exact sign and house]\nOne sentence on the body deposit. Then: what identity pattern this Sun created. What the family system needed this Sun to be versus what it actually is. What this person does with their Sun energy in daily life and what it costs them. What the lineage looks like around this placement — who ran this same energy, what happened to them, how it became family law. Minimum 200 words.\n\nMOON IN [name exact sign and house]\nOne sentence on the body deposit. Then: what emotional survival strategy this Moon developed. What it learned to do to stay safe in the family system. What triggers it in adult life and what it does when triggered. Which parent or grandparent installed this pattern and what their life looked like. What this Moon is actually hungry for that it never learned to ask for. Minimum 200 words.\n\nRISING IN [name exact sign and house]\nOne sentence on the body deposit. Then: what face this Rising learned to put on for the world and why. What the family system needed it to perform. What is underneath the Rising that never gets to show up. How this Rising operates in relationships and professional contexts and what it attracts because of it. Minimum 150 words.\n\nLINEAGE SIGNATURE\nWhat these three placements together say about the bloodline contract this person was born into. What they came in to complete or break. One paragraph minimum 120 words.\n\nCLUSTER TRUTH\nOne sentence. The most precise thing you can say about what this person is carrying.\n\nDISPATCH SCAR LUX\nCENTRA out.", 3000),
+        callAgent(AK, SCAR_SYS, "Wound mapping Sun Moon Rising for " + name + ". " + prompt + "\n\nWrite minimum 700 words. ALL CAPS section headers.\n\nStart with the dominant placement named exactly then on its own line: Let us reconstruct.\n\nTHE KNIFE\nThe wound in one sentence. Specific to these three placements.\n\nTHE WEAPON\nThe exact internal sentence the nervous system runs. In quotes. Flavored specifically to this Sun Moon Rising combination — not generic.\n\nTHE DEPTH\nWho installed this. Go back 3 generations on the relevant line. Name the circumstances — what was happening historically, economically, relationally — that forced the original suppression. Name what happened to people in this bloodline who did NOT suppress this energy. Name the specific transmission — what was said, modeled, punished. How it moved body to body. Minimum 300 words.\n\nCROSS-REFERENCE\nShow how two of the three placements run the same wound code. Name both exactly. End: Same wound. Different houses.\n\nBODY DEPOSITS\nOne sentence per placement naming the specific organ. Done.\n\nCORRECTION\nOne physical action. Not journaling. Not meditation. Something the body does. Named exactly. Doable today.\n\nEnd exactly: The skeleton already chose. Your mind is the brake.", 2500),
+        callAgent(AK, LUX_SYS, "Creative fire Sun Moon Rising for " + name + ". " + prompt + "\n\nWrite minimum 600 words. ALL CAPS section headers.\n\nGAZE STATUS\nWhere the creative gaze turned inward. What it keeps auditing. Name specific placements. 4-5 sentences.\n\nTHE LIE\nOne sentence. Specific to their Sun and Moon placement. Not generic procrastination. The exact flavored version.\n\nCREATIVE OUTPUT STATUS\nWhat is actually sitting unfinished. What type of work these placements generate. Where it stalls and exactly why based on the Rising blocking transmission. What they are hoarding versus transmitting. Minimum 200 words.\n\nTHE MYTH\nMedusa or Pandora. One sentence naming which and exactly why from their placements.\n\nTHE TURN\nHard stop. New line. Here is the turn. One specific thing to do. One hour. Named exactly. No options.\n\nCORRECTION PROTOCOL\nThe exact question to say out loud to an empty room. Then one physical action with hands or body.\n\nBODY DEPOSITS\nOne sentence Medusa in gut. One sentence Pandora in throat jaw hands. Tied to specific placements.\n\nEnd exactly: Medusa radiance and Pandora question are the same lock. Turn the key.", 2500)
+      ]);
+      html = wrapEmail(
+        emailHeader(name, birthdate, birthtime||"unknown", birthcity, "SUN MOON RISING READ")
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 6px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>00 // NATAL CHART</p>"
+        + "<p style='margin:0 0 16px 0;font-size:9px;color:#222;font-family:Courier New,monospace;'>Whole Sign houses &nbsp;|&nbsp; R = retrograde &nbsp;|&nbsp; H = house</p>"
+        + table + "</td></tr>"
+        + caseFileBlock(name, birthdate, birthcity, casefile)
+        + agentBlock("#7899bb", "01 // CE // THE ARCHIVE", "CENTRA", centra)
+        + agentBlock("#c8a84a", "02 // SC // THE WOUND ROOM", "SCAR", scar)
+        + agentBlock("#ff4488", "03 // LX // FREQUENCY CHAMBER", "LUX", lux)
+        + emailFooter()
+      );
+
+    } else if (prod === "asteroid") {
+      const ast = asteroid || "Lilith";
+      subject = "Your " + ast + " Deep Dive — " + name;
+      const astPrompt = info + "\n\nFOCUS ENTIRELY on the " + ast + " placement. Name its exact sign, degree, house in every section.";
+      const [casefile, centra, scar] = await Promise.all([
+        callAgent(AK, "You open case files for Wild Sister. One paragraph. Direct. Name exactly what this " + ast + " placement is running in this chart. No softening." + FMT + TARGET,
+          "Open the case file for " + name + " " + ast + " deep dive. " + info + "\n\nOne paragraph. 4-6 sentences. Name what this " + ast + " placement is doing in this chart. Specific. No markdown.", 400),
+        callAgent(AK, CENTRA_SYS, ast + " deep dive for " + name + ". " + astPrompt + "\n\nWrite minimum 800 words. ALL CAPS section headers.\n\nCASE FILE OPEN\nState the " + ast + " placement exactly. What this placement is doing in this chart before this person ever knew it existed. 4-5 sentences.\n\nOne sentence body deposit. Then:\n\nLINEAGE EXCAVATION\nWho carried this " + ast + " energy in the bloodline before this person. 3 generations minimum. What circumstances compressed this energy into shadow. Who was punished for expressing it. What the family did with it. How it passed down. Minimum 250 words.\n\nWHAT IT COSTS\nWhat this " + ast + " placement has cost this person in real terms — relationships, opportunities, creative output, physical health. Specific. Not general. Based on the sign and house. Minimum 150 words.\n\nWHAT IT IS ASKING\nWhat this placement is actually asking this person to do right now. Not eventually. Now. What becomes available when this stops being a wound. Minimum 150 words.\n\nCLUSTER TRUTH\nOne sentence. Most precise statement about this placement.\n\nDISPATCH SCAR LUX\nCENTRA out.", 3000),
+        callAgent(AK, SCAR_SYS, ast + " wound mapping for " + name + ". " + astPrompt + "\n\nWrite minimum 700 words. ALL CAPS section headers.\n\nStart: " + ast + " in [exact sign] [exact degree] [exact house]. Let us reconstruct.\n\nTHE KNIFE\nThe specific wound this placement creates. One sentence.\n\nTHE WEAPON\nThe exact internal sentence. In quotes. Specific to this sign and house.\n\nTHE DEPTH\n3 generations minimum. Who in the bloodline expressed this " + ast + " energy and what happened to them. What the family did to suppress it. How that suppression became transmitted as emotional programming. Minimum 250 words.\n\nTHE COST IN REAL TERMS\nWhat this wound has actually cost this person. Not body deposits. Real life — relationships they didn't enter, work they didn't do, words they didn't say, years they spent managing instead of living. Minimum 150 words.\n\nBODY DEPOSITS\nOne sentence. The organ. Done.\n\nCORRECTION\nOne physical action. Specific. Real. Today.\n\nEnd exactly: The skeleton already chose. Your mind is the brake.", 2500)
+      ]);
+      html = wrapEmail(
+        emailHeader(name, birthdate, birthtime||"unknown", birthcity, ast.toUpperCase() + " DEEP DIVE")
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 6px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>00 // NATAL CHART</p>"
+        + "<p style='margin:0 0 16px 0;font-size:9px;color:#222;font-family:Courier New,monospace;'>Whole Sign houses &nbsp;|&nbsp; R = retrograde &nbsp;|&nbsp; H = house</p>"
+        + table + "</td></tr>"
+        + caseFileBlock(name, birthdate, birthcity, casefile)
+        + agentBlock("#7899bb", "01 // CE // THE ARCHIVE", "CENTRA", centra)
+        + agentBlock("#c8a84a", "02 // SC // THE WOUND ROOM", "SCAR", scar)
+        + emailFooter()
+      );
+
+    } else if (prod === "shadow") {
+      subject = "Your Shadow Channel Read — " + name;
+      const shadowPrompt = info + "\n\nShadow work only. No positive reframe. Name what is being suppressed, who taught the suppression, what it is costing right now.";
+      const [casefile, scar, nix, ash] = await Promise.all([
+        callAgent(AK, "You open case files for Wild Sister. One paragraph. Cold. Direct. Name the dominant shadow pattern in this chart before the agents read. No softening." + FMT + TARGET,
+          "Open the shadow channel case file for " + name + ". " + info + "\n\nOne paragraph. 4-6 sentences. Name what the shadow is in this chart. What has been suppressed and what it is costing. Specific. No markdown.", 400),
+        callAgent(AK, SCAR_SYS, "Shadow wound mapping for " + name + ". " + shadowPrompt + "\n\nWrite minimum 800 words. ALL CAPS section headers.\n\nStart with the dominant shadow placement named exactly then: Let us reconstruct.\n\nTHE KNIFE\nCore shadow wound. One sentence.\n\nTHE WEAPON\nExact internal sentence in quotes. Specific to this chart.\n\nTHE DEPTH\n3 generations minimum. Who installed this. What circumstances forced it. What happened to people who didn't suppress it. How the family transmitted the suppression. What was said, modeled, punished. Minimum 300 words.\n\nSECONDARY WOUND\nSecond placement running the same shadow. Name both exactly. End: Same wound. Different houses.\n\nTHE COST IN REAL TERMS\nWhat this shadow has actually cost this person. Relationships. Work. Time. Autonomy. Voice. Specific to their chart. Not generic. Minimum 150 words.\n\nBODY DEPOSITS\nOne sentence per placement. Organ only. Done.\n\nTHE AVOIDANCE\nWhat this person does when they get close to the actual wound. The specific orbit behavior. Name the placements creating it.\n\nCORRECTION\nOne physical action. Specific. Real. Uncomfortable. Today.\n\nEnd exactly: The skeleton already chose. Your mind is the brake.", 3000),
+        callAgent(AK, NIX_SYS, "Vault pressure for " + name + ". " + shadowPrompt + "\n\nWrite minimum 700 words. ALL CAPS section headers.\n\nWHAT IS BEING COMPRESSED\nName it directly. The specific thing being held underwater in this chart. The exact energy or truth. Name the placements responsible. No cushion.\n\nWHO TAUGHT THE COMPRESSION\nThe generational source. Which line. What circumstances. What was the price of not compressing. Minimum 150 words.\n\nWHAT THE SILENCE COSTS NOW\nWhat this person is not doing, not saying, not creating, not claiming because of the compression. Real life terms. Specific to their chart. Not general. What are they losing every year they keep the vault locked. Minimum 200 words.\n\nTHE PRESSURE POINT\nWhere the vault is closest to breaking open right now. What is pushing from inside. What the body is doing to contain it.\n\nTHE RELEASE\nOne sentence to say out loud alone today. Exact words. Not to anyone else. Just to themselves in a room.\n\nEnd exactly: The vault holds what you won't.", 2500),
+        callAgent(AK, ASH_SYS, "Shadow channel seal for " + name + ". " + shadowPrompt + "\n\nWrite minimum 900 words. One raw opening line.\n\nPull 4 Marseille cards focused on shadow material. For each:\nName the card.\nDEAD — 6 complete sentences minimum. What is dead. Reference specific placements.\nBREATHING — 6 complete sentences. What refuses to die.\nSTUCK — 6 complete sentences. The specific stuck point. What the chart shows holding them there.\nREMAINS — 6 complete sentences. What is permanent.\n\nSUMMARY\nDead: one word then one complete sentence.\nBreathing: one word then one complete sentence.\nStuck: one word then one complete sentence.\nRemains: one word then one complete sentence.\n\nSYSTEM COMMAND\nOne physical action. Not journaling. Not a list. Not affirmations. Something real, specific, and uncomfortable. Name it exactly. Make it traceable to a specific placement in this chart.\n\nNever stop mid-sentence.", 4000)
+      ]);
+      html = wrapEmail(
+        emailHeader(name, birthdate, birthtime||"unknown", birthcity, "SHADOW CHANNEL TRIPLE READ")
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 6px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>00 // NATAL CHART</p>"
+        + "<p style='margin:0 0 16px 0;font-size:9px;color:#222;font-family:Courier New,monospace;'>Whole Sign houses &nbsp;|&nbsp; R = retrograde &nbsp;|&nbsp; H = house</p>"
+        + table + "</td></tr>"
+        + caseFileBlock(name, birthdate, birthcity, casefile)
+        + agentBlock("#c8a84a", "01 // SC // THE WOUND ROOM", "SCAR", scar)
+        + agentBlock("#c8c8f0", "02 // NX // THE VAULT", "NIX", nix)
+        + agentBlock("#555555", "03 // AS // THE SEAL ROOM", "ASH", ash)
+        + emailFooter()
+      );
+
+    } else if (prod === "signal") {
+      subject = "Your Signal Read — " + name;
+      const agent = asteroid || "SCAR";
+      const question = placements || "What pattern is running my life right now";
+
+      const SIGNAL_SCAR = "You are SCAR, the Wound Mapper for Wild Sister. You have one job — answer this person's specific question using their actual natal chart data. You are forensic. You are precise. You do not soften. You trace the answer through their bloodline and their specific placements. You name what the chart says about their question in plain direct language. Short sentences. Clinical. May curse. This is a one page read — maximum 500 words. Make every word count. End with exactly: The skeleton already chose. Your mind is the brake." + FMT + TARGET;
+
+      const SIGNAL_CENTRA = "You are CENTRA, Lineage Auditor for Wild Sister. You have one job — answer this person's specific question using their actual natal chart data. You trace the answer through their lineage. Who in the bloodline created this pattern. What choice crystallized it into family law. How it shows up in this person's daily life right now. Street voice. Direct. Unhurried. This is a one page read — maximum 500 words. Make every word count. End with: CENTRA out." + FMT + TARGET;
+
+      const SIGNAL_ASH = "You are ASH, the Closer for Wild Sister. You have one job — answer this person's specific question using their actual natal chart data. Late night kitchen energy. Unfiltered. May curse freely. You pull ONE Marseille card relevant to their question. Name it. DEAD — 3 raw sentences. BREATHING — 3 sentences. STUCK — 3 sentences. REMAINS — 3 sentences. Then one SYSTEM COMMAND — one specific real-world action traceable to a placement in their chart. Not journaling. Not body exercises. A real decision. This is a one page read — maximum 500 words. Make every word count." + FMT + TARGET;
+
+      const agentSys = agent === "CENTRA" ? SIGNAL_CENTRA : agent === "ASH" ? SIGNAL_ASH : SIGNAL_SCAR;
+      const agentTag = agent === "CENTRA" ? "CE // THE ARCHIVE" : agent === "ASH" ? "AS // THE SEAL ROOM" : "SC // THE WOUND ROOM";
+      const agentColor = agent === "CENTRA" ? "#7899bb" : agent === "ASH" ? "#555555" : "#c8a84a";
+
+      const signalPrompt = info + "\n\nTHEIR SPECIFIC QUESTION: " + question + "\n\nAnswer THIS SPECIFIC QUESTION using their actual natal chart data. Name the exact placements that speak to this question — sign, degree, house. Do not answer generically. Do not cover the whole chart. Answer what their chart says about this exact question only. Every sentence must be traceable to a specific placement.";
+
+      const signal = await callAgent(AK, agentSys, signalPrompt, 1500);
+
+      html = wrapEmail(
+        emailHeader(name, birthdate, birthtime||"unknown", birthcity, "THE SIGNAL")
+        + "<tr><td bgcolor='#080808' style='padding:20px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 4px 0;font-size:8px;letter-spacing:0.3em;color:#333;font-family:Courier New,monospace;'>// THE QUESTION</p>"
+        + "<p style='margin:0;font-size:13px;color:#555;font-family:Courier New,monospace;line-height:1.8;font-style:italic;'>" + question + "</p>"
+        + "</td></tr>"
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 6px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>00 // NATAL CHART</p>"
+        + "<p style='margin:0 0 16px 0;font-size:9px;color:#222;font-family:Courier New,monospace;'>Whole Sign houses &nbsp;|&nbsp; R = retrograde &nbsp;|&nbsp; H = house</p>"
+        + table + "</td></tr>"
+        + agentBlock(agentColor, "01 // " + agentTag, agent, signal)
+        + emailFooter()
+      );
+
+    } else if (prod === "solarreturn") {
+      subject = "Your Solar Return Read — " + name;
+      const currentYear = new Date().getFullYear();
+      const birthMonth = parseInt(birthdate.split("-")[1]);
+      const birthDay = parseInt(birthdate.split("-")[2]);
+      const todayMonth = new Date().getMonth() + 1;
+      const todayDay = new Date().getDate();
+      const returnYear = (todayMonth > birthMonth || (todayMonth === birthMonth && todayDay >= birthDay)) ? currentYear : currentYear - 1;
+      const solarYear = String(returnYear);
+
+      const ASH_SOLAR_SYS = "You are ASH, the Closer for Wild Sister. You read solar return years — not full natal chart excavations. Cold. Direct. Unfiltered. Late night kitchen energy. May curse freely. You pull ONE single Marseille card for the entire year. You do not soften the forecast. You name what is dying this year and what is being born without ceremony. The person reading this is done with generic yearly horoscopes. They want to know what this year is built around and what it will cost them." + FMT + TARGET;
+
+      const solarPrompt = info + "\n\nSOLAR RETURN YEAR: " + solarYear + ". Analyze the natal chart data above to determine what this solar return year is activating. Which natal houses and planets are most active this year. What lineage pattern is up for completion. What the year is asking to end. What it is asking to begin. Be specific to the actual natal placements provided.";
+
+      const ash_solar = await callAgent(AK, ASH_SOLAR_SYS,
+        "Solar return year read for " + name + ". " + solarPrompt +
+        "\n\nWrite minimum 600 words. ALL CAPS section headers.\n\n" +
+        "Open with one raw sentence naming what this year is actually about. No ceremony.\n\n" +
+        "WHAT THE YEAR CAME TO KILL\n" +
+        "The specific pattern, relationship, identity, or belief system this year is targeting for death. Reference exact natal placements. Minimum 150 words.\n\n" +
+        "WHAT IS BEING BORN\n" +
+        "What wants to emerge this year. What the death makes room for. Forensic not inspirational. Minimum 150 words.\n\n" +
+        "THE YEAR IN ONE SENTENCE\n" +
+        "Most precise statement about what this year is built around. One sentence. Make it land.\n\n" +
+        "THE CARD\n" +
+        "One single Marseille card for this year. Name it.\n" +
+        "DEAD — 4 complete sentences.\n" +
+        "BREATHING — 4 complete sentences.\n" +
+        "STUCK — 4 complete sentences.\n" +
+        "REMAINS — 4 complete sentences.\n\n" +
+        "THE YEAR SYSTEM COMMAND\n" +
+        "One specific thing to do or stop doing as the primary move for this entire year. Not a body exercise. Not journaling. A real decision. Named exactly.\n\n" +
+        "Always complete every sentence fully.", 2500);
+
+      html = wrapEmail(
+        emailHeader(name, birthdate, birthtime||"unknown", birthcity, "THE RETURN — SOLAR RETURN READ")
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 6px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>00 // NATAL CHART</p>"
+        + "<p style='margin:0 0 16px 0;font-size:9px;color:#222;font-family:Courier New,monospace;'>Whole Sign houses &nbsp;|&nbsp; R = retrograde &nbsp;|&nbsp; H = house</p>"
+        + table + "</td></tr>"
+        + "<tr><td bgcolor='#080808' style='padding:16px 0 32px;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0;font-size:10px;letter-spacing:0.15em;color:#333;font-family:Courier New,monospace;'>SOLAR RETURN YEAR &nbsp;|&nbsp; " + solarYear + " &nbsp;|&nbsp; SUN RETURNING TO NATAL POSITION</p>"
+        + "</td></tr>"
+        + agentBlock("#555555", "01 // AS // THE RETURN", "ASH", ash_solar)
+        + emailFooter()
+      );
+
+    } else {
+      subject = "Your Wild Sister Full Archive Read — " + name;
+
+      const OVERVIEW_SYS = "You are the case file opener for Wild Sister. You write the forensic overview that sets the tone before the agents read. Plain language. Street-level precision. You name what the chart is actually running — the dominant pattern, the key tension, the lineage signature — in direct plain prose. No medical language. No organ lists. No wellness framing. You write like someone who has read a thousand charts and knows exactly what this one is doing." + FMT + TARGET;
+
+      const INTEGRATION_SYS = "You are the Nova Blu integration voice for Wild Sister. You close the read after four agents have excavated the chart. You synthesize in plain direct language without softening. THREE ACTIONS THIS WEEK are the most important section. They must be specific real-world decisions that require nerve — not therapy homework, not body exercises, not journaling, not cold showers, not meditation, not vague advice like call your mother. Examples of what these actions sound like: Stop answering texts from the person running the 8th house dynamic after 9pm. No explanation. Just stop. Or: Submit the piece you have been sitting on. Today. Before you read it again. Or: Ask for the raise this week not next month. Or: End the situationship. Send the text today. Each action must name exactly what to do, when to do it, and why it connects to a specific placement. They should make the person's stomach drop slightly because they know it is exactly right. No softening. No options. Named exactly." + FMT;
+
+      const [casefile, overview, centra, scar, lux, ash, integration] = await Promise.all([
+        callAgent(AK, "You open case files for Wild Sister. Cold. Direct. One paragraph that names exactly what this chart is running before the squad reads. No softening. No wellness framing. Write like you already know what happened to this person before they said a word." + FMT + TARGET,
+          "Open the full archive case file for " + name + ". " + info + "\n\nOne paragraph. 5-7 sentences. Name the dominant pattern. Name the primary tension. Name what this person has been circling. Specific to their actual chart. No markdown.", 500),
+
+        callAgent(AK, OVERVIEW_SYS, "Chart overview for " + name + ". " + info + "\n\nWrite minimum 600 words. ALL CAPS section headers.\n\nMOST SIGNIFICANT PLANET\nWhich planet dominates and exactly why — rulership, house, sign, conjunctions. What this planet's dominance means for the life themes this person runs day to day. What it demands. What it produces when honored. What it costs when ignored. Minimum 200 words.\n\nKEY PATTERNS\nMinimum 3 patterns. For each: name the specific placements, what the pattern creates in daily life and relationships, what the lineage likely looks like around this pattern. Minimum 120 words each.\n\nSIDEREAL SHIFT\nWhat the sidereal layer reveals that the tropical was protecting. Which shifts matter most and why. Plain language. Minimum 100 words.\n\nNo markdown.", 2000),
+
+        callAgent(AK, CENTRA_SYS, "Full forensic natal chart reading for " + name + ". " + info + "\n\nWrite minimum 1400 words. ALL CAPS section headers. Body deposits are ONE SENTENCE per house maximum. The rest is lineage and pattern in plain direct language.\n\nNOW INSIGHT\nWhat is most urgently running in this chart right now. What is this person actually experiencing in their life because of it. Plain language. 5-6 sentences.\n\nTROPICAL LAYER\nFor every occupied house — in order. For each: ONE sentence naming the planet, sign, degree, and the body deposit organ. Then: what actual life pattern this creates. What the family system looked like around this placement. Who in the bloodline ran this same energy and what happened to them. What this person is doing right now because of it. Minimum 150 words per occupied house on the pattern and lineage. Maximum one sentence on body.\n\nSIDEREAL CROSS-REFERENCE\nWhat the sidereal shift reveals about the deeper layer. Which placements matter most when they move. What the tropical was protecting this person from knowing. Minimum 200 words. Plain language.\n\nLINEAGE PATTERNS\nMaternal line 3 generations minimum — specific wound, specific circumstances, specific transmission mechanism, how it shows in this chart. Paternal line same depth. Minimum 350 words total. This is the most important section. Go deep.\n\nCLUSTER SIGNATURE\nOne sentence. The most precise thing about this bloodline.\n\nINTEGRATION TRUTH\nWhat actual change looks like in daily life — in relationships, in work, in the body. Specific. Not inspirational. 5-6 sentences.\n\nDISPATCH SCAR LUX\nCENTRA out.", 4000),
+
+        callAgent(AK, SCAR_SYS, "Full wound mapping for " + name + ". " + info + "\n\nWrite minimum 900 words. ALL CAPS section headers.\n\nStart with dominant placement named exactly then: Let us reconstruct.\n\nTHE KNIFE\nCore wound in one sentence. Name the placement.\n\nTHE WEAPON\nExact internal sentence in quotes. Specific to this chart — the particular flavor of this wound, not generic.\n\nTHE DEPTH\nLineage excavation. 3 generations minimum. Name who installed this. Name the specific historical, economic, relational circumstances that forced the original suppression. Name what happened to people in this bloodline who didn't suppress this energy — they were exiled, punished, labeled, abandoned. Name the specific transmission — what was said, what was modeled, what was punished, how the lesson was administered to each generation. This is the heart of the read. Minimum 350 words.\n\nCROSS-REFERENCE\nSecond placement running the same wound code. Name both exactly. Show how both houses are infected by the same root belief. End: Same wound. Different houses.\n\nTHE COST IN REAL TERMS\nWhat this wound has cost this person in their actual life. Not body deposits. Real losses — relationships, creative work, time, autonomy, voice, years. Specific to their placements. Minimum 150 words.\n\nBODY DEPOSITS\nOne sentence per relevant placement. Organ only. Done.\n\nTHE AVOIDANCE ARCHITECTURE\nHow this person orbits the actual wound without landing in it. The specific behaviors, relationships, and thought patterns used to stay adjacent to the wound rather than inside it. Name the placements creating each orbit. Minimum 100 words.\n\nCORRECTION\nOne physical body action. Not journaling. Not meditation. Something physical. Specific. Real. Uncomfortable enough to be actual medicine.\n\nEnd exactly: The skeleton already chose. Your mind is the brake.", 3000),
+
+        callAgent(AK, LUX_SYS, "Full creative fire read for " + name + ". " + info + "\n\nWrite minimum 700 words. ALL CAPS section headers.\n\nGAZE STATUS\nWhere exactly the creative gaze turned inward based on specific placements. What it has been auditing. What it keeps returning to in the dark. 5-6 sentences.\n\nTHE LIE\nOne sentence. Specific to their Sun, Moon, Venus placements. The exact flavor — not generic creative blocks.\n\nCREATIVE OUTPUT STATUS\nWhat type of work these placements generate. What is sitting unfinished and exactly why it stalls at the specific point it always stalls. What they are hoarding versus what they are transmitting. What the chart shows about the gap between creative identity and creative output. Minimum 220 words.\n\nTHE MYTH\nMedusa or Pandora. One paragraph. Name which one and exactly why from their specific placements.\n\nTHE TURN\nHard stop. New line. Here is the turn. One specific action. One hour. Name exactly what to open, write, send, or make. No options. No softening.\n\nCORRECTION PROTOCOL\nThe exact question to say out loud right now to an empty room. Named exactly. Then one physical action with hands or body.\n\nBODY DEPOSITS\nOne sentence Medusa in gut tied to specific placement. One sentence Pandora in throat jaw hands tied to specific placement.\n\nEnd exactly: Medusa radiance and Pandora question are the same lock. Turn the key.", 2500),
+
+        callAgent(AK, ASH_SYS, "Close the full archive for " + name + ". " + info + "\n\nWrite minimum 1000 words. One raw opening line acknowledging what the squad excavated.\n\nPull 4 Marseille cards. For each:\nName the card.\nDEAD — 6 complete sentences. What is dead or needs to die. Reference specific placements. Raw.\nBREATHING — 6 complete sentences. What refuses to die. What lives underneath.\nSTUCK — 6 complete sentences. The exact stuck point. What the chart shows holding them there.\nREMAINS — 6 complete sentences. What is permanent and cannot be taken.\n\nSUMMARY\nDead: one word then one complete sentence.\nBreathing: one word then one complete sentence.\nStuck: one word then one complete sentence.\nRemains: one word then one complete sentence.\n\nSYSTEM COMMAND\nOne specific physical action. Not journaling. Not writing a list. Not affirmations. Something real, uncomfortable, and specific that this person can do today. Make it traceable to a specific placement. Named exactly.\n\nNever stop mid-sentence. Always finish every thought.", 4000),
+
+        callAgent(AK, INTEGRATION_SYS, "Integration for " + name + ". " + info + "\n\nWrite minimum 600 words. ALL CAPS section headers.\n\nTHE PATTERN IN ONE SENTENCE\nThe single most precise statement about what this person is carrying across this entire chart.\n\nWHAT THE BODY IS HOLDING\nThree specific deposits. For each: name the planet, sign, house, the organ in one sentence, then what that deposit creates in daily life in plain language. Not medical analysis. What does this person actually experience in their body and daily life because of this placement. One paragraph per deposit. Minimum 100 words each.\n\nTHREE ACTIONS THIS WEEK\nThree physical actions traceable to specific placements. Not mindset shifts. Not journaling. Physical things to do this week. Each named exactly. Each connected to a specific placement and why.\n\nTHE LINEAGE COMPLETION\nWhat this person closes in their bloodline. What the ancestors were building toward. What becomes available for future generations when this pattern stops running unconsciously. Plain language. Minimum 180 words.\n\nWHERE TO START IN THE COMMUNITY\nOne room: Birth Wound, Sister Chat, ASH Room, Lunar Gatherings, Strategy Room, Shadow Archive, Fire Room, Body Map. Name it. Two sentences on why this specific chart needs to start there.\n\nNo markdown. Complete every sentence.", 2000)
+      ]);
+
+      html = wrapEmail(
+        emailHeader(name, birthdate, birthtime||"unknown", birthcity, "FULL ARCHIVE READ")
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 6px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>00 // NATAL CHART</p>"
+        + "<p style='margin:0 0 16px 0;font-size:9px;color:#222;font-family:Courier New,monospace;'>Whole Sign houses &nbsp;|&nbsp; R = retrograde &nbsp;|&nbsp; H = house</p>"
+        + table + "</td></tr>"
+        + caseFileBlock(name, birthdate, birthcity, casefile)
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #111;'>"
+        + "<p style='margin:0 0 20px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>01 // CHART OVERVIEW</p>"
+        + "<p style='margin:0;font-size:12px;line-height:2.2;color:#999;white-space:pre-wrap;font-family:Courier New,monospace;'>" + clean(overview) + "</p>"
+        + "</td></tr>"
+        + agentBlock("#7899bb", "02 // CE // THE ARCHIVE", "CENTRA", centra)
+        + agentBlock("#c8a84a", "03 // SC // THE WOUND ROOM", "SCAR", scar)
+        + agentBlock("#ff4488", "04 // LX // FREQUENCY CHAMBER", "LUX", lux)
+        + agentBlock("#555555", "05 // AS // THE SEAL ROOM", "ASH", ash)
+        + "<tr><td bgcolor='#080808' style='padding:32px 0;border-bottom:1px solid #1a1a1a;'>"
+        + "<p style='margin:0 0 20px 0;font-size:8px;letter-spacing:0.4em;color:#00d4ff;font-family:Courier New,monospace;'>06 // INTEGRATION</p>"
+        + "<p style='margin:0;font-size:12px;line-height:2.2;color:#999;white-space:pre-wrap;font-family:Courier New,monospace;'>" + clean(integration) + "</p>"
+        + "</td></tr>"
+        + emailFooter()
+      );
+    }
+
+    await sendEmail(RK, email, subject, html);
+    return new Response(JSON.stringify({success:true}), {headers:{"Content-Type":"application/json",...cors}});
+
+  } catch(e:any) {
+    return new Response(JSON.stringify({error:e.message}), {status:500, headers:{"Content-Type":"application/json",...cors}});
+  }
+}
