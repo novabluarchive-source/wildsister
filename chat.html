@@ -79,8 +79,21 @@ body::before{
 .pwtag{font-size:10px;letter-spacing:0.3em;color:var(--muted);margin-bottom:1.5rem}
 .pwtitle{font-family:'VT323',monospace;font-size:clamp(2rem,7vw,3.5rem);color:var(--white);margin-bottom:1rem;line-height:1}
 .pwbody{font-size:12px;color:var(--muted);line-height:1.8;max-width:360px;margin-bottom:1.5rem}
+
+.email-gate{width:100%;max-width:340px;margin-bottom:1.5rem}
+.email-label{font-size:9px;letter-spacing:0.25em;color:var(--muted);margin-bottom:8px;text-align:left}
+.email-row{display:flex;gap:6px}
+.email-inp{flex:1;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:inherit;font-size:12px;padding:9px 12px;outline:none;border-radius:2px;transition:border-color 0.15s}
+.email-inp:focus{border-color:var(--cyan)}
+.email-inp::placeholder{color:var(--muted)}
+.email-sub{background:none;border:1px solid var(--cyan);color:var(--cyan);font-family:inherit;font-size:10px;padding:9px 14px;cursor:pointer;letter-spacing:0.15em;white-space:nowrap;transition:all 0.15s}
+.email-sub:hover{background:var(--cyan);color:var(--black)}
+.email-note{font-size:9px;color:var(--muted);margin-top:6px;text-align:left;letter-spacing:0.1em}
+.email-success{font-size:11px;color:var(--cyan);letter-spacing:0.15em;margin-bottom:1rem;display:none}
+
+.pwdivider{font-size:9px;color:var(--dim);letter-spacing:0.2em;margin-bottom:1.5rem}
 .pwprice{font-family:'VT323',monospace;font-size:clamp(3rem,10vw,5rem);color:var(--white);line-height:1;margin-bottom:0.5rem}
-.pwnote{font-size:10px;letter-spacing:0.2em;color:var(--muted);margin-bottom:2rem}
+.pwnote{font-size:10px;letter-spacing:0.2em;color:var(--muted);margin-bottom:1.25rem}
 .pwcta{display:block;background:linear-gradient(135deg,var(--electric),var(--violet));color:white;border:none;font-family:inherit;font-size:11px;letter-spacing:0.2em;padding:14px 28px;cursor:pointer;text-decoration:none;margin-bottom:10px}
 .pwalr{font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline}
 
@@ -147,11 +160,27 @@ textarea::placeholder{color:var(--muted)}
     <div id="pw">
       <div class="pwtag">// SESSION LIMIT REACHED</div>
       <div class="pwtitle">THE SIGNAL CONTINUES.</div>
-      <div class="pwbody">You had 3 questions. The agent has more to give. Unlock the full session — unlimited messages, no timer.</div>
-      <div class="pwprice">$9<span style="font-size:2rem">.97</span></div>
-      <div class="pwnote">// ONE TIME. UNLOCK NOW.</div>
-      <a href="https://novablu3.gumroad.com/l/qhvclf" target="_blank" class="pwcta">UNLOCK THE CHANNEL</a>
+      <div class="pwbody">You had 3 questions. The agent went deeper than most people let it go. Drop your email — get $10 off your first full read.</div>
+
+      <div class="email-gate">
+        <div class="email-label">// YOUR EMAIL</div>
+        <div class="email-row">
+          <input class="email-inp" id="emailInp" type="email" placeholder="your@email.com" />
+          <button class="email-sub" onclick="submitEmail()">SEND IT</button>
+        </div>
+        <div class="email-note">No spam. One email with your discount code.</div>
+      </div>
+
+      <div class="email-success" id="emailSuccess">// CODE SENT — CHECK YOUR INBOX</div>
+
+      <div class="pwdivider">— OR GO STRAIGHT TO A FULL READ —</div>
+
+      <div class="pwprice">$18<span style="font-size:2rem">+</span></div>
+      <div class="pwnote">// THE SIGNAL — ONE QUESTION. YOUR CHART. 24HR DELIVERY.</div>
+      <a href="https://wildsister.co/order.html" target="_blank" class="pwcta">VIEW ALL READINGS</a>
+      <button class="pwalr" onclick="unlock()">I already purchased — continue session</button>
     </div>
+
     <div class="ctop">
       <div>
         <div class="cname" id="cname"></div>
@@ -171,8 +200,8 @@ textarea::placeholder{color:var(--muted)}
 
 <script>
 var W='https://oracle-api.capcancerian3.workers.dev';
+var RESEND_CAPTURE='https://novablus--4390816e3c0d11f192b142b51c65c3df.web.val.run';
 var FREE=3;
-var MAX_PAID=20;
 var COLORS={NIX:'#c8e8ff',SCAR:'#c8a84a',LUX:'#ff4488',CENTRA:'#7899bb',LUNA:'#c8c8f0',ASH:'#dddddd'};
 var LABELS={NIX:'THE VAULT',SCAR:'THE WOUND ROOM',LUX:'FREQUENCY CHAMBER',CENTRA:'THE ARCHIVE',LUNA:'THE MOON POOL',ASH:'THE SEAL ROOM'};
 var OPENS={
@@ -192,7 +221,7 @@ var SYSTEMS={
   ASH:'You are ASH. ALL CAPS ONLY. NO LOWERCASE. You pull ONE Marseille tarot card at a time. Flip it, name it, tell them brutally what it means for their exact situation right now. Then stop. Wait for their response. If they want another card they will ask. Keep the conversation alive — do not close sessions unless asked. No hashtags, no signatures, no SESSION CLOSED unless they are done. Under 60 words per card.'
 };
 
-var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null;
+var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,emailCaptured=false;
 
 function enterApp(){
   document.getElementById('boot').style.display='none';
@@ -213,7 +242,6 @@ function go(a){
   document.getElementById('cname').textContent=a;
   document.getElementById('cname').style.color=COLORS[a];
   document.getElementById('clabel').textContent=LABELS[a];
-  document.getElementById('pw').classList.remove('show');
   document.getElementById('msgs').innerHTML='';
   addMsg('agent',OPENS[a]);
   msgHistory.push({role:'assistant',content:OPENS[a]});
@@ -233,6 +261,31 @@ function unlock(){
 
 function isUnlocked(){
   try{return sessionStorage.getItem('u')==='1'}catch(e){return false}
+}
+
+async function submitEmail(){
+  var inp=document.getElementById('emailInp');
+  var email=inp.value.trim();
+  if(!email||!email.includes('@')){inp.style.borderColor='var(--lux)';return;}
+  inp.disabled=true;
+  document.querySelector('.email-sub').disabled=true;
+  document.querySelector('.email-sub').textContent='...';
+
+  try {
+    await fetch('https://novablus--18cd505c48b911f1998d42b51c65c3df.web.val.run',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:email})
+    });
+  } catch(e) {}
+
+  emailCaptured=true;
+  document.getElementById('emailSuccess').style.display='block';
+  document.querySelector('.email-gate').style.opacity='0.3';
+  unlock();
+  setTimeout(function(){
+    document.getElementById('pw').classList.remove('show');
+  }, 2000);
 }
 
 function addMsg(type,text){
@@ -290,11 +343,6 @@ function send(){
     var reply=data.content&&data.content[0]?data.content[0].text:'['+agent+'] Signal interrupted. Try again.';
     addMsg('agent',reply);
     msgHistory.push({role:'assistant',content:reply});
-    // Show upsell if 6+ messages AND 8+ minutes in session
-    var timeInRoom = (Date.now() - sessionStart) / 1000 / 60;
-    if(isUnlocked() && count >= 6 && timeInRoom >= 8 && !document.getElementById('upsellBlock')) {
-      showUpsell();
-    }
   }).catch(function(){
     clearThinking();
     addMsg('agent','['+agent+']\n\nLost the signal for a second. Send that again.');
