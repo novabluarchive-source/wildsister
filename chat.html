@@ -336,11 +336,7 @@ function send(){
     return;
   }
   if(isUnlocked()&&count>15){
-    addMsg('agent','['+agent+']
-
-Session complete. You have reached the limit for this channel.
-
-Your full read is waiting at wildsister.co/order.html');
+    addMsg('agent','['+agent+']\n\nSession complete. You have reached the limit for this channel.\n\nYour full read is waiting at wildsister.co/order.html');
     posting=false;
     document.getElementById('sbtn').disabled=true;
     document.getElementById('inp').disabled=true;
