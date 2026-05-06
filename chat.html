@@ -282,10 +282,7 @@ async function submitEmail(){
   emailCaptured=true;
   document.getElementById('emailSuccess').style.display='block';
   document.querySelector('.email-gate').style.opacity='0.3';
-  unlock();
-  setTimeout(function(){
-    document.getElementById('pw').classList.remove('show');
-  }, 2000);
+  document.querySelector('.email-sub').textContent='SENT';
 }
 
 function addMsg(type,text){
