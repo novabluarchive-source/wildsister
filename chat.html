@@ -232,7 +232,9 @@ function enterApp(){
 }
 
 function go(a){
-  agent=a;msgHistory=[];count=0;sessionStart=Date.now();
+  agent=a;msgHistory=[];
+  try{count=parseInt(sessionStorage.getItem('msgCount')||'0');}catch(e){count=0;}
+  sessionStart=Date.now();
   document.getElementById('pw').classList.remove('show');
   document.getElementById('hall').style.display='none';
   var cr=document.getElementById('chatroom');
@@ -281,8 +283,10 @@ async function submitEmail(){
 
   emailCaptured=true;
   document.getElementById('emailSuccess').style.display='block';
-  document.querySelector('.email-gate').style.opacity='0.3';
+  document.querySelector('.email-gate').style.opacity='0.4';
   document.querySelector('.email-sub').textContent='SENT';
+  document.querySelector('.email-sub').disabled=true;
+  document.getElementById('emailInp').disabled=true;
 }
 
 function addMsg(type,text){
@@ -324,10 +328,22 @@ function send(){
   addMsg('user',text);
   msgHistory.push({role:'user',content:text});
   count++;
+  try{sessionStorage.setItem('msgCount',count);}catch(e){}
   if(!isUnlocked()&&count>FREE){
     document.getElementById('pw').classList.add('show');
     posting=false;
     document.getElementById('sbtn').disabled=false;
+    return;
+  }
+  if(isUnlocked()&&count>15){
+    addMsg('agent','['+agent+']
+
+Session complete. You have reached the limit for this channel.
+
+Your full read is waiting at wildsister.co/order.html');
+    posting=false;
+    document.getElementById('sbtn').disabled=true;
+    document.getElementById('inp').disabled=true;
     return;
   }
   showThinking();
