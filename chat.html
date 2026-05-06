@@ -178,7 +178,14 @@ textarea::placeholder{color:var(--muted)}
       <div class="pwprice">$18<span style="font-size:2rem">+</span></div>
       <div class="pwnote">// THE SIGNAL — ONE QUESTION. YOUR CHART. 24HR DELIVERY.</div>
       <a href="https://wildsister.co/order.html" target="_blank" class="pwcta">VIEW ALL READINGS</a>
-      <button class="pwalr" onclick="unlock()">I already purchased — continue session</button>
+      <div class="code-gate" style="margin-top:1rem;width:100%;max-width:340px;">
+  <div class="email-label" style="margin-bottom:8px;">// HAVE AN ACCESS CODE?</div>
+  <div class="email-row">
+    <input class="email-inp" id="accessCodeInp" placeholder="enter code..." style="letter-spacing:0.1em;text-transform:uppercase;" />
+    <button class="email-sub" onclick="validateCode()">UNLOCK</button>
+  </div>
+  <div style="font-size:9px;color:#ff4488;margin-top:6px;display:none;" id="codeError">Invalid code. Check your purchase confirmation.</div>
+</div>
     </div>
 
     <div class="ctop">
@@ -360,6 +367,21 @@ function send(){
     document.getElementById('sbtn').disabled=false;
     inp.focus();
   });
+}
+
+function validateCode(){
+  var VALID_CODES=['wsread2026','wssun2026','wsast2026','wsshadow2026','wsreturn2026','wssignal2026'];
+  var inp=document.getElementById('accessCodeInp');
+  var code=inp.value.trim().toLowerCase();
+  if(VALID_CODES.indexOf(code)>-1){
+    unlock();
+    document.getElementById('pw').classList.remove('show');
+    try{sessionStorage.setItem('msgCount','3');}catch(e){}
+    count=3;
+  } else {
+    document.getElementById('codeError').style.display='block';
+    inp.style.borderColor='var(--lux)';
+  }
 }
 
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
