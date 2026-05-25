@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern Engine — Wild Sister // Nova Blu</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --obsidian:#080a0f;
+  --graphite:#0d1018;
+  --panel:#111520;
+  --panel2:#161c28;
+  --cyan:#00e5ff;
+  --violet:#a855f7;
+  --silver:#b0bec5;
+  --blood:#ef4444;
+  --gold:#d4a017;
+  --green:#00ff88;
+  --dim:#1e2535;
+  --border:#1e2d40;
+  --text:#c8d4e0;
+  --muted:#5a6a7a;
+  --tropical:#00e5ff;
+  --vedic:#a855f7;
+  --draconic:#d4a017;
+}
+
+html{scroll-behavior:smooth;}
+body{background:var(--obsidian);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden;cursor:crosshair;}
+
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,0.01) 2px,rgba(0,229,255,0.01) 4px);pointer-events:none;z-index:0;}
+
+.grain{position:fixed;inset:0;opacity:0.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px;pointer-events:none;z-index:0;}
+
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:32px 20px;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+@keyframes scan{0%{top:0;}100%{top:100%;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes breathe{0%,100%{box-shadow:0 0 8px rgba(0,229,255,0.1);}50%{box-shadow:0 0 24px rgba(0,229,255,0.35);}}
+@keyframes flicker{0%,89%,91%,100%{opacity:1;}90%{opacity:0.3;}95%{opacity:0.6;}}
+
+/* HEADER */
+.header{text-align:center;padding:40px 0 48px;position:relative;}
+.header-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--muted);margin-bottom:16px;}
+.header-title{font-family:'Cinzel',serif;font-size:clamp(28px,6vw,52px);color:var(--cyan);letter-spacing:4px;animation:flicker 12s ease-in-out infinite;line-height:1.1;}
+.header-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-top:10px;}
+.header-desc{font-size:13px;color:var(--silver);line-height:1.8;max-width:600px;margin:20px auto 0;}
+
+/* SYSTEM LEGEND */
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:32px 0;}
+.legend-item{padding:16px;border:1px solid var(--border);position:relative;overflow:hidden;}
+.legend-item::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.legend-tropical::before{background:var(--tropical);}
+.legend-vedic::before{background:var(--vedic);}
+.legend-draconic::before{background:var(--draconic);}
+.legend-system{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:3px;margin-bottom:6px;}
+.legend-label{font-family:'Cinzel',serif;font-size:14px;margin-bottom:4px;}
+.legend-desc{font-size:10px;color:var(--muted);line-height:1.5;}
+
+/* FORM SECTIONS */
+.form-section{background:var(--panel);border:1px solid var(--border);padding:24px;margin-bottom:16px;position:relative;overflow:hidden;animation:fadeUp 0.5s ease-out both;}
+.form-section::after{content:'';position:absolute;left:0;right:0;height:1px;top:0;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.2),transparent);pointer-events:none;}
+
+.scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.3),transparent);animation:scan 4s linear infinite;pointer-events:none;}
+
+.section-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-label::before{content:'//';color:var(--cyan);}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* SYSTEM TABS */
+.system-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+.sys-tab{padding:10px;border:1px solid var(--border);text-align:center;cursor:pointer;transition:all 0.2s;background:var(--graphite);}
+.sys-tab.active-tropical{border-color:var(--tropical);background:rgba(0,229,255,0.06);}
+.sys-tab.active-vedic{border-color:var(--vedic);background:rgba(168,85,247,0.06);}
+.sys-tab.active-draconic{border-color:var(--draconic);background:rgba(212,160,23,0.06);}
+.sys-tab-label{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;margin-bottom:4px;}
+.sys-tab-name{font-family:'Cinzel',serif;font-size:12px;}
+
+/* GRID INPUTS */
+.input-grid{display:grid;gap:12px;}
+.input-grid-2{grid-template-columns:1fr 1fr;}
+.input-grid-3{grid-template-columns:1fr 1fr 1fr;}
+.input-grid-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+
+.field-wrap{display:flex;flex-direction:column;gap:5px;}
+.field-label{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.field-hint{font-size:10px;color:var(--muted);margin-top:3px;opacity:0.7;}
+
+input[type=text],input[type=email],input[type=date],input[type=time],select,textarea{
+  background:var(--graphite);
+  border:none;
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  padding:10px;
+  width:100%;
+  outline:none;
+  transition:border-color 0.2s,background 0.2s;
+  appearance:none;
+  -webkit-appearance:none;
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235a6a7a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;background-color:var(--graphite);}
+input:focus,select:focus,textarea:focus{border-bottom-color:var(--cyan);background:var(--panel2);}
+select option{background:var(--graphite);color:var(--text);}
+textarea{min-height:80px;resize:vertical;line-height:1.6;}
+
+/* SYSTEM PANELS */
+.system-panel{display:none;}
+.system-panel.active{display:block;animation:fadeUp 0.3s ease-out;}
+
+.system-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px;border-left:3px solid;}
+.system-header.tropical{border-color:var(--tropical);background:rgba(0,229,255,0.04);}
+.system-header.vedic{border-color:var(--vedic);background:rgba(168,85,247,0.04);}
+.system-header.draconic{border-color:var(--draconic);background:rgba(212,160,23,0.04);}
+.system-name{font-family:'Cinzel',serif;font-size:14px;}
+.system-meaning{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* PLANET ROWS */
+.planet-group{margin-bottom:20px;}
+.planet-group-title{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:3px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+/* PATTERN RESULT */
+.pattern-result{display:none;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-left:3px solid var(--blood);padding:20px;margin-top:16px;animation:fadeUp 0.4s ease-out;}
+.pattern-result.active{display:block;}
+.pr-header{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--blood);letter-spacing:3px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.pr-header::before{content:'⚠';}
+.pr-layers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.pr-layer{padding:12px;border:1px solid var(--border);}
+.pr-layer-label{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;margin-bottom:6px;}
+.pr-layer-content{font-size:12px;color:var(--silver);line-height:1.6;}
+.pr-pattern{font-size:14px;color:var(--silver);line-height:1.8;margin-bottom:12px;}
+.pr-truth{font-family:'Cinzel',serif;font-size:16px;color:var(--cyan);line-height:1.5;padding:12px;border:1px solid rgba(0,229,255,0.2);background:rgba(0,229,255,0.04);}
+
+/* SUBMIT */
+.submit-zone{text-align:center;padding:24px 0;}
+.submit-btn{background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;padding:14px 40px;cursor:pointer;transition:all 0.25s;text-transform:uppercase;animation:breathe 4s ease-in-out infinite;}
+.submit-btn:hover{background:rgba(0,229,255,0.08);box-shadow:0 0 30px rgba(0,229,255,0.2);letter-spacing:5px;}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;animation:none;}
+
+.progress-bar{height:2px;background:var(--dim);margin-top:16px;display:none;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width 0.3s ease-out;}
+
+/* SUCCESS */
+.success-state{display:none;text-align:center;padding:48px 24px;}
+.success-state.active{display:block;animation:fadeUp 0.5s ease-out;}
+.success-icon{font-family:'Cinzel',serif;font-size:48px;color:var(--cyan);margin-bottom:16px;}
+.success-title{font-family:'Cinzel',serif;font-size:24px;color:var(--cyan);margin-bottom:12px;}
+.success-text{font-size:13px;color:var(--muted);line-height:2;}
+
+/* ERROR */
+.error-msg{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--blood);padding:10px 14px;border-left:2px solid var(--blood);background:rgba(239,68,68,0.06);margin-top:12px;display:none;}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--border);padding-top:20px;margin-top:32px;display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .input-grid-3,.input-grid-4{grid-template-columns:1fr 1fr;}
+  .input-grid-2{grid-template-columns:1fr;}
+  .legend{grid-template-columns:1fr;}
+  .pr-layers{grid-template-columns:1fr;}
+  .system-tabs{grid-template-columns:1fr;}
+}
+@media(max-width:500px){
+  .input-grid-3,.input-grid-4,.input-grid-2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-tag">// Wild Sister // Nova Blu — Forensic Astrology Division</div>
+  <div class="header-title">Pattern Engine</div>
+  <div class="header-sub">Three Chart System // Full Forensic Architecture</div>
+  <div class="header-desc">Your pattern is not your sun sign. It lives across three layers — Tropical (psychological), Vedic (soul drive), and Draconic (soul contract). Enter all three to reveal what is actually running you.</div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item legend-tropical">
+    <div class="legend-system" style="color:var(--tropical)">// System 01</div>
+    <div class="legend-label" style="color:var(--tropical)">Tropical</div>
+    <div class="legend-desc">Psychological layer. Who you are in this lifetime. The ego, the wound, how you show up. Your Sun here = your identity pattern.</div>
+  </div>
+  <div class="legend-item legend-vedic">
+    <div class="legend-system" style="color:var(--vedic)">// System 02</div>
+    <div class="legend-label" style="color:var(--vedic)">Vedic / Sidereal</div>
+    <div class="legend-desc">Soul drive layer. What your soul came here to do. Your Moon here = your emotional purpose and deeper motivation.</div>
+  </div>
+  <div class="legend-item legend-draconic">
+    <div class="legend-system" style="color:var(--draconic)">// System 03</div>
+    <div class="legend-label" style="color:var(--draconic)">Draconic</div>
+    <div class="legend-desc">Soul contract layer. Why you are here. What you carried in. Your Rising here = the karmic architecture of this incarnation.</div>
+  </div>
+</div>
+
+<!-- BIRTH DATA -->
+<div class="form-section" style="animation-delay:0.1s;">
+  <div class="scan-line"></div>
+  <div class="section-label">Birth Data — Required for All Three Systems</div>
+  <div class="input-grid input-grid-2" style="margin-bottom:12px;">
+    <div class="field-wrap">
+      <div class="field-label">Full Name</div>
+      <input type="text" id="name" placeholder="your name..."/>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Email Address</div>
+      <input type="email" id="email" placeholder="your@email.com"/>
+    </div>
+  </div>
+  <div class="input-grid input-grid-3">
+    <div class="field-wrap">
+      <div class="field-label">Birth Date</div>
+      <input type="date" id="birthdate"/>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Birth Time</div>
+      <input type="time" id="birthtime"/>
+      <div class="field-hint">As exact as possible — Rising depends on this</div>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Birth City</div>
+      <input type="text" id="birthcity" placeholder="city, country..."/>
+    </div>
+  </div>
+</div>
+
+<!-- THREE SYSTEM INPUT -->
+<div class="form-section" style="animation-delay:0.2s;">
+  <div class="section-label">Three System Placements</div>
+
+  <!-- TABS -->
+  <div class="system-tabs">
+    <div class="sys-tab active-tropical" onclick="switchTab('tropical')">
+      <div class="sys-tab-label" style="color:var(--tropical)">// System 01</div>
+      <div class="sys-tab-name" style="color:var(--tropical)">Tropical</div>
+    </div>
+    <div class="sys-tab" onclick="switchTab('vedic')">
+      <div class="sys-tab-label" style="color:var(--vedic)">// System 02</div>
+      <div class="sys-tab-name" style="color:var(--vedic)">Vedic</div>
+    </div>
+    <div class="sys-tab" onclick="switchTab('draconic')">
+      <div class="sys-tab-label" style="color:var(--draconic)">// System 03</div>
+      <div class="sys-tab-name" style="color:var(--draconic)">Draconic</div>
+    </div>
+  </div>
+
+  <!-- TROPICAL PANEL -->
+  <div class="system-panel active" id="panel-tropical">
+    <div class="system-header tropical">
+      <div>
+        <div class="system-name" style="color:var(--tropical)">Tropical — Psychological Layer</div>
+        <div class="system-meaning">Who you are in this lifetime. The ego pattern. The wound.</div>
+      </div>
+    </div>
+
+    <div class="planet-group">
+      <div class="planet-group-title">// Core Placements</div>
+      <div class="input-grid input-grid-3" style="margin-bottom:12px;">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Sun Sign</div>
+          <select id="t-sun"><option value="">Select...</option></select>
+          <div class="field-hint">Identity pattern</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Sun House</div>
+          <select id="t-sun-house"><option value="">Select...</option></select>
+          <div class="field-hint">Where identity lives</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Sun Ruler House</div>
+          <select id="t-sun-ruler"><option value="">Select...</option></select>
+          <div class="field-hint">What Sun rules</div>
+        </div>
+      </div>
+      <div class="input-grid input-grid-3" style="margin-bottom:12px;">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Moon Sign</div>
+          <select id="t-moon"><option value="">Select...</option></select>
+          <div class="field-hint">Emotional survival</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Moon House</div>
+          <select id="t-moon-house"><option value="">Select...</option></select>
+          <div class="field-hint">Where emotion lives</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Moon Ruler House</div>
+          <select id="t-moon-ruler"><option value="">Select...</option></select>
+          <div class="field-hint">What Moon rules</div>
+        </div>
+      </div>
+      <div class="input-grid input-grid-2">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Rising / Ascendant</div>
+          <select id="t-rising"><option value="">Select...</option></select>
+          <div class="field-hint">How you present</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--tropical)">Chart Ruler</div>
+          <select id="t-ruler"><option value="">Select planet...</option>
+            <option>Sun</option><option>Moon</option><option>Mercury</option><option>Venus</option>
+            <option>Mars</option><option>Jupiter</option><option>Saturn</option>
+            <option>Uranus</option><option>Neptune</option><option>Pluto</option>
+          </select>
+          <div class="field-hint">Ruler of your Rising sign</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="planet-group">
+      <div class="planet-group-title">// Additional Placements (Optional)</div>
+      <div class="input-grid input-grid-4">
+        <div class="field-wrap">
+          <div class="field-label">Mercury</div>
+          <select id="t-mercury"><option value="">Sign...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Mercury House</div>
+          <select id="t-mercury-house"><option value="">House...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Venus</div>
+          <select id="t-venus"><option value="">Sign...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Venus House</div>
+          <select id="t-venus-house"><option value="">House...</option></select>
+        </div>
+      </div>
+      <div class="input-grid input-grid-4" style="margin-top:12px;">
+        <div class="field-wrap">
+          <div class="field-label">Mars</div>
+          <select id="t-mars"><option value="">Sign...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Mars House</div>
+          <select id="t-mars-house"><option value="">House...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Pluto</div>
+          <select id="t-pluto"><option value="">Sign...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Pluto House</div>
+          <select id="t-pluto-house"><option value="">House...</option></select>
+        </div>
+      </div>
+      <div class="input-grid input-grid-4" style="margin-top:12px;">
+        <div class="field-wrap">
+          <div class="field-label">Saturn</div>
+          <select id="t-saturn"><option value="">Sign...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Saturn House</div>
+          <select id="t-saturn-house"><option value="">House...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">North Node</div>
+          <select id="t-node"><option value="">Sign...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">North Node House</div>
+          <select id="t-node-house"><option value="">House...</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VEDIC PANEL -->
+  <div class="system-panel" id="panel-vedic">
+    <div class="system-header vedic">
+      <div>
+        <div class="system-name" style="color:var(--vedic)">Vedic / Sidereal — Soul Drive Layer</div>
+        <div class="system-meaning">What your soul came to do. Purpose. Deeper motivation.</div>
+      </div>
+    </div>
+    <div class="planet-group">
+      <div class="planet-group-title">// Core Placements</div>
+      <div class="input-grid input-grid-3" style="margin-bottom:12px;">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Sun Sign (Sidereal)</div>
+          <select id="v-sun"><option value="">Select...</option></select>
+          <div class="field-hint">Soul identity</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Sun House</div>
+          <select id="v-sun-house"><option value="">Select...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Sun Ruler House</div>
+          <select id="v-sun-ruler"><option value="">Select...</option></select>
+        </div>
+      </div>
+      <div class="input-grid input-grid-3" style="margin-bottom:12px;">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Moon Sign (Sidereal)</div>
+          <select id="v-moon"><option value="">Select...</option></select>
+          <div class="field-hint">Soul emotional drive</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Moon House</div>
+          <select id="v-moon-house"><option value="">Select...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Moon Ruler House</div>
+          <select id="v-moon-ruler"><option value="">Select...</option></select>
+        </div>
+      </div>
+      <div class="input-grid input-grid-2">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Rising / Lagna</div>
+          <select id="v-rising"><option value="">Select...</option></select>
+          <div class="field-hint">Soul presentation</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--vedic)">Atmakaraka Planet</div>
+          <select id="v-atma"><option value="">Select planet...</option>
+            <option>Sun</option><option>Moon</option><option>Mercury</option><option>Venus</option>
+            <option>Mars</option><option>Jupiter</option><option>Saturn</option><option>Rahu</option>
+          </select>
+          <div class="field-hint">Highest degree planet — soul significator</div>
+        </div>
+      </div>
+    </div>
+    <div class="planet-group">
+      <div class="planet-group-title">// Additional (Optional)</div>
+      <div class="input-grid input-grid-4">
+        <div class="field-wrap"><div class="field-label">Mercury</div><select id="v-mercury"><option value="">Sign...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Mercury House</div><select id="v-mercury-house"><option value="">House...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Venus</div><select id="v-venus"><option value="">Sign...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Venus House</div><select id="v-venus-house"><option value="">House...</option></select></div>
+      </div>
+      <div class="input-grid input-grid-4" style="margin-top:12px;">
+        <div class="field-wrap"><div class="field-label">Saturn</div><select id="v-saturn"><option value="">Sign...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Saturn House</div><select id="v-saturn-house"><option value="">House...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Rahu (North Node)</div><select id="v-rahu"><option value="">Sign...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Rahu House</div><select id="v-rahu-house"><option value="">House...</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRACONIC PANEL -->
+  <div class="system-panel" id="panel-draconic">
+    <div class="system-header draconic">
+      <div>
+        <div class="system-name" style="color:var(--draconic)">Draconic — Soul Contract Layer</div>
+        <div class="system-meaning">Why you are here. What you carried in. The karmic root.</div>
+      </div>
+    </div>
+    <div class="planet-group">
+      <div class="planet-group-title">// Core Placements</div>
+      <div class="input-grid input-grid-3" style="margin-bottom:12px;">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">Sun Sign (Draconic)</div>
+          <select id="d-sun"><option value="">Select...</option></select>
+          <div class="field-hint">Soul purpose identity</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">Sun House</div>
+          <select id="d-sun-house"><option value="">Select...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">Sun Ruler House</div>
+          <select id="d-sun-ruler"><option value="">Select...</option></select>
+        </div>
+      </div>
+      <div class="input-grid input-grid-3" style="margin-bottom:12px;">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">Moon Sign (Draconic)</div>
+          <select id="d-moon"><option value="">Select...</option></select>
+          <div class="field-hint">Karmic emotional core</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">Moon House</div>
+          <select id="d-moon-house"><option value="">Select...</option></select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">Moon Ruler House</div>
+          <select id="d-moon-ruler"><option value="">Select...</option></select>
+        </div>
+      </div>
+      <div class="input-grid input-grid-2">
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">Rising (Draconic)</div>
+          <select id="d-rising"><option value="">Select...</option></select>
+          <div class="field-hint">Karmic soul architecture</div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label" style="color:var(--draconic)">North Node Sign</div>
+          <select id="d-node"><option value="">Select...</option></select>
+          <div class="field-hint">Draconic = 0° Aries Rising always — node reveals the contract</div>
+        </div>
+      </div>
+    </div>
+    <div class="planet-group">
+      <div class="planet-group-title">// Additional (Optional)</div>
+      <div class="input-grid input-grid-4">
+        <div class="field-wrap"><div class="field-label">Mercury</div><select id="d-mercury"><option value="">Sign...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Mercury House</div><select id="d-mercury-house"><option value="">House...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Venus</div><select id="d-venus"><option value="">Sign...</option></select></div>
+        <div class="field-wrap"><div class="field-label">Venus House</div><select id="d-venus-house"><option value="">House...</option></select></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- QUESTION -->
+<div class="form-section" style="animation-delay:0.3s;">
+  <div class="section-label">Your Question — Optional but Powerful</div>
+  <div class="field-wrap">
+    <div class="field-label">What Pattern Are You Trying to Understand?</div>
+    <textarea id="question" placeholder="Ex: Why do I keep attracting the same relationship? What is blocking my money? What pattern am I here to break? What is the soul contract I came in with?"></textarea>
+    <div class="field-hint">The more specific the question, the more precise the forensic read.</div>
+  </div>
+</div>
+
+<!-- PRODUCT SELECTION -->
+<div class="form-section" style="animation-delay:0.4s;">
+  <div class="section-label">Select Your Read</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <label style="cursor:pointer;">
+      <input type="radio" name="product" value="signal" style="display:none;" onchange="selectProduct(this)">
+      <div class="product-option" id="opt-signal" style="padding:14px;border:1px solid var(--border);transition:all 0.2s;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">// Entry</div>
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--silver);">The Signal</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">One question. One agent. Three system pattern read.</div>
+        <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--cyan);margin-top:8px;">$18</div>
+      </div>
+    </label>
+    <label style="cursor:pointer;">
+      <input type="radio" name="product" value="shadow" style="display:none;" onchange="selectProduct(this)">
+      <div class="product-option" id="opt-shadow" style="padding:14px;border:1px solid var(--border);transition:all 0.2s;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">// Shadow Work</div>
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--silver);">Shadow Channel</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">SCAR, NIX, ASH. Raw shadow mapping across all three systems.</div>
+        <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--cyan);margin-top:8px;">$44</div>
+      </div>
+    </label>
+    <label style="cursor:pointer;">
+      <input type="radio" name="product" value="sunmoon" style="display:none;" onchange="selectProduct(this)">
+      <div class="product-option" id="opt-sunmoon" style="padding:14px;border:1px solid var(--border);transition:all 0.2s;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">// Core Three</div>
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--silver);">Sun Moon Rising</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">CENTRA, SCAR, LUX. Three placements across all three systems.</div>
+        <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--cyan);margin-top:8px;">$44</div>
+      </div>
+    </label>
+    <label style="cursor:pointer;">
+      <input type="radio" name="product" value="archive" style="display:none;" onchange="selectProduct(this)">
+      <div class="product-option" id="opt-archive" style="padding:14px;border:1px solid var(--border);transition:all 0.2s;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">// Complete</div>
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--silver);">Full Archive</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">All agents. Full three system forensic audit. The complete pattern.</div>
+        <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--cyan);margin-top:8px;">$88</div>
+      </div>
+    </label>
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<div class="form-section" style="animation-delay:0.5s;">
+  <div class="section-label">Transmit to Archive</div>
+  <div style="font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:16px;">Your three-system pattern data will be analyzed across Tropical, Vedic, and Draconic layers. Your read will arrive within 24 hours. Add <span style="color:var(--cyan);">squad@wildsister.co</span> to your contacts.</div>
+  <div class="error-msg" id="error-msg"></div>
+  <div class="submit-zone">
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">// Initiate Pattern Scan</button>
+    <div class="progress-bar" id="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+  <div class="success-state" id="success-state">
+    <div class="success-icon">✦</div>
+    <div class="success-title">Pattern Received.</div>
+    <div class="success-text">Your three-system data is in the archive.<br><br>Your forensic read will land in your inbox within 24 hours.<br><br>Check spam if you do not see it.<br><br>Add <strong style="color:var(--cyan);">squad@wildsister.co</strong> to your contacts.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Wild Sister // Nova Blu</span>
+  <span>Truth // Pattern // Freedom</span>
+  <span>wildsister.co</span>
+</div>
+
+</div>
+
+<script>
+const SIGNS = ['Aries ♈','Taurus ♉','Gemini ♊','Cancer ♋','Leo ♌','Virgo ♍','Libra ♎','Scorpio ♏','Sagittarius ♐','Capricorn ♑','Aquarius ♒','Pisces ♓'];
+const HOUSES = ['1st House','2nd House','3rd House','4th House','5th House','6th House','7th House','8th House','9th House','10th House','11th House','12th House'];
+
+function populateSelect(id, options, placeholder='Select...') {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.innerHTML = '<option value="">' + placeholder + '</option>' + options.map(o => '<option value="' + o + '">' + o + '</option>').join('');
+}
+
+// Populate all sign selects
+const signIds = ['t-sun','t-moon','t-rising','t-mercury','t-venus','t-mars','t-pluto','t-saturn','t-node',
+                 'v-sun','v-moon','v-rising','v-mercury','v-venus','v-saturn','v-rahu','v-atma',
+                 'd-sun','d-moon','d-rising','d-mercury','d-venus','d-node'];
+signIds.forEach(id => populateSelect(id, SIGNS));
+
+// Populate all house selects
+const houseIds = ['t-sun-house','t-moon-house','t-sun-ruler','t-moon-ruler','t-mercury-house','t-venus-house','t-mars-house','t-pluto-house','t-saturn-house','t-node-house',
+                  'v-sun-house','v-moon-house','v-sun-ruler','v-moon-ruler','v-mercury-house','v-venus-house','v-saturn-house','v-rahu-house',
+                  'd-sun-house','d-moon-house','d-sun-ruler','d-moon-ruler','d-mercury-house','d-venus-house'];
+houseIds.forEach(id => populateSelect(id, HOUSES, 'House...'));
+
+// Tab switching
+function switchTab(system) {
+  document.querySelectorAll('.system-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sys-tab').forEach(t => t.className = 'sys-tab');
+  document.getElementById('panel-' + system).classList.add('active');
+  const tabs = document.querySelectorAll('.sys-tab');
+  const idx = ['tropical','vedic','draconic'].indexOf(system);
+  if(tabs[idx]) tabs[idx].classList.add('active-' + system);
+}
+
+// Product selection
+function selectProduct(radio) {
+  document.querySelectorAll('.product-option').forEach(o => {
+    o.style.borderColor = 'var(--border)';
+    o.style.background = 'transparent';
+  });
+  const opt = document.getElementById('opt-' + radio.value);
+  if(opt) {
+    opt.style.borderColor = 'var(--cyan)';
+    opt.style.background = 'rgba(0,229,255,0.04)';
+  }
+}
+
+// Build placements string
+function buildPlacements() {
+  const get = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  let p = '';
+  p += 'TROPICAL: Sun=' + get('t-sun') + ' H' + get('t-sun-house') + ' Ruler H' + get('t-sun-ruler');
+  p += ' | Moon=' + get('t-moon') + ' H' + get('t-moon-house') + ' Ruler H' + get('t-moon-ruler');
+  p += ' | Rising=' + get('t-rising') + ' | Chart Ruler=' + get('t-ruler');
+  if(get('t-mercury')) p += ' | Mercury=' + get('t-mercury') + ' H' + get('t-mercury-house');
+  if(get('t-venus')) p += ' | Venus=' + get('t-venus') + ' H' + get('t-venus-house');
+  if(get('t-mars')) p += ' | Mars=' + get('t-mars') + ' H' + get('t-mars-house');
+  if(get('t-pluto')) p += ' | Pluto=' + get('t-pluto') + ' H' + get('t-pluto-house');
+  if(get('t-saturn')) p += ' | Saturn=' + get('t-saturn') + ' H' + get('t-saturn-house');
+  if(get('t-node')) p += ' | North Node=' + get('t-node') + ' H' + get('t-node-house');
+
+  p += '\n\nVEDIC/SIDEREAL (Soul Drive): Sun=' + get('v-sun') + ' H' + get('v-sun-house');
+  p += ' | Moon=' + get('v-moon') + ' H' + get('v-moon-house');
+  p += ' | Rising=' + get('v-rising') + ' | Atmakaraka=' + get('v-atma');
+  if(get('v-mercury')) p += ' | Mercury=' + get('v-mercury') + ' H' + get('v-mercury-house');
+  if(get('v-venus')) p += ' | Venus=' + get('v-venus') + ' H' + get('v-venus-house');
+  if(get('v-saturn')) p += ' | Saturn=' + get('v-saturn') + ' H' + get('v-saturn-house');
+  if(get('v-rahu')) p += ' | Rahu=' + get('v-rahu') + ' H' + get('v-rahu-house');
+
+  p += '\n\nDRACONIC (Soul Contract): Sun=' + get('d-sun') + ' H' + get('d-sun-house');
+  p += ' | Moon=' + get('d-moon') + ' H' + get('d-moon-house');
+  p += ' | Rising=' + get('d-rising') + ' | North Node=' + get('d-node');
+  if(get('d-mercury')) p += ' | Mercury=' + get('d-mercury') + ' H' + get('d-mercury-house');
+  if(get('d-venus')) p += ' | Venus=' + get('d-venus') + ' H' + get('d-venus-house');
+
+  const q = get('question');
+  if(q) p += '\n\nQUESTION: ' + q;
+
+  return p;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function submitForm() {
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const birthdate = document.getElementById('birthdate').value;
+  const birthtime = document.getElementById('birthtime').value;
+  const birthcity = document.getElementById('birthcity').value.trim();
+  const productEl = document.querySelector('input[name="product"]:checked');
+
+  document.getElementById('error-msg').style.display = 'none';
+
+  if(!name) { showError('Name is required.'); return; }
+  if(!email || !email.includes('@')) { showError('Valid email is required.'); return; }
+  if(!birthdate) { showError('Birth date is required.'); return; }
+  if(!birthtime) { showError('Birth time is required.'); return; }
+  if(!birthcity) { showError('Birth city is required.'); return; }
+  if(!productEl) { showError('Please select a reading.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '// Scanning Pattern...';
+
+  const pb = document.getElementById('progress-bar');
+  const pf = document.getElementById('progress-fill');
+  pb.style.display = 'block';
+
+  let prog = 0;
+  const interval = setInterval(() => {
+    prog = Math.min(prog + Math.random() * 8, 90);
+    pf.style.width = prog + '%';
+  }, 300);
+
+  try {
+    const res = await fetch('https://novablus--f39e1e00401211f1a25442b51c65c3df.web.val.run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name,
+        email,
+        birthdate,
+        birthtime,
+        birthcity,
+        placements: buildPlacements(),
+        product: productEl.value
+      })
+    });
+
+    clearInterval(interval);
+    pf.style.width = '100%';
+
+    const data = await res.json();
+    if(data.success) {
+      setTimeout(() => {
+        document.getElementById('submit-btn').style.display = 'none';
+        pb.style.display = 'none';
+        document.getElementById('success-state').classList.add('active');
+      }, 400);
+    } else {
+      showError(data.error || 'Something went wrong. Try again.');
+      btn.disabled = false;
+      btn.textContent = '// Initiate Pattern Scan';
+      pb.style.display = 'none';
+    }
+  } catch(e) {
+    clearInterval(interval);
+    showError('Connection error. Try again.');
+    btn.disabled = false;
+    btn.textContent = '// Initiate Pattern Scan';
+    pb.style.display = 'none';
+  }
+}
+</script>
+
+</body>
+</html>
