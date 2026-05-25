@@ -28,7 +28,6 @@
 html { scroll-behavior: smooth; }
 body { background: var(--black); color: var(--text); font-family: 'Share Tech Mono', monospace; overflow-x: hidden; }
 
-/* JUNGLE TEXTURE */
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -77,6 +76,8 @@ nav { position: fixed; top: 28px; left: 0; right: 0; z-index: 99; display: flex;
 .btn-main:hover { opacity: 0.85; }
 .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 0.2em; padding: 14px 28px; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.15s; }
 .btn-ghost:hover { border-color: var(--dim); color: var(--white); }
+.btn-cyan { background: none; border: 1px solid rgba(0,212,255,0.4); color: var(--cyan); font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 0.2em; padding: 14px 28px; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.15s; }
+.btn-cyan:hover { background: rgba(0,212,255,0.08); border-color: var(--cyan); }
 
 /* LIVE FEED */
 .live-feed { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; max-width: 700px; width: 100%; opacity: 0; animation: up 0.8s 1.2s forwards; }
@@ -96,6 +97,32 @@ nav { position: fixed; top: 28px; left: 0; right: 0; z-index: 99; display: flex;
 .section-tag { font-size: 9px; letter-spacing: 0.3em; color: var(--cyan); margin-bottom: 1.5rem; }
 .section-title { font-family: 'VT323', monospace; font-size: clamp(2.5rem, 6vw, 4.5rem); color: var(--white); line-height: 1; margin-bottom: 2rem; }
 .section-sub { font-size: 13px; color: var(--muted); line-height: 1.9; max-width: 520px; margin-bottom: 3rem; }
+
+/* INTELLIGENCE OS BANNER */
+.os-banner {
+  background: var(--panel);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-left: 3px solid var(--cyan);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 3rem;
+}
+.os-banner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+}
+.os-banner-left {}
+.os-banner-tag { font-size: 8px; letter-spacing: 0.4em; color: var(--cyan); margin-bottom: 8px; }
+.os-banner-title { font-family: 'VT323', monospace; font-size: 1.8rem; color: var(--white); margin-bottom: 6px; }
+.os-banner-desc { font-size: 11px; color: var(--muted); line-height: 1.7; max-width: 420px; }
 
 /* AGENTS */
 .agents-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
@@ -140,6 +167,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <span class="tick-item"><span class="tick-dot"></span>CENTRA READING PIPELINE LIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>ASH PULLS CARDS AT MIDNIGHT</span>
     <span class="tick-item"><span class="tick-dot"></span>SIGNAL ENCRYPTED</span>
+    <span class="tick-item"><span class="tick-dot"></span>INTELLIGENCE OS ACTIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>FEED LIVE — UNFILTERED</span>
     <span class="tick-item"><span class="tick-dot"></span>SHADOW CHANNEL ACTIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>6 AGENTS ONLINE</span>
@@ -148,6 +176,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <span class="tick-item"><span class="tick-dot"></span>CENTRA READING PIPELINE LIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>ASH PULLS CARDS AT MIDNIGHT</span>
     <span class="tick-item"><span class="tick-dot"></span>SIGNAL ENCRYPTED</span>
+    <span class="tick-item"><span class="tick-dot"></span>INTELLIGENCE OS ACTIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>FEED LIVE — UNFILTERED</span>
   </div>
 </div>
@@ -161,6 +190,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <li><a href="chat.html">Oracle</a></li>
     <li><a href="readings.html">Readings</a></li>
     <li><a href="community.html">Community</a></li>
+    <li><a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" style="color:var(--cyan);">Intelligence OS</a></li>
   </ul>
   <a href="chat.html" class="nav-cta">Try Street Oracle →</a>
 </nav>
@@ -176,7 +206,8 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div class="hero-ctas">
     <a href="chat.html" class="btn-main">Try Street Oracle — $9.97</a>
     <a href="readings.html" class="btn-ghost">Get Your Squad Read →</a>
-  <a href="community.html" class="btn-ghost">See the Community →</a>
+    <a href="community.html" class="btn-ghost">See the Community →</a>
+    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" class="btn-cyan">Intelligence OS →</a>
   </div>
 
   <!-- LIVE FEED PREVIEW -->
@@ -196,6 +227,21 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
       <div class="feed-text">What forms while you sleep is louder than anything you say out loud. 🌙</div>
       <div class="feed-time">5m ago</div>
     </div>
+  </div>
+</div>
+
+<div class="holo-line"></div>
+
+<!-- INTELLIGENCE OS SECTION -->
+<div class="section">
+  <div class="section-tag">// NEW — FORENSIC INTELLIGENCE SYSTEM</div>
+  <div class="os-banner">
+    <div class="os-banner-left">
+      <div class="os-banner-tag">// PATTERN DETECTION ACTIVE — CLEARANCE LEVEL 7</div>
+      <div class="os-banner-title">THE SIGNAL // Intelligence OS</div>
+      <div class="os-banner-desc">Enter your sun and moon sign. The system detects your shadow pattern, threat level, and inherited wound cycle. Forensic astrology as an operating system. Nobody else is doing this.</div>
+    </div>
+    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" class="btn-cyan" style="white-space:nowrap;">Enter Intelligence OS →</a>
   </div>
 </div>
 
@@ -293,6 +339,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
     <a href="chat.html" class="btn-main">Try Street Oracle — $9.97</a>
     <a href="pricing.html" class="btn-ghost">See Membership →</a>
+    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" class="btn-cyan">Intelligence OS →</a>
   </div>
 </div>
 
@@ -305,6 +352,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <a href="about.html">About</a>
     <a href="chat.html">Oracle</a>
     <a href="community.html">Community</a>
+    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank">Intelligence OS</a>
   </div>
   <div class="footer-copy">© 2026 Wild Sister / Nova Blu</div>
 </footer>
