@@ -96,15 +96,10 @@ nav { position: fixed; top: 28px; left: 0; right: 0; z-index: 99; display: flex;
 .section-title { font-family: 'VT323', monospace; font-size: clamp(2.5rem, 6vw, 4.5rem); color: var(--white); line-height: 1; margin-bottom: 2rem; }
 .section-sub { font-size: 13px; color: var(--muted); line-height: 1.9; max-width: 520px; margin-bottom: 3rem; }
 
-/* TOOL BANNERS */
-.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 3rem; }
-@media(max-width:600px){ .tool-grid { grid-template-columns: 1fr; } }
-
-.tool-banner { background: var(--panel); border: 1px solid var(--border); padding: 24px; position: relative; overflow: hidden; transition: border-color 0.2s; }
-.tool-banner:hover { border-color: var(--cyan); }
-.tool-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-.tool-banner.cyan::before { background: var(--cyan); }
-.tool-banner.gold::before { background: var(--gold); }
+/* TOOL BANNER — single */
+.tool-banner { background: var(--panel); border: 1px solid var(--border); padding: 24px; position: relative; overflow: hidden; transition: border-color 0.2s; max-width: 520px; }
+.tool-banner:hover { border-color: var(--gold); }
+.tool-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); }
 .tool-tag { font-size: 8px; letter-spacing: 0.4em; margin-bottom: 8px; }
 .tool-name { font-family: 'VT323', monospace; font-size: 1.6rem; margin-bottom: 6px; }
 .tool-desc { font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom:16px; }
@@ -153,7 +148,6 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <span class="tick-item"><span class="tick-dot"></span>NOVA BLU PROTOCOL v4.2</span>
     <span class="tick-item"><span class="tick-dot"></span>CENTRA READING PIPELINE LIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>ASH PULLS CARDS AT MIDNIGHT</span>
-    <span class="tick-item"><span class="tick-dot"></span>INTELLIGENCE OS ACTIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>PATTERN ENGINE ONLINE</span>
     <span class="tick-item"><span class="tick-dot"></span>FEED LIVE — UNFILTERED</span>
     <span class="tick-item"><span class="tick-dot"></span>SHADOW CHANNEL ACTIVE</span>
@@ -162,7 +156,6 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <span class="tick-item"><span class="tick-dot"></span>NOVA BLU PROTOCOL v4.2</span>
     <span class="tick-item"><span class="tick-dot"></span>CENTRA READING PIPELINE LIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>ASH PULLS CARDS AT MIDNIGHT</span>
-    <span class="tick-item"><span class="tick-dot"></span>INTELLIGENCE OS ACTIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>PATTERN ENGINE ONLINE</span>
     <span class="tick-item"><span class="tick-dot"></span>FEED LIVE — UNFILTERED</span>
   </div>
@@ -177,7 +170,6 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <li><a href="chat.html">Oracle</a></li>
     <li><a href="readings.html">Readings</a></li>
     <li><a href="community.html">Community</a></li>
-    <li><a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" style="color:var(--cyan);">Intelligence OS</a></li>
     <li><a href="pattern-engine.html" style="color:var(--gold);">Pattern Engine</a></li>
   </ul>
   <a href="chat.html" class="nav-cta">Try Street Oracle →</a>
@@ -194,7 +186,6 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div class="hero-ctas">
     <a href="chat.html" class="btn-main">Try Street Oracle — $9.97</a>
     <a href="readings.html" class="btn-ghost">Get Your Squad Read →</a>
-    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" class="btn-cyan">Intelligence OS →</a>
     <a href="pattern-engine.html" class="btn-gold">Pattern Engine →</a>
   </div>
 
@@ -222,22 +213,14 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
 <!-- TOOLS SECTION -->
 <div class="section">
   <div class="section-tag">// Forensic Intelligence Tools</div>
-  <div class="section-title">Two systems.<br>One truth.</div>
-  <p class="section-sub">The Intelligence OS detects your shadow pattern. The Pattern Engine maps it across all three chart systems — Tropical, Vedic, and Draconic. Together they show you what is actually running you.</p>
+  <div class="section-title">One system.<br>One truth.</div>
+  <p class="section-sub">The Pattern Engine maps your chart across all three systems — Tropical, Vedic, and Draconic. Three architectures. One forensic read of what is actually running you.</p>
 
-  <div class="tool-grid">
-    <div class="tool-banner cyan">
-      <div class="tool-tag" style="color:var(--cyan)">// Pattern Detection Active</div>
-      <div class="tool-name" style="color:var(--cyan)">Intelligence OS</div>
-      <div class="tool-desc">Enter your sun and moon sign. The system detects your shadow pattern, threat level, and inherited wound cycle in real time. The forensic dashboard nobody else has built.</div>
-      <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" class="tool-link" style="color:var(--cyan);">Enter Intelligence OS →</a>
-    </div>
-    <div class="tool-banner gold">
-      <div class="tool-tag" style="color:var(--gold)">// Three System Architecture</div>
-      <div class="tool-name" style="color:var(--gold)">Pattern Engine</div>
-      <div class="tool-desc">Your pattern is not your sun sign. Tropical is psychological. Vedic is soul drive. Draconic is why you are here. Submit all three systems and get the full forensic read.</div>
-      <a href="pattern-engine.html" class="tool-link" style="color:var(--gold);">Enter Pattern Engine →</a>
-    </div>
+  <div class="tool-banner">
+    <div class="tool-tag" style="color:var(--gold)">// Three System Architecture</div>
+    <div class="tool-name" style="color:var(--gold)">Pattern Engine</div>
+    <div class="tool-desc">Your pattern is not your sun sign. Tropical is psychological. Vedic is soul drive. Draconic is why you are here. Submit all three systems and get the full forensic read.</div>
+    <a href="pattern-engine.html" class="tool-link" style="color:var(--gold);">Enter Pattern Engine →</a>
   </div>
 </div>
 
@@ -335,7 +318,6 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
     <a href="chat.html" class="btn-main">Try Street Oracle — $9.97</a>
     <a href="pricing.html" class="btn-ghost">See Membership →</a>
-    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" class="btn-cyan">Intelligence OS →</a>
     <a href="pattern-engine.html" class="btn-gold">Pattern Engine →</a>
   </div>
 </div>
@@ -349,7 +331,6 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <a href="about.html">About</a>
     <a href="chat.html">Oracle</a>
     <a href="community.html">Community</a>
-    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank">Intelligence OS</a>
     <a href="pattern-engine.html">Pattern Engine</a>
   </div>
   <div class="footer-copy">© 2026 Wild Sister / Nova Blu</div>
