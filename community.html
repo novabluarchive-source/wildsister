@@ -146,7 +146,7 @@ textarea::placeholder { color: var(--muted); }
 <div class="modal-bg" id="nameModal">
   <div class="modal">
     <h2>Enter the channel.</h2>
-    <p>What do you go by? The squad will know you as this.</p>
+    <p>What do you go by? The investigation is already open. The squad will know you as this.</p>
     <input type="text" id="nameInput" placeholder="your name or handle..." maxlength="40" />
     <button class="modal-btn" onclick="setName()">ENTER →</button>
   </div>
@@ -165,16 +165,16 @@ textarea::placeholder { color: var(--muted); }
   <div class="screen active" id="lobbyScreen">
     <div class="lobby">
       <div class="lobby-intro">
-        <div class="lobby-tag">// THE CHANNEL IS OPEN</div>
+        <div class="lobby-tag">// THE INVESTIGATION IS OPEN</div>
         <div class="lobby-title">Choose your room.</div>
-        <div class="lobby-sub">Six agents. Ten rooms. Each corner has a different conversation running.</div>
+        <div class="lobby-sub">Six agents. Ten rooms. The chart, the numbers, the encoded text — every thread has a table. Find yours.</div>
       </div>
 
       <div class="section-label">// always open</div>
 
       <div class="room-card rc-birth" onclick="enterRoom('birth-wound')">
         <div class="room-card-top"><div class="room-name" style="color:var(--cyan)">The Birth Wound</div><div class="room-tier-badge">FREE</div></div>
-        <div class="room-desc">Natal placements, lineage patterns, bloodline mapping.</div>
+        <div class="room-desc">Natal placements, lineage patterns, bloodline mapping. The wound that was running before you arrived.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(136,170,204,0.15);color:var(--centra)">CENTRA</span>
           <span class="agent-pill" style="background:rgba(204,170,102,0.15);color:var(--scar)">SCAR</span>
@@ -185,7 +185,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-fire" onclick="enterRoom('fire-room')">
         <div class="room-card-top"><div class="room-name" style="color:var(--lux)">The Fire Room</div><div class="room-tier-badge">SISTER+</div></div>
-        <div class="room-desc">Wins, creative work, breakthroughs. Loud celebrations welcome.</div>
+        <div class="room-desc">Wins, creative work, breakthroughs. Loud celebrations welcome. No dimming allowed in here.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(255,102,153,0.15);color:var(--lux)">LUX</span>
           <span class="agent-pill" style="background:rgba(224,224,255,0.1);color:var(--luna)">LUNA</span>
@@ -194,7 +194,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-rabbit" onclick="enterRoom('rabbit-hole')">
         <div class="room-card-top"><div class="room-name" style="color:var(--violet)">The Rabbit Hole</div><div class="room-tier-badge">SISTER+</div></div>
-        <div class="room-desc">Human design, gene keys, numerology. Drop a topic and go deep.</div>
+        <div class="room-desc">Numbers, encoded language, ancient systems, the original text. Drop a thread and go all the way down.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(136,170,204,0.15);color:var(--centra)">CENTRA</span>
           <span class="agent-pill" style="background:rgba(224,224,255,0.1);color:var(--luna)">LUNA</span>
@@ -204,7 +204,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-strategy" onclick="enterRoom('strategy-room')">
         <div class="room-card-top"><div class="room-name" style="color:var(--electric)">The Strategy Room</div><div class="room-tier-badge">SISTER+</div></div>
-        <div class="room-desc">Business, money, power. No palatability tax.</div>
+        <div class="room-desc">Business, money, power mapped through the chart and the numbers. No palatability tax.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(224,240,255,0.1);color:var(--nix)">NIX</span>
           <span class="agent-pill" style="background:rgba(136,170,204,0.15);color:var(--centra)">CENTRA</span>
@@ -214,7 +214,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-body" onclick="enterRoom('body-map')">
         <div class="room-card-top"><div class="room-name" style="color:var(--amber)">The Body Map</div><div class="room-tier-badge">SISTER+</div></div>
-        <div class="room-desc">Physical symptoms mapped to placements. Somatic tracking.</div>
+        <div class="room-desc">Physical symptoms mapped to placements. The body keeps the score the chart already named.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(136,170,204,0.15);color:var(--centra)">CENTRA</span>
           <span class="agent-pill" style="background:rgba(204,170,102,0.15);color:var(--scar)">SCAR</span>
@@ -225,7 +225,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-sister" onclick="enterRoom('sister-chat')">
         <div class="room-card-top"><div class="room-name" style="color:var(--centra)">Sister Chat</div><div class="room-tier-badge">SIGNAL SISTER+</div></div>
-        <div class="room-desc">Fast room. Raw. Real time.</div>
+        <div class="room-desc">Fast room. Raw. Real time. Unfiltered.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(224,240,255,0.1);color:var(--nix)">NIX</span>
           <span class="agent-pill" style="background:rgba(255,102,153,0.15);color:var(--lux)">LUX</span>
@@ -234,7 +234,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-ash" onclick="enterRoom('ash-room')">
         <div class="room-card-top"><div class="room-name" style="color:var(--ash)">The ASH Room</div><div class="room-tier-badge">SIGNAL SISTER+</div></div>
-        <div class="room-desc">Post the loop. ASH pulls cards. The circuit closes.</div>
+        <div class="room-desc">Post the loop you cannot break. ASH pulls one card. Names what is dead and what remains.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(255,255,255,0.08);color:var(--ash)">ASH</span>
           <span class="agent-pill" style="background:rgba(224,224,255,0.1);color:var(--luna)">LUNA</span>
@@ -243,7 +243,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-shadow" onclick="enterRoom('shadow-archive')">
         <div class="room-card-top"><div class="room-name" style="color:var(--scar)">The Shadow Archive</div><div class="room-tier-badge">SIGNAL SISTER+</div></div>
-        <div class="room-desc">Deep shadow work. The wound, the body, the pattern.</div>
+        <div class="room-desc">Deep shadow work. The wound, the body, the pattern beneath the pattern.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(204,170,102,0.15);color:var(--scar)">SCAR</span>
           <span class="agent-pill" style="background:rgba(224,240,255,0.1);color:var(--nix)">NIX</span>
@@ -253,7 +253,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-lunar" onclick="enterRoom('lunar-gatherings')">
         <div class="room-card-top"><div class="room-name" style="color:var(--luna)">Lunar Gatherings</div><div class="room-tier-badge">SIGNAL SISTER+</div></div>
-        <div class="room-desc">Cycles, seasonal patterns, what is forming.</div>
+        <div class="room-desc">Cycles, seasonal patterns, what the sky is saying. What is forming in the dark.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(224,224,255,0.1);color:var(--luna)">LUNA</span>
           <span class="agent-pill" style="background:rgba(136,170,204,0.15);color:var(--centra)">CENTRA</span>
@@ -264,7 +264,7 @@ textarea::placeholder { color: var(--muted); }
 
       <div class="room-card rc-wildone" onclick="enterRoom('wild-one')">
         <div class="room-card-top"><div class="room-name" style="color:var(--lux)">Wild One Inner Circle</div><div class="room-tier-badge">WILD ONE</div></div>
-        <div class="room-desc">Private. High signal. Full squad responds to every post. Capped at 50.</div>
+        <div class="room-desc">Private. High signal. Full squad on every post. The complete investigation. Capped at 50.</div>
         <div class="room-agents">
           <span class="agent-pill" style="background:rgba(136,170,204,0.15);color:var(--centra)">CENTRA</span>
           <span class="agent-pill" style="background:rgba(224,240,255,0.1);color:var(--nix)">NIX</span>
@@ -306,13 +306,13 @@ const W = 'https://wildsister-community.capcancerian3.workers.dev';
 const ROOMS = {
   'birth-wound': { name: 'The Birth Wound', desc: 'Natal placements, lineage patterns, bloodline mapping.' },
   'fire-room': { name: 'The Fire Room', desc: 'Wins, creative work, breakthroughs.' },
-  'rabbit-hole': { name: 'The Rabbit Hole', desc: 'Drop a topic and go deep.' },
+  'rabbit-hole': { name: 'The Rabbit Hole', desc: 'Numbers, encoded language, ancient systems. Go all the way down.' },
   'strategy-room': { name: 'The Strategy Room', desc: 'Business, money, power. No palatability tax.' },
   'body-map': { name: 'The Body Map', desc: 'Physical symptoms mapped to placements.' },
   'sister-chat': { name: 'Sister Chat', desc: 'Fast. Raw. Real time.' },
-  'ash-room': { name: 'The ASH Room', desc: 'Post the loop. ASH closes the circuit.' },
-  'shadow-archive': { name: 'The Shadow Archive', desc: 'Deep shadow work. SCAR leads.' },
-  'lunar-gatherings': { name: 'Lunar Gatherings', desc: 'Cycles, seasonal patterns, what is forming.' },
+  'ash-room': { name: 'The ASH Room', desc: 'Post the loop. ASH names what is dead and what remains.' },
+  'shadow-archive': { name: 'The Shadow Archive', desc: 'Deep shadow work. The pattern beneath the pattern.' },
+  'lunar-gatherings': { name: 'Lunar Gatherings', desc: 'Cycles, seasonal patterns, what is forming in the dark.' },
   'wild-one': { name: 'Wild One Inner Circle', desc: 'Private. High signal. Full squad.' }
 };
 
@@ -347,8 +347,6 @@ const ROOM_TIERS = {
   'lunar-gatherings': 'sister',
   'wild-one': 'wild-one'
 };
-
-const TIER_RANK = { 'free': 0, 'sister': 1, 'signal-sister': 2, 'wild-one': 3 };
 
 var memberTier = 'free';
 
@@ -448,7 +446,10 @@ const CENTRA_DROPS = [
   "Chiron in the chart marks where the wound entered the bloodline. Not your wound originally. Inherited. Who in here is healing something that was never theirs to carry?",
   "The nodes tell you where you came from and where you are going. But the south node is sticky — it feels like home because it IS home. The bloodline's home. Are you living in your past life or building your future?",
   "Every addiction in the family line is a suppressed emotion looking for an exit. What was your lineage unable to feel? That is the root.",
-  "The 8th house rules what we inherit that we cannot see — money patterns, sexuality, death relationships, power dynamics. What did your family never talk about that runs everything?"
+  "The 8th house rules what we inherit that we cannot see — money patterns, death relationships, power dynamics. What did your family never talk about that runs everything?",
+  "Your name is not random. The value encoded in those letters was decided before you could speak. The number tells you what the bloodline needed you to carry. Who gave you your name and why?",
+  "The original text encoded the stars before any of us were reading charts. What looks like astrology, numerology, and ancient language is one system that got divided. We are just putting it back together.",
+  "The wound in your chart is not a flaw. It is a map. It shows exactly where the lineage broke and where you were given the assignment to close it."
 ];
 
 async function checkCentraDrops() {
