@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Signal — Wild Sister // Nova Blu</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #03060d;
+  --deep: #07101c;
+  --panel: #0a0e14;
+  --border: #1a1a2a;
+  --gold: #d6b46a;
+  --gold-dim: #8a6a2f;
+  --gold-muted: #7f693d;
+  --gold-bright: #f1e0a8;
+  --text: #c8b080;
+  --muted: #6a5530;
+  --cyan: #00d4ff;
+  --violet: #7b2fff;
+  --blood: #cc2222;
+  --green: #00ff88;
+  --white: #f0ede4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--black); color: var(--text); font-family: 'Share Tech Mono', monospace; overflow-x: hidden; min-height: 100vh; }
+
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 500px 300px at 50% 10%, rgba(0,212,255,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 300px 500px at 90% 50%, rgba(123,47,255,0.04) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.008) 3px, rgba(0,212,255,0.008) 4px);
+}
+
+/* TICKER */
+.ticker-wrap { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 26px; overflow: hidden; background: rgba(3,6,13,0.98); border-bottom: 1px solid var(--border); }
+.ticker { display: flex; white-space: nowrap; animation: tick 40s linear infinite; }
+.tick-item { display: flex; align-items: center; gap: 8px; padding: 0 24px; height: 26px; font-size: 8px; letter-spacing: 0.25em; color: var(--muted); }
+.tick-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--cyan); }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* NAV */
+nav { position: fixed; top: 26px; left: 0; right: 0; z-index: 99; display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: rgba(3,6,13,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
+.nav-logo { font-family: 'VT323', monospace; font-size: 1.3rem; letter-spacing: 0.15em; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+.nav-links { display: flex; gap: 20px; list-style: none; }
+.nav-links a { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.nav-links a:hover { color: var(--white); }
+.nav-cta { font-size: 9px; letter-spacing: 0.2em; color: var(--cyan); border: 1px solid rgba(0,212,255,0.3); padding: 5px 14px; text-decoration: none; transition: all 0.15s; }
+.nav-cta:hover { background: var(--cyan); color: var(--black); }
+@media(max-width:600px){.nav-links{display:none;}}
+
+/* WRAP */
+.wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 80px 16px 60px; }
+
+/* CASE FILE HEADER */
+.case-header { border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; position: relative; background: rgba(7,10,20,0.8); }
+.case-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); opacity: 0.4; }
+.case-header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+.case-meta { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); line-height: 2; }
+.case-meta span { color: var(--cyan); }
+.case-barcode { font-size: 10px; letter-spacing: -1px; color: var(--muted); opacity: 0.4; }
+.case-file-box { border: 1px solid var(--border); padding: 10px 16px; }
+.case-file-label { font-size: 7px; letter-spacing: 0.3em; color: var(--muted); margin-bottom: 4px; }
+.case-file-title { font-family: 'VT323', monospace; font-size: 1.4rem; color: var(--cyan); letter-spacing: 0.1em; margin-bottom: 2px; }
+.case-file-sub { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); }
+.case-divider { height: 1px; background: var(--border); margin: 12px 0; }
+.case-quote { font-size: 12px; color: var(--gold-bright); line-height: 1.7; text-align: center; padding: 8px; font-style: italic; }
+.biometric { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 10px; }
+.bio-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,136,0.4)} 50%{opacity:0.8;box-shadow:0 0 0 6px rgba(0,255,136,0)} }
+.bio-text { font-size: 9px; letter-spacing: 0.2em; color: var(--green); }
+
+/* MAIN GRID */
+.main-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; margin-bottom: 16px; }
+@media(max-width:750px){ .main-grid { grid-template-columns: 1fr; } }
+
+/* ARCHIVE PANELS */
+.archive-panel { border: 1px solid var(--border); background: rgba(7,10,20,0.8); }
+.archive-title { font-size: 8px; letter-spacing: 0.3em; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.archive-item { padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+.archive-item:hover { background: rgba(0,212,255,0.03); }
+.archive-item:last-child { border-bottom: none; }
+.ai-icon { font-size: 16px; margin-bottom: 4px; opacity: 0.6; }
+.ai-title { font-size: 10px; color: var(--text); margin-bottom: 3px; }
+.ai-desc { font-size: 9px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+.ai-link { font-size: 8px; letter-spacing: 0.15em; color: var(--cyan); }
+
+/* CENTER PANEL */
+.center-panel { border: 1px solid var(--border); background: rgba(7,10,20,0.9); }
+
+/* SCAN TERMINAL */
+.scan-terminal { padding: 14px; border-bottom: 1px solid var(--border); }
+.scan-title { font-size: 9px; letter-spacing: 0.3em; color: var(--cyan); margin-bottom: 12px; }
+.scan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.scan-field { }
+.scan-label { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 4px; }
+select.scan-select {
+  width: 100%; background: var(--black); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; padding: 8px 10px; outline: none;
+  transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  cursor: pointer;
+}
+select.scan-select:focus { border-color: var(--cyan); }
+select.scan-select option { background: var(--black); }
+.scan-btn {
+  width: 100%; background: none; border: 1px solid var(--cyan);
+  color: var(--cyan); font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.3em; padding: 12px;
+  cursor: pointer; transition: all 0.2s;
+  animation: breathe 3s ease-in-out infinite;
+}
+.scan-btn:hover { background: var(--cyan); color: var(--black); animation: none; }
+@keyframes breathe { 0%,100%{box-shadow:0 0 6px rgba(0,212,255,0.1)} 50%{box-shadow:0 0 20px rgba(0,212,255,0.3)} }
+
+/* EVIDENCE BOARD */
+.evidence-board { padding: 14px; border-bottom: 1px solid var(--border); }
+.eb-title { font-size: 9px; letter-spacing: 0.25em; color: var(--muted); margin-bottom: 10px; }
+.zodiac-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 12px; }
+.zodiac-cell { border: 1px solid var(--border); padding: 6px 4px; text-align: center; font-size: 14px; cursor: pointer; transition: all 0.15s; opacity: 0.4; }
+.zodiac-cell:hover { border-color: var(--gold-dim); opacity: 0.8; }
+.zodiac-cell.active { border-color: var(--cyan); opacity: 1; background: rgba(0,212,255,0.06); }
+
+/* CORE SCAN RESULT */
+.core-scan { border: 1px solid var(--border); padding: 12px; background: rgba(3,6,13,0.8); }
+.cs-status { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 6px; }
+.cs-result { font-size: 11px; color: var(--text); line-height: 1.7; min-height: 60px; }
+.cs-result.active { color: var(--gold-bright); }
+.cs-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 8px; color: var(--muted); }
+
+/* CASE NOTES */
+.case-notes { padding: 14px; }
+.cn-title { font-size: 9px; letter-spacing: 0.25em; color: var(--muted); margin-bottom: 10px; }
+.cn-files { display: flex; flex-direction: column; gap: 6px; }
+.cn-file { border: 1px solid var(--border); padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start; cursor: pointer; transition: border-color 0.15s; }
+.cn-file:hover { border-color: var(--gold-dim); }
+.cn-no { font-size: 8px; letter-spacing: 0.1em; color: var(--cyan); flex-shrink: 0; }
+.cn-title-text { font-size: 10px; color: var(--text); margin-bottom: 2px; }
+.cn-desc { font-size: 9px; color: var(--muted); }
+
+/* PSYCH PROFILE */
+.psych-panel { border: 1px solid var(--border); padding: 14px; margin-bottom: 16px; background: rgba(7,10,20,0.8); }
+.pp-title { font-size: 9px; letter-spacing: 0.3em; color: var(--muted); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+@media(max-width:500px){.pp-grid{grid-template-columns:1fr;}}
+.pp-row { }
+.pp-label { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-bottom: 4px; }
+.pp-pct { color: var(--gold); }
+.pp-bar-wrap { height: 3px; background: var(--border); }
+.pp-bar { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--violet)); width: 0%; transition: width 1.5s ease; }
+.pp-note { font-size: 11px; color: var(--gold-bright); line-height: 1.7; border-top: 1px solid var(--border); padding-top: 12px; font-style: italic; }
+
+/* AGENTS + THREAT */
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+@media(max-width:700px){.bottom-grid{grid-template-columns:1fr;}}
+
+/* AGENT ROSTER */
+.agent-roster { border: 1px solid var(--border); padding: 14px; background: rgba(7,10,20,0.8); }
+.ar-title { font-size: 9px; letter-spacing: 0.3em; color: var(--muted); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.ar-agent { display: flex; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.ar-agent:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.ar-badge { width: 32px; height: 32px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 9px; letter-spacing: 0.05em; flex-shrink: 0; }
+.ar-name { font-family: 'VT323', monospace; font-size: 1.1rem; margin-bottom: 2px; }
+.ar-role { font-size: 8px; color: var(--muted); line-height: 1.5; margin-bottom: 4px; }
+.ar-status { font-size: 7px; letter-spacing: 0.15em; color: var(--green); }
+
+/* THREAT LEVEL */
+.threat-panel { border: 1px solid var(--border); padding: 14px; background: rgba(7,10,20,0.8); text-align: center; }
+.tp-title { font-size: 9px; letter-spacing: 0.3em; color: var(--muted); margin-bottom: 16px; }
+.threat-meter { position: relative; width: 100px; height: 100px; margin: 0 auto 12px; }
+.threat-circle { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.threat-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(0deg, rgba(204,34,34,0.3), rgba(204,34,34,0.05)); height: 0%; transition: height 1.5s ease; }
+.threat-pct { font-family: 'VT323', monospace; font-size: 2rem; color: var(--blood); position: relative; z-index: 1; line-height: 1; }
+.threat-label { font-size: 7px; letter-spacing: 0.1em; color: var(--muted); position: relative; z-index: 1; }
+.threat-status { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 8px; }
+.threat-classification { font-size: 8px; color: var(--muted); line-height: 1.6; border: 1px solid var(--border); padding: 8px; margin-top: 10px; }
+
+/* PROTOCOL + DELIVERY */
+.protocol-panel { border: 1px solid var(--border); padding: 14px; background: rgba(7,10,20,0.8); }
+.proto-title { font-size: 9px; letter-spacing: 0.3em; color: var(--muted); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.proto-item { display: flex; gap: 8px; margin-bottom: 10px; font-size: 10px; color: var(--muted); line-height: 1.5; }
+.proto-item::before { content: '→'; color: var(--cyan); flex-shrink: 0; }
+.delivery-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+.delivery-box { border: 1px solid var(--border); padding: 8px; text-align: center; }
+.db-label { font-size: 7px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 3px; }
+.db-value { font-size: 11px; color: var(--gold); }
+
+/* CTA PANEL */
+.cta-panel { border: 1px solid var(--gold-dim); padding: 28px; margin-bottom: 16px; position: relative; overflow: hidden; background: rgba(7,10,20,0.95); text-align: center; }
+.cta-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.cta-label { font-size: 8px; letter-spacing: 0.4em; color: var(--muted); margin-bottom: 12px; }
+.cta-title { font-family: 'VT323', monospace; font-size: 2rem; color: var(--gold); margin-bottom: 6px; letter-spacing: 0.1em; }
+.cta-sub { font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.cta-includes { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; text-align: left; max-width: 360px; margin-left: auto; margin-right: auto; }
+.cta-include { font-size: 10px; color: var(--muted); display: flex; gap: 8px; }
+.cta-include::before { content: '→'; color: var(--cyan); flex-shrink: 0; }
+.cta-price { font-family: 'VT323', monospace; font-size: 4rem; color: var(--gold); line-height: 1; margin-bottom: 6px; }
+.cta-price-note { font-size: 9px; color: var(--muted); margin-bottom: 20px; }
+.btn-access { display: inline-block; background: none; border: 1px solid var(--gold); color: var(--gold); font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 0.3em; padding: 16px 48px; cursor: pointer; text-decoration: none; transition: all 0.2s; margin-bottom: 10px; }
+.btn-access:hover { background: var(--gold); color: var(--black); }
+
+/* SYSTEM LOG */
+.system-log { border: 1px solid var(--border); padding: 14px; background: rgba(3,6,13,0.9); }
+.sl-title { font-size: 9px; letter-spacing: 0.25em; color: var(--muted); margin-bottom: 10px; }
+.sl-line { font-size: 10px; color: var(--muted); line-height: 2; }
+.sl-line::before { content: '> '; color: var(--cyan); }
+.sl-line.active { color: var(--gold-bright); }
+.sl-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; flex-wrap: wrap; gap: 8px; }
+.sl-file { font-size: 9px; color: var(--muted); }
+.sl-price { font-family: 'VT323', monospace; font-size: 1.5rem; color: var(--gold); }
+.sl-stamp { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); border: 1px solid var(--border); padding: 4px 10px; }
+
+/* FOOTER */
+footer { padding: 24px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; position: relative; z-index: 1; }
+.footer-logo { font-family: 'VT323', monospace; font-size: 1.1rem; color: var(--muted); letter-spacing: 0.1em; }
+.footer-tagline { font-size: 9px; color: var(--muted); letter-spacing: 0.15em; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.footer-links a { font-size: 9px; letter-spacing: 0.15em; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="tick-item"><span class="tick-dot"></span>SHADOW BEHAVIOR UNIT — ACTIVE</span>
+    <span class="tick-item"><span class="tick-dot"></span>FILE: TS-316590-EI // CLEARANCE LEVEL 7</span>
+    <span class="tick-item"><span class="tick-dot"></span>THE SIGNAL // $18 // 24 HOUR DELIVERY</span>
+    <span class="tick-item"><span class="tick-dot"></span>PATTERN DETECTION ONLINE</span>
+    <span class="tick-item"><span class="tick-dot"></span>SCAR // CENTRA // ASH — STANDING BY</span>
+    <span class="tick-item"><span class="tick-dot"></span>ONE QUESTION. ONE FORENSIC READING. ONE TRUTH.</span>
+    <span class="tick-item"><span class="tick-dot"></span>SHADOW BEHAVIOR UNIT — ACTIVE</span>
+    <span class="tick-item"><span class="tick-dot"></span>FILE: TS-316590-EI // CLEARANCE LEVEL 7</span>
+    <span class="tick-item"><span class="tick-dot"></span>THE SIGNAL // $18 // 24 HOUR DELIVERY</span>
+    <span class="tick-item"><span class="tick-dot"></span>PATTERN DETECTION ONLINE</span>
+    <span class="tick-item"><span class="tick-dot"></span>SCAR // CENTRA // ASH — STANDING BY</span>
+    <span class="tick-item"><span class="tick-dot"></span>ONE QUESTION. ONE FORENSIC READING. ONE TRUTH.</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">WILD SISTER</a>
+  <ul class="nav-links">
+    <li><a href="readings.html">Readings</a></li>
+    <li><a href="pattern-engine.html">Pattern Engine</a></li>
+    <li><a href="sid.html">S.I.D.</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+  </ul>
+  <a href="order.html" class="nav-cta">Open Dossier — $18</a>
+</nav>
+
+<div class="wrap">
+
+  <!-- CASE FILE HEADER -->
+  <div class="case-header">
+    <div class="case-header-top">
+      <div class="case-meta">
+        Wild Sister // Nova Blu<br>
+        <span>Forensic Astrology Division</span> — Shadow Behavior Unit<br>
+        Intelligence Operating System // v7.0<br>
+        System Active — Pattern Detection Online<br>
+        Clearance Level 7 // Eyes Only<br>
+        File ID: <span>TS-316590-EI</span>
+      </div>
+      <div class="case-barcode">||| |||| ||| || ||||| || |||</div>
+      <div class="case-file-box">
+        <div class="case-file-label">CASE FILE //</div>
+        <div class="case-file-title">THE SIGNAL</div>
+        <div class="case-file-sub">Intelligence Dossier // Classified</div>
+      </div>
+    </div>
+    <div class="case-divider"></div>
+    <div class="case-meta" style="text-align:center;font-size:8px;line-height:2;">
+      Subject: [REDACTED] &nbsp;|&nbsp; Date Opened: 07.09.2026 &nbsp;|&nbsp; Analyst: Wild Sister // Nova Blu<br>
+      Division: Shadow Behavior Unit &nbsp;|&nbsp; Status: Active Investigation &nbsp;|&nbsp; Clearance: Level 7
+    </div>
+    <div class="case-divider"></div>
+    <div class="case-quote">"The truth has been waiting in the pattern."</div>
+    <div class="biometric">
+      <div class="bio-dot"></div>
+      <div class="bio-text">Biometric ID Match — Confirmed ✓</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT ARCHIVE -->
+    <div class="archive-panel">
+      <div class="archive-title">Left Archive</div>
+      <div class="archive-item">
+        <div class="ai-icon">◈</div>
+        <div class="ai-title">Emotional Crime Scene</div>
+        <div class="ai-desc">Original wound mapping. Where the pattern began.</div>
+        <div class="ai-link">Access File</div>
+      </div>
+      <div class="archive-item">
+        <div class="ai-icon">⟁</div>
+        <div class="ai-title">Bloodline File</div>
+        <div class="ai-desc">Ancestral conditioning. Inherited emotional contracts.</div>
+        <div class="ai-link">Open Dossier</div>
+      </div>
+      <div class="archive-item">
+        <div class="ai-icon">◉</div>
+        <div class="ai-title">Family Conditioning</div>
+        <div class="ai-desc">Generational repetition decoded. Survival adaptations.</div>
+        <div class="ai-link">View Evidence</div>
+      </div>
+      <div class="archive-item">
+        <div class="ai-icon">⌬</div>
+        <div class="ai-title">Nervous System</div>
+        <div class="ai-desc">Somatic evidence. How the body holds the pattern.</div>
+        <div class="ai-link">Analyze Pattern</div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center-panel">
+
+      <!-- SCAN TERMINAL -->
+      <div class="scan-terminal">
+        <div class="scan-title">Pattern Detection Terminal</div>
+        <div class="scan-grid">
+          <div class="scan-field">
+            <div class="scan-label">// Sun Sign</div>
+            <select class="scan-select" id="sunSign" onchange="updateScan()">
+              <option value="">Select Sign</option>
+              <option value="aries">Aries ♈</option>
+              <option value="taurus">Taurus ♉</option>
+              <option value="gemini">Gemini ♊</option>
+              <option value="cancer">Cancer ♋</option>
+              <option value="leo">Leo ♌</option>
+              <option value="virgo">Virgo ♍</option>
+              <option value="libra">Libra ♎</option>
+              <option value="scorpio">Scorpio ♏</option>
+              <option value="sagittarius">Sagittarius ♐</option>
+              <option value="capricorn">Capricorn ♑</option>
+              <option value="aquarius">Aquarius ♒</option>
+              <option value="pisces">Pisces ♓</option>
+            </select>
+          </div>
+          <div class="scan-field">
+            <div class="scan-label">// Moon Sign</div>
+            <select class="scan-select" id="moonSign" onchange="updateScan()">
+              <option value="">Select Sign</option>
+              <option value="aries">Aries ♈</option>
+              <option value="taurus">Taurus ♉</option>
+              <option value="gemini">Gemini ♊</option>
+              <option value="cancer">Cancer ♋</option>
+              <option value="leo">Leo ♌</option>
+              <option value="virgo">Virgo ♍</option>
+              <option value="libra">Libra ♎</option>
+              <option value="scorpio">Scorpio ♏</option>
+              <option value="sagittarius">Sagittarius ♐</option>
+              <option value="capricorn">Capricorn ♑</option>
+              <option value="aquarius">Aquarius ♒</option>
+              <option value="pisces">Pisces ♓</option>
+            </select>
+          </div>
+          <div class="scan-field">
+            <div class="scan-label">// Pluto Placement</div>
+            <select class="scan-select" id="plutoHouse" onchange="updateScan()">
+              <option value="">Select House</option>
+              <option value="1">1st House</option>
+              <option value="2">2nd House</option>
+              <option value="3">3rd House</option>
+              <option value="4">4th House</option>
+              <option value="5">5th House</option>
+              <option value="6">6th House</option>
+              <option value="7">7th House</option>
+              <option value="8">8th House</option>
+              <option value="9">9th House</option>
+              <option value="10">10th House</option>
+              <option value="11">11th House</option>
+              <option value="12">12th House</option>
+            </select>
+          </div>
+          <div class="scan-field">
+            <div class="scan-label">// Saturn Sign</div>
+            <select class="scan-select" id="saturnSign" onchange="updateScan()">
+              <option value="">Select Sign</option>
+              <option value="aries">Aries ♈</option>
+              <option value="taurus">Taurus ♉</option>
+              <option value="gemini">Gemini ♊</option>
+              <option value="cancer">Cancer ♋</option>
+              <option value="leo">Leo ♌</option>
+              <option value="virgo">Virgo ♍</option>
+              <option value="libra">Libra ♎</option>
+              <option value="scorpio">Scorpio ♏</option>
+              <option value="sagittarius">Sagittarius ♐</option>
+              <option value="capricorn">Capricorn ♑</option>
+              <option value="aquarius">Aquarius ♒</option>
+              <option value="pisces">Pisces ♓</option>
+            </select>
+          </div>
+        </div>
+        <button class="scan-btn" onclick="initiateScan()">// Initiate Scan</button>
+      </div>
+
+      <!-- EVIDENCE BOARD -->
+      <div class="evidence-board">
+        <div class="eb-title">Core Scan — Evidence Board</div>
+        <div class="zodiac-grid" id="zodiacGrid">
+          <div class="zodiac-cell" data-sign="aries">♈</div>
+          <div class="zodiac-cell" data-sign="taurus">♉</div>
+          <div class="zodiac-cell" data-sign="gemini">♊</div>
+          <div class="zodiac-cell" data-sign="cancer">♋</div>
+          <div class="zodiac-cell" data-sign="leo">♌</div>
+          <div class="zodiac-cell" data-sign="virgo">♍</div>
+          <div class="zodiac-cell" data-sign="libra">♎</div>
+          <div class="zodiac-cell" data-sign="scorpio">♏</div>
+          <div class="zodiac-cell" data-sign="sagittarius">♐</div>
+          <div class="zodiac-cell" data-sign="capricorn">♑</div>
+          <div class="zodiac-cell" data-sign="aquarius">♒</div>
+          <div class="zodiac-cell" data-sign="pisces">♓</div>
+        </div>
+        <div class="core-scan">
+          <div class="cs-status" id="scanStatus">Core Scan — Awaiting Input</div>
+          <div class="cs-result" id="scanResult">Submit your placements above to initiate the pattern scan. The evidence board will activate when data is received.</div>
+          <div class="cs-meta">
+            <span id="caseLinkage">Case Linkage: Pending</span>
+            <span id="fileStatus">File Status: Awaiting Scan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CASE NOTES -->
+      <div class="case-notes">
+        <div class="cn-title">Evidence Board // Case Notes</div>
+        <div class="cn-files">
+          <div class="cn-file">
+            <div class="cn-no">File 01</div>
+            <div><div class="cn-title-text">Betrayal</div><div class="cn-desc">Trust as a wound. Repeated for recognition.</div></div>
+          </div>
+          <div class="cn-file">
+            <div class="cn-no">File 02</div>
+            <div><div class="cn-title-text">Silence</div><div class="cn-desc">Words swallowed. Voice buried in the pattern.</div></div>
+          </div>
+          <div class="cn-file">
+            <div class="cn-no">File 03</div>
+            <div><div class="cn-title-text">Abandonment</div><div class="cn-desc">Leaving before being left. The oldest wound.</div></div>
+          </div>
+          <div class="cn-file">
+            <div class="cn-no">File 04</div>
+            <div><div class="cn-title-text">Obsession</div><div class="cn-desc">Control as safety. The mind that cannot rest.</div></div>
+          </div>
+          <div class="cn-file">
+            <div class="cn-no">File 05</div>
+            <div><div class="cn-title-text">Rebirth</div><div class="cn-desc">Destruction as the door. The pattern ends here.</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT ARCHIVE -->
+    <div class="archive-panel">
+      <div class="archive-title">Right Archive</div>
+      <div class="archive-item">
+        <div class="ai-icon">⬡</div>
+        <div class="ai-title">Pluto Reconstruction</div>
+        <div class="ai-desc">Destruction and rebirth cycles. Power reclamation.</div>
+        <div class="ai-link">Enter Archive</div>
+      </div>
+      <div class="archive-item">
+        <div class="ai-icon">⊗</div>
+        <div class="ai-title">Saturn Interrogation</div>
+        <div class="ai-desc">Discipline wound. Authority patterns. Karmic contracts.</div>
+        <div class="ai-link">Initiate Scan</div>
+      </div>
+      <div class="archive-item">
+        <div class="ai-icon">◎</div>
+        <div class="ai-title">Relationship Evidence</div>
+        <div class="ai-desc">Attachment wound. Love as trauma response.</div>
+        <div class="ai-link">View Evidence</div>
+      </div>
+      <div class="archive-item">
+        <div class="ai-icon">◈</div>
+        <div class="ai-title">Recovery Directive</div>
+        <div class="ai-desc">Soul contract. Reclamation path. The way out.</div>
+        <div class="ai-link">Open Dossier</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PSYCH PROFILE -->
+  <div class="psych-panel">
+    <div class="pp-title">Psychological Profile</div>
+    <div class="pp-grid">
+      <div class="pp-row">
+        <div class="pp-label"><span>Emotional Depth</span><span class="pp-pct">95%</span></div>
+        <div class="pp-bar-wrap"><div class="pp-bar" id="bar1" style="width:0%"></div></div>
+      </div>
+      <div class="pp-row">
+        <div class="pp-label"><span>Intuition</span><span class="pp-pct">90%</span></div>
+        <div class="pp-bar-wrap"><div class="pp-bar" id="bar2" style="width:0%"></div></div>
+      </div>
+      <div class="pp-row">
+        <div class="pp-label"><span>Defensive Walls</span><span class="pp-pct">85%</span></div>
+        <div class="pp-bar-wrap"><div class="pp-bar" id="bar3" style="width:0%"></div></div>
+      </div>
+      <div class="pp-row">
+        <div class="pp-label"><span>Trust Issues</span><span class="pp-pct">91%</span></div>
+        <div class="pp-bar-wrap"><div class="pp-bar" id="bar4" style="width:0%"></div></div>
+      </div>
+      <div class="pp-row">
+        <div class="pp-label"><span>Shadow Reactivity</span><span class="pp-pct">88%</span></div>
+        <div class="pp-bar-wrap"><div class="pp-bar" id="bar5" style="width:0%"></div></div>
+      </div>
+      <div class="pp-row">
+        <div class="pp-label"><span>Transformation Capacity</span><span class="pp-pct">97%</span></div>
+        <div class="pp-bar-wrap"><div class="pp-bar" id="bar6" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="pp-note">Notes: This soul was never meant to stay small. You are not here to be understood. You are here to be undeniable.</div>
+  </div>
+
+  <!-- AGENTS + THREAT + PROTOCOL -->
+  <div class="bottom-grid">
+
+    <!-- AGENT ROSTER -->
+    <div class="agent-roster">
+      <div class="ar-title">Agent Roster</div>
+      <div class="ar-agent">
+        <div class="ar-badge" style="border-color:#c8a84a;color:#c8a84a">SC</div>
+        <div>
+          <div class="ar-name" style="color:#c8a84a">SCAR</div>
+          <div class="ar-role">Wound Mapping — Emotional injury patterns, suppression mechanisms, survival adaptations</div>
+          <div class="ar-status">Clearance: Level 7 — Active</div>
+        </div>
+      </div>
+      <div class="ar-agent">
+        <div class="ar-badge" style="border-color:#7899bb;color:#7899bb">CE</div>
+        <div>
+          <div class="ar-name" style="color:#7899bb">CENTRA</div>
+          <div class="ar-role">Lineage Analysis — Ancestral patterns, bloodline conditioning, generational repetition</div>
+          <div class="ar-status">Clearance: Level 7 — Active</div>
+        </div>
+      </div>
+      <div class="ar-agent">
+        <div class="ar-badge" style="border-color:#aaaaaa;color:#aaaaaa">AS</div>
+        <div>
+          <div class="ar-name" style="color:#aaaaaa">ASH</div>
+          <div class="ar-role">Tarot Seal — Pulls the symbolic confirmation. Locks in the answer with timing.</div>
+          <div class="ar-status">Clearance: Level 7 — Active</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THREAT LEVEL -->
+    <div class="threat-panel">
+      <div class="tp-title">Threat Level</div>
+      <div class="threat-meter">
+        <div class="threat-circle">
+          <div class="threat-fill" id="threatFill"></div>
+          <div class="threat-pct" id="threatPct">--%</div>
+          <div class="threat-label">Awaiting Scan</div>
+        </div>
+      </div>
+      <div class="threat-status" id="threatStatus">Scan not initiated</div>
+      <div class="threat-classification">
+        Classification:<br>
+        Psychological // Occult // Ancestral<br><br>
+        Access Restricted<br>
+        Confidential
+      </div>
+    </div>
+
+    <!-- PROTOCOL -->
+    <div class="protocol-panel">
+      <div class="proto-title">Recommended Protocol</div>
+      <div class="proto-item">Shadow Integration — Face the truth without flinching.</div>
+      <div class="proto-item">Power Reclamation — Rebuild boundaries as armor.</div>
+      <div class="proto-item">Emotional Transmutation — Turn pain into precision.</div>
+      <div class="proto-item">Soul Realignment — Choose yourself. Every time.</div>
+      <div class="delivery-grid">
+        <div class="delivery-box"><div class="db-label">Delivery Time</div><div class="db-value">24 Hours</div></div>
+        <div class="delivery-box"><div class="db-label">Exceptions</div><div class="db-value">None</div></div>
+        <div class="delivery-box"><div class="db-label">Delays</div><div class="db-value">Never</div></div>
+        <div class="delivery-box"><div class="db-label">Format</div><div class="db-value">Portal</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CTA PANEL -->
+  <div class="cta-panel">
+    <div class="cta-label">// Open Dossier — $18</div>
+    <div class="cta-title">One Question. One Forensic Reading. One Truth.</div>
+    <div class="cta-sub">You will receive your dossier via secure delivery portal. All readings delivered within 24 hours. No exceptions. No delays.</div>
+    <div class="cta-includes">
+      <div class="cta-include">Direct answer to your one question</div>
+      <div class="cta-include">Full natal chart forensic analysis</div>
+      <div class="cta-include">Wound + pattern identification</div>
+      <div class="cta-include">Ancestral lineage decoded</div>
+      <div class="cta-include">Tarot confirmation seal included</div>
+      <div class="cta-include">Delivered in 24 hours. No delays.</div>
+    </div>
+    <div class="cta-price">$18</div>
+    <div class="cta-price-note">One-time investment. Your file stays open.</div>
+    <a href="order.html" class="btn-access">// Access Your File</a>
+  </div>
+
+  <!-- SYSTEM LOG -->
+  <div class="system-log">
+    <div class="sl-title">System Log</div>
+    <div class="sl-line active" id="log1">Scan Complete</div>
+    <div class="sl-line active" id="log2">Pattern Locked</div>
+    <div class="sl-line active" id="log3">File Sealed</div>
+    <div class="sl-bottom">
+      <div class="sl-file">File: TS-316590-EI</div>
+      <div class="sl-price">$18</div>
+      <div class="sl-stamp">Do Not Duplicate</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">WILD SISTER // NOVA BLU</div>
+  <div class="footer-tagline">Truth // Pattern // Freedom</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="readings.html">Readings</a>
+    <a href="pattern-engine.html">Pattern Engine</a>
+    <a href="sid.html">S.I.D.</a>
+    <a href="pricing.html">Pricing</a>
+  </div>
+</footer>
+
+<script>
+const SCAN_DATA = {
+  aries: { wound: "identity as performance — you learned to lead before you learned to rest", deposit: "head, jaw, face" },
+  taurus: { wound: "worth tied to what you can provide — love felt conditional on usefulness", deposit: "throat, neck, thyroid" },
+  gemini: { wound: "split identity — you became whoever the room needed before it finished asking", deposit: "lungs, shoulders, nervous system" },
+  cancer: { wound: "emotional labor without reciprocation — the home was not always safe", deposit: "stomach, chest, digestive system" },
+  leo: { wound: "visibility punished — you learned to dim so others could shine", deposit: "heart, upper back, spine" },
+  virgo: { wound: "worthiness through perfection — you were never enough as you were", deposit: "gut, intestines, nervous system" },
+  libra: { wound: "self-erasure for peace — you kept the balance by disappearing", deposit: "lower back, kidneys, adrenals" },
+  scorpio: { wound: "trust as danger — betrayal became the baseline expectation", deposit: "reproductive system, lower abdomen" },
+  sagittarius: { wound: "truth punished — speaking it cost you something every time", deposit: "hips, thighs, liver, sciatic" },
+  capricorn: { wound: "love rationed — you earned affection through achievement", deposit: "knees, bones, joints, skin" },
+  aquarius: { wound: "belonging as exile — you were too different and learned to perform normalcy", deposit: "ankles, circulation, nervous system" },
+  pisces: { wound: "boundaries as cruelty — you dissolved to keep the peace", deposit: "feet, lymphatic system, immune system" }
+};
+
+const THREAT_LEVELS = {
+  aries: 87, taurus: 82, gemini: 89, cancer: 92, leo: 85,
+  virgo: 88, libra: 83, scorpio: 94, sagittarius: 86, capricorn: 91,
+  aquarius: 84, pisces: 90
+};
+
+let scanned = false;
+
+function updateScan() {
+  const sun = document.getElementById('sunSign').value;
+  if (sun) {
+    document.querySelectorAll('.zodiac-cell').forEach(c => c.classList.remove('active'));
+    const cell = document.querySelector(`.zodiac-cell[data-sign="${sun}"]`);
+    if (cell) cell.classList.add('active');
+  }
+}
+
+function initiateScan() {
+  const sun = document.getElementById('sunSign').value;
+  const moon = document.getElementById('moonSign').value;
+
+  if (!sun || !moon) {
+    document.getElementById('scanStatus').textContent = 'Error: Sun Sign and Moon Sign required to initiate scan.';
+    return;
+  }
+
+  const sunData = SCAN_DATA[sun];
+  const moonData = SCAN_DATA[moon];
+  const threat = THREAT_LEVELS[sun] || 88;
+
+  document.getElementById('scanStatus').textContent = 'Core Scan — Pattern Detected';
+  document.getElementById('scanResult').className = 'cs-result active';
+  document.getElementById('scanResult').textContent =
+    `Sun ${sun.charAt(0).toUpperCase()+sun.slice(1)}: ${sunData.wound}. Body deposit: ${sunData.deposit}. Moon ${moon.charAt(0).toUpperCase()+moon.slice(1)}: ${moonData.wound}. The full forensic map lives in your dossier.`;
+
+  document.getElementById('caseLinkage').textContent = 'Case Linkage: Active';
+  document.getElementById('fileStatus').textContent = 'File Status: Pattern Locked';
+
+  // Animate threat level
+  document.getElementById('threatPct').textContent = threat + '%';
+  document.getElementById('threatFill').style.height = threat + '%';
+  document.getElementById('threatStatus').textContent = 'Threat Level: ' + (threat > 90 ? 'Critical' : threat > 85 ? 'High' : 'Elevated');
+
+  // Animate psych bars
+  const bars = [
+    {id:'bar1', pct:95}, {id:'bar2', pct:90}, {id:'bar3', pct:85},
+    {id:'bar4', pct:91}, {id:'bar5', pct:88}, {id:'bar6', pct:97}
+  ];
+  bars.forEach((b, i) => {
+    setTimeout(() => {
+      document.getElementById(b.id).style.width = b.pct + '%';
+    }, i * 150);
+  });
+
+  // Activate all zodiac cells briefly
+  document.querySelectorAll('.zodiac-cell').forEach((c, i) => {
+    setTimeout(() => { c.classList.add('active'); }, i * 80);
+    setTimeout(() => {
+      c.classList.remove('active');
+      if (c.dataset.sign === sun) c.classList.add('active');
+    }, i * 80 + 600);
+  });
+
+  scanned = true;
+}
+
+// Animate bars on load after delay
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('bar1').style.width = '95%';
+    document.getElementById('bar2').style.width = '90%';
+    document.getElementById('bar3').style.width = '85%';
+    document.getElementById('bar4').style.width = '91%';
+    document.getElementById('bar5').style.width = '88%';
+    document.getElementById('bar6').style.width = '97%';
+  }, 800);
+});
+</script>
+
+</body>
+</html>
