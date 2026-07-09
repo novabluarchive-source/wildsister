@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symbol Intelligence Division — Recovered Archive</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #000000;
+  --deep: #03060d;
+  --panel-bg: #07101c;
+  --border: #2a1f0a;
+  --gold: #d6b46a;
+  --gold-dim: #8a6a2f;
+  --gold-muted: #7f693d;
+  --gold-bright: #f1e0a8;
+  --text: #c8b080;
+  --muted: #6a5530;
+  --centra: #7899bb;
+  --scar: #c8a84a;
+  --nix: #c8d8e8;
+  --lux: #ff4488;
+  --luna: #c8c8f0;
+  --ash: #aaaaaa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: #000; color: #c8b080; font-family: 'Share Tech Mono', monospace; overflow-x: hidden; min-height: 100vh; }
+
+/* ============================================
+   ENTRY SCREEN
+   ============================================ */
+#entry {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.entry-lines { max-width: 600px; width: 100%; }
+
+.entry-line {
+  font-size: clamp(13px, 2.5vw, 16px);
+  color: #333;
+  line-height: 2;
+  margin-bottom: 0;
+  opacity: 0;
+  min-height: 1.5em;
+  transition: color 0.5s;
+}
+.entry-line.lit { color: #c8b080; }
+.entry-line.gold { color: #d6b46a; }
+.entry-line.dim { color: #555; }
+
+.entry-cursor {
+  display: inline-block;
+  width: 10px; height: 18px;
+  background: #d6b46a;
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: blink 1s infinite;
+  opacity: 0;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.entry-bar {
+  width: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #d6b46a, transparent);
+  margin: 24px auto;
+  transition: width 1s ease;
+  opacity: 0;
+}
+
+.entry-warning {
+  border: 1px solid #8a6a2f;
+  padding: 24px 28px;
+  max-width: 500px;
+  margin: 0 auto 32px;
+  opacity: 0;
+  text-align: left;
+  background: rgba(214,180,106,0.03);
+}
+.entry-warning-title { font-size: 10px; letter-spacing: 0.4em; color: #d6b46a; margin-bottom: 12px; }
+.entry-warning-text { font-size: 11px; color: #6a5530; line-height: 1.9; }
+
+.entry-btn {
+  opacity: 0;
+  background: none;
+  border: 1px solid #d6b46a;
+  color: #d6b46a;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 0.4em;
+  padding: 16px 48px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.entry-btn:hover { background: #d6b46a; color: #000; }
+
+/* ============================================
+   MAIN ARCHIVE (hidden until entry complete)
+   ============================================ */
+#archive { display: none; }
+
+/* TICKER */
+.ticker-wrap { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 26px; overflow: hidden; background: rgba(0,0,0,0.98); border-bottom: 1px solid var(--border); }
+.ticker { display: flex; white-space: nowrap; animation: tick 60s linear infinite; }
+.tick-item { display: flex; align-items: center; gap: 8px; padding: 0 28px; height: 26px; font-size: 8px; letter-spacing: 0.3em; color: var(--muted); }
+.tick-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gold); }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* NAV */
+nav { position: fixed; top: 26px; left: 0; right: 0; z-index: 99; display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
+.nav-logo { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.3em; color: var(--gold); text-decoration: none; }
+.nav-links { display: flex; gap: 20px; list-style: none; }
+.nav-links a { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.nav-links a:hover { color: var(--gold); }
+.nav-back { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 5px 14px; transition: all 0.15s; }
+.nav-back:hover { border-color: var(--gold-dim); color: var(--gold); }
+@media(max-width:600px){.nav-links{display:none;}}
+
+/* BODY */
+body.archive-open { background: var(--deep); }
+body.archive-open::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 600px 400px at 50% 20%, rgba(214,180,106,0.05) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(214,180,106,0.01) 3px, rgba(214,180,106,0.01) 4px);
+}
+
+/* WRAP */
+.wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 90px 20px 60px; }
+
+/* HEADER */
+.header { border: 1px solid var(--gold-dim); padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
+.header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+.header-meta { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); line-height: 1.8; }
+.header-status { font-size: 9px; letter-spacing: 0.15em; color: var(--gold-dim); border: 1px solid var(--border); padding: 8px 14px; text-align: right; line-height: 1.8; }
+.header-title { font-family: 'VT323', monospace; font-size: clamp(3rem, 12vw, 6.5rem); color: var(--gold); letter-spacing: 0.1em; line-height: 0.9; margin-bottom: 6px; text-shadow: 0 0 40px rgba(214,180,106,0.2); }
+.header-division { font-family: 'Cinzel', serif; font-size: clamp(10px, 2vw, 13px); letter-spacing: 0.4em; color: var(--gold-dim); margin-bottom: 4px; }
+.header-tagline { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 16px; }
+.header-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); opacity: 0.4; margin-bottom: 16px; }
+.header-mission { font-size: 12px; color: var(--text); line-height: 1.9; max-width: 680px; }
+
+/* SECTION HEADER */
+.section-label { font-size: 9px; letter-spacing: 0.3em; color: var(--gold-dim); border: 1px solid var(--border); padding: 8px 16px; margin-bottom: 14px; background: rgba(214,180,106,0.02); }
+
+/* DEPARTMENTS GRID */
+.dept-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+@media(max-width:700px){.dept-grid{grid-template-columns:repeat(2,1fr);}}
+.dept-card { border: 1px solid var(--border); padding: 16px 12px; text-align: center; background: rgba(7,10,7,0.8); transition: border-color 0.2s; cursor: pointer; }
+.dept-card:hover { border-color: var(--gold-dim); }
+.dept-icon { font-size: 26px; margin-bottom: 8px; opacity: 0.6; }
+.dept-code { font-size: 10px; letter-spacing: 0.3em; color: var(--gold); margin-bottom: 3px; }
+.dept-name { font-size: 9px; color: var(--muted); line-height: 1.4; margin-bottom: 8px; }
+.dept-count { font-size: 8px; letter-spacing: 0.2em; color: var(--gold-dim); border-top: 1px solid var(--border); padding-top: 6px; }
+
+/* THREE COL */
+.three-col { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 12px; margin-bottom: 20px; }
+@media(max-width:700px){.three-col{grid-template-columns:1fr;}}
+
+/* STATUS PANEL */
+.status-panel { border: 1px solid var(--border); padding: 16px; background: rgba(7,10,7,0.8); }
+.status-title { font-size: 9px; letter-spacing: 0.25em; color: var(--gold-dim); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.status-label { font-size: 8px; letter-spacing: 0.1em; color: var(--muted); width: 70px; flex-shrink: 0; }
+.status-bar-wrap { flex: 1; height: 3px; background: var(--border); }
+.status-bar { height: 100%; background: var(--gold-dim); transition: width 1s ease; }
+.status-pct { font-size: 8px; color: var(--muted); width: 30px; text-align: right; flex-shrink: 0; }
+.status-total { font-size: 9px; letter-spacing: 0.2em; color: var(--gold); border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+
+/* SPOTLIGHT */
+.spotlight-panel { border: 1px solid var(--gold-dim); padding: 16px; background: rgba(7,10,7,0.95); position: relative; overflow: hidden; }
+.spotlight-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.spotlight-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.spotlight-tag { font-size: 8px; letter-spacing: 0.25em; color: var(--gold-dim); }
+.spotlight-no { font-size: 9px; color: var(--gold); border: 1px solid var(--border); padding: 3px 8px; }
+.spotlight-img { width: 100%; height: 110px; background: linear-gradient(135deg, #0a0e06, #1a1206); border: 1px solid var(--border); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.spotlight-img::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(214,180,106,0.12) 0%, transparent 60%); }
+.spotlight-scroll { font-size: 44px; opacity: 0.35; position: relative; z-index: 1; }
+.spotlight-title { font-family: 'VT323', monospace; font-size: 2rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 3px; }
+.spotlight-sub { font-size: 8px; letter-spacing: 0.2em; color: var(--gold-dim); margin-bottom: 8px; }
+.spotlight-meta { font-size: 9px; color: var(--muted); line-height: 1.8; margin-bottom: 8px; }
+.spotlight-meta span { color: var(--gold-dim); }
+.spotlight-brief { font-size: 10px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+.stamp { display: inline-block; border: 2px solid var(--gold-dim); padding: 3px 10px; font-size: 8px; letter-spacing: 0.2em; color: var(--gold-dim); transform: rotate(-3deg); margin-bottom: 12px; }
+.btn-open-file { width: 100%; background: none; border: 1px solid var(--gold-dim); color: var(--gold); font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 0.3em; padding: 10px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: block; text-align: center; }
+.btn-open-file:hover { background: var(--gold); color: var(--black); }
+
+/* RECENT FILES */
+.recent-panel { border: 1px solid var(--border); padding: 16px; background: rgba(7,10,7,0.8); }
+.recent-title { font-size: 9px; letter-spacing: 0.25em; color: var(--gold-dim); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.recent-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 13px; padding-bottom: 13px; border-bottom: 1px solid var(--border); }
+.recent-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.recent-icon { font-size: 18px; opacity: 0.5; flex-shrink: 0; margin-top: 2px; }
+.recent-file-no { font-size: 8px; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 2px; }
+.recent-name { font-size: 10px; color: var(--gold-bright); margin-bottom: 2px; }
+.recent-div { font-size: 8px; color: var(--muted); }
+
+/* AGENTS */
+.agents-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+@media(max-width:700px){.agents-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:450px){.agents-grid{grid-template-columns:1fr;}}
+.agent-card { border: 1px solid var(--border); background: rgba(7,10,7,0.8); position: relative; overflow: hidden; transition: border-color 0.2s; }
+.agent-card:hover { border-color: var(--gold-dim); }
+.agent-top { padding: 18px 18px 12px; border-bottom: 1px solid var(--border); }
+.agent-id { font-size: 8px; letter-spacing: 0.25em; color: var(--muted); margin-bottom: 5px; }
+.agent-name { font-family: 'VT323', monospace; font-size: 2rem; line-height: 1; margin-bottom: 3px; }
+.agent-role { font-size: 8px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 8px; }
+.agent-spec { font-size: 10px; color: var(--muted); line-height: 1.5; }
+.agent-bottom { padding: 12px 18px; }
+.agent-tasks { margin-bottom: 12px; }
+.agent-task { font-size: 9px; color: var(--muted); line-height: 1.8; display: flex; gap: 5px; }
+.agent-task::before { content: '—'; color: var(--gold-dim); flex-shrink: 0; }
+.agent-prices { display: flex; gap: 6px; }
+.price-pill { flex: 1; border: 1px solid var(--border); padding: 7px; text-align: center; cursor: pointer; transition: all 0.2s; text-decoration: none; display: block; }
+.price-pill:hover { border-color: var(--gold-dim); }
+.price-pill-label { font-size: 7px; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 2px; }
+.price-pill-amount { font-size: 12px; color: var(--gold); }
+.agent-centra { border-top: 3px solid var(--centra); } .agent-centra .agent-name { color: var(--centra); }
+.agent-scar { border-top: 3px solid var(--scar); } .agent-scar .agent-name { color: var(--scar); }
+.agent-nix { border-top: 3px solid var(--nix); } .agent-nix .agent-name { color: var(--nix); }
+.agent-lux { border-top: 3px solid var(--lux); } .agent-lux .agent-name { color: var(--lux); }
+.agent-luna { border-top: 3px solid var(--luna); } .agent-luna .agent-name { color: var(--luna); }
+.agent-ash { border-top: 3px solid var(--ash); } .agent-ash .agent-name { color: var(--ash); }
+
+/* FULL SQUAD */
+.squad-panel { border: 1px solid var(--gold-dim); padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; background: rgba(7,10,7,0.95); }
+.squad-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.squad-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 12px; }
+.squad-title { font-family: 'VT323', monospace; font-size: 2.2rem; color: var(--gold); line-height: 1; }
+.squad-subtitle { font-size: 9px; letter-spacing: 0.15em; color: var(--gold-dim); margin-top: 3px; }
+.squad-price { font-family: 'VT323', monospace; font-size: 2.8rem; color: var(--gold); line-height: 1; text-align: right; }
+.squad-price-note { font-size: 8px; color: var(--muted); text-align: right; }
+.squad-desc { font-size: 11px; color: var(--muted); line-height: 1.9; margin-bottom: 16px; max-width: 580px; }
+.squad-agents { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.squad-pill { font-size: 8px; letter-spacing: 0.1em; padding: 3px 9px; border-radius: 999px; border: 1px solid; }
+.squad-includes { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; margin-bottom: 18px; }
+@media(max-width:500px){.squad-includes{grid-template-columns:1fr;}}
+.squad-include { font-size: 9px; color: var(--muted); display: flex; gap: 6px; }
+.squad-include::before { content: '✦'; color: var(--gold-dim); flex-shrink: 0; }
+.btn-squad { display: block; width: 100%; background: none; border: 1px solid var(--gold); color: var(--gold); font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.3em; padding: 14px; cursor: pointer; text-decoration: none; text-align: center; transition: all 0.2s; margin-bottom: 8px; }
+.btn-squad:hover { background: var(--gold); color: var(--black); }
+.btn-squad-ghost { display: block; width: 100%; background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 0.2em; padding: 11px; cursor: pointer; text-decoration: none; text-align: center; transition: all 0.2s; }
+.btn-squad-ghost:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+/* SUBSCRIPTIONS */
+.sub-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
+@media(max-width:600px){.sub-grid{grid-template-columns:1fr;}}
+.sub-card { border: 1px solid var(--border); padding: 20px; text-align: center; background: rgba(7,10,7,0.6); transition: border-color 0.2s; }
+.sub-card:hover { border-color: var(--gold-dim); }
+.sub-card.featured { border-color: var(--gold-dim); background: rgba(214,180,106,0.03); }
+.sub-name { font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold); margin-bottom: 6px; }
+.sub-price { font-family: 'VT323', monospace; font-size: 2.5rem; color: var(--gold-bright); line-height: 1; margin-bottom: 3px; }
+.sub-cycle { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 12px; }
+.sub-desc { font-size: 9px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+.sub-btn { display: block; width: 100%; background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: 0.2em; padding: 9px; cursor: pointer; text-decoration: none; text-align: center; transition: all 0.2s; }
+.sub-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+/* ARCHIVE STRIP */
+.archive-strip { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.archive-box { flex: 1; min-width: 100px; border: 1px solid var(--border); padding: 10px 14px; background: rgba(7,10,7,0.6); }
+.archive-label { font-size: 7px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 4px; }
+.archive-value { font-size: 12px; letter-spacing: 0.1em; color: var(--gold); }
+
+/* FOOTER */
+.sid-footer { border-top: 1px solid var(--border); padding: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.footer-archive-status { font-size: 9px; letter-spacing: 0.15em; color: var(--muted); line-height: 1.8; }
+.footer-archive-status span { color: var(--gold-dim); }
+.footer-links-group { display: flex; gap: 16px; flex-wrap: wrap; }
+.footer-links-group a { font-size: 9px; letter-spacing: 0.15em; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.footer-links-group a:hover { color: var(--gold); }
+.footer-revision { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; }
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     ENTRY SCREEN
+     ============================================ -->
+<div id="entry">
+  <div class="entry-lines">
+    <div class="entry-line" id="l1">Searching...</div>
+    <div class="entry-line" id="l2"></div>
+    <div class="entry-bar" id="bar1"></div>
+    <div class="entry-line" id="l3"></div>
+    <div class="entry-line" id="l4"></div>
+    <div class="entry-line" id="l5"></div>
+    <div class="entry-bar" id="bar2"></div>
+    <div class="entry-line" id="l6"></div>
+    <div class="entry-line" id="l7"></div>
+    <div class="entry-line" id="l8"></div>
+    <div class="entry-bar" id="bar3"></div>
+    <div class="entry-line" id="l9"></div>
+    <div class="entry-line" id="l10"></div>
+    <div class="entry-line" id="l11"></div>
+    <div class="entry-line" id="l12"></div>
+    <br>
+    <div class="entry-warning" id="warning">
+      <div class="entry-warning-title">⚠ RECOVERED ARCHIVE — PUBLIC ACCESS GRANTED</div>
+      <div class="entry-warning-text">
+        This archive contains recovered symbolic intelligence collected across multiple investigative divisions.<br><br>
+        Proceed only if you intend to investigate patterns rather than consume opinions.<br><br>
+        Archive Status: <span style="color:#d6b46a">ACTIVE</span> &nbsp;|&nbsp; Division: <span style="color:#d6b46a">UNKNOWN</span> &nbsp;|&nbsp; Revision: <span style="color:#d6b46a">01</span>
+      </div>
+    </div>
+    <button class="entry-btn" id="enterBtn" onclick="enterArchive()">// ENTER ARCHIVE</button>
+  </div>
+</div>
+
+<!-- ============================================
+     MAIN ARCHIVE
+     ============================================ -->
+<div id="archive">
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span class="tick-item"><span class="tick-dot"></span>SYMBOL INTELLIGENCE DIVISION — ACTIVE</span>
+      <span class="tick-item"><span class="tick-dot"></span>RECOVERED ARCHIVE // REVISION 01</span>
+      <span class="tick-item"><span class="tick-dot"></span>6 ANALYSTS ONLINE — PURCHASE ACCESS NOW</span>
+      <span class="tick-item"><span class="tick-dot"></span>OTF-001 // MAZZAROTH — FILE OPEN</span>
+      <span class="tick-item"><span class="tick-dot"></span>ZODIAC = 70 // LILITH = 70 // SECRET = 70 // SHADOW = 70</span>
+      <span class="tick-item"><span class="tick-dot"></span>JOB 38:32 — CAN YOU BRING FORTH MAZZAROTH IN ITS SEASON</span>
+      <span class="tick-item"><span class="tick-dot"></span>ARCHIVE COMPLETION: 7% — INVESTIGATION CONTINUES</span>
+      <span class="tick-item"><span class="tick-dot"></span>DRACONIC → VEDIC → TROPICAL // ONE TRUTH</span>
+      <span class="tick-item"><span class="tick-dot"></span>SYMBOL INTELLIGENCE DIVISION — ACTIVE</span>
+      <span class="tick-item"><span class="tick-dot"></span>RECOVERED ARCHIVE // REVISION 01</span>
+      <span class="tick-item"><span class="tick-dot"></span>6 ANALYSTS ONLINE — PURCHASE ACCESS NOW</span>
+      <span class="tick-item"><span class="tick-dot"></span>OTF-001 // MAZZAROTH — FILE OPEN</span>
+      <span class="tick-item"><span class="tick-dot"></span>ZODIAC = 70 // LILITH = 70 // SECRET = 70 // SHADOW = 70</span>
+      <span class="tick-item"><span class="tick-dot"></span>JOB 38:32 — CAN YOU BRING FORTH MAZZAROTH IN ITS SEASON</span>
+      <span class="tick-item"><span class="tick-dot"></span>ARCHIVE COMPLETION: 7% — INVESTIGATION CONTINUES</span>
+      <span class="tick-item"><span class="tick-dot"></span>DRACONIC → VEDIC → TROPICAL // ONE TRUTH</span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="sid.html" class="nav-logo">S.I.D.</a>
+    <ul class="nav-links">
+      <li><a href="#departments">Departments</a></li>
+      <li><a href="#analysts">Analysts</a></li>
+      <li><a href="#squad">Full Squad</a></li>
+      <li><a href="#subscriptions">Subscribe</a></li>
+    </ul>
+    <a href="index.html" class="nav-back">← Wild Sister</a>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-top">
+        <div class="header-meta">
+          RECOVERED SYMBOLIC INTELLIGENCE DATABASE<br>
+          SYMBOL INTELLIGENCE DIVISION<br>
+          // ARCHIVE TERMINAL 01 // REVISION 01
+        </div>
+        <div class="header-status">
+          ARCHIVE STATUS: ACTIVE<br>
+          ACCESS LEVEL: PUBLIC<br>
+          ANALYSTS: 6 ONLINE
+        </div>
+      </div>
+      <div class="header-title">WILD SISTER</div>
+      <div class="header-division">SYMBOL INTELLIGENCE DIVISION</div>
+      <div class="header-tagline">EVERYTHING LEAVES EVIDENCE. WE INVESTIGATE THE PATTERN.</div>
+      <div class="header-divider"></div>
+      <div class="header-mission">The Symbol Intelligence Division investigates recurring patterns across symbolic systems — celestial, mathematical, linguistic, scriptural, archetypal, and behavioral — to reveal where they converge, what they confirm, and what was encoded before any single tradition claimed it. We gather evidence. We compare sources. We look for patterns. We produce findings.</div>
+    </div>
+
+    <!-- DEPARTMENTS -->
+    <div class="section-label" id="departments">// ARCHIVE INDEX — INVESTIGATIVE DEPARTMENTS</div>
+    <div class="dept-grid">
+      <div class="dept-card">
+        <div class="dept-icon">☿</div>
+        <div class="dept-code">AST</div>
+        <div class="dept-name">Forensic Astrology Division</div>
+        <div class="dept-count">18 FILES</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">📜</div>
+        <div class="dept-code">OTF</div>
+        <div class="dept-name">Original Text Files Division</div>
+        <div class="dept-count">05 FILES</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon" style="font-size:18px;letter-spacing:-1px">1 2 3<br>4 5 6</div>
+        <div class="dept-code">NUM</div>
+        <div class="dept-name">Numerology Division</div>
+        <div class="dept-count">02 FILES</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon" style="font-size:20px;opacity:0.5">וּאנב</div>
+        <div class="dept-code">GEM</div>
+        <div class="dept-name">Gematria Division</div>
+        <div class="dept-count">00 FILES</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🌳</div>
+        <div class="dept-code">SYM</div>
+        <div class="dept-name">Symbol Files Division</div>
+        <div class="dept-count">09 FILES</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🏛</div>
+        <div class="dept-code">ARC</div>
+        <div class="dept-name">Ancient Record Files</div>
+        <div class="dept-count">03 FILES</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">◈</div>
+        <div class="dept-code">PAT</div>
+        <div class="dept-name">Pattern Investigation</div>
+        <div class="dept-count">03 FILES</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🧠</div>
+        <div class="dept-code">PSY</div>
+        <div class="dept-name">Behavioral Intelligence</div>
+        <div class="dept-count">02 FILES</div>
+      </div>
+    </div>
+
+    <!-- THREE COL -->
+    <div class="three-col">
+      <!-- STATUS -->
+      <div class="status-panel">
+        <div class="status-title">ARCHIVE STATUS</div>
+        <div class="status-row"><div class="status-label">AST</div><div class="status-bar-wrap"><div class="status-bar" style="width:18%"></div></div><div class="status-pct">18%</div></div>
+        <div class="status-row"><div class="status-label">OTF</div><div class="status-bar-wrap"><div class="status-bar" style="width:5%"></div></div><div class="status-pct">5%</div></div>
+        <div class="status-row"><div class="status-label">NUM</div><div class="status-bar-wrap"><div class="status-bar" style="width:2%"></div></div><div class="status-pct">2%</div></div>
+        <div class="status-row"><div class="status-label">GEM</div><div class="status-bar-wrap"><div class="status-bar" style="width:0%"></div></div><div class="status-pct">0%</div></div>
+        <div class="status-row"><div class="status-label">SYM</div><div class="status-bar-wrap"><div class="status-bar" style="width:9%"></div></div><div class="status-pct">9%</div></div>
+        <div class="status-row"><div class="status-label">ARC</div><div class="status-bar-wrap"><div class="status-bar" style="width:3%"></div></div><div class="status-pct">3%</div></div>
+        <div class="status-row"><div class="status-label">PAT</div><div class="status-bar-wrap"><div class="status-bar" style="width:3%"></div></div><div class="status-pct">3%</div></div>
+        <div class="status-row"><div class="status-label">PSY</div><div class="status-bar-wrap"><div class="status-bar" style="width:2%"></div></div><div class="status-pct">2%</div></div>
+        <div class="status-total">ARCHIVE COMPLETION: 7%</div>
+      </div>
+
+      <!-- SPOTLIGHT -->
+      <div class="spotlight-panel">
+        <div class="spotlight-top">
+          <div class="spotlight-tag">FILE SPOTLIGHT // PART ONE</div>
+          <div class="spotlight-no">OTF-001</div>
+        </div>
+        <div class="spotlight-img"><div class="spotlight-scroll">📜</div></div>
+        <div class="spotlight-title">MAZZAROTH</div>
+        <div class="spotlight-sub">JOB 38:32 // THE ORIGINAL ZODIAC</div>
+        <div class="spotlight-meta"><span>STATUS:</span> ACTIVE &nbsp; <span>DIVISION:</span> OTF</div>
+        <div class="spotlight-brief">An investigation into the first recorded reference to the celestial order and the stars set in their places — before any modern system claimed them.</div>
+        <div class="stamp">CASE STATUS: ACTIVE</div>
+        <a href="sid-investigation.html" class="btn-open-file">OPEN FILE</a>
+      </div>
+
+      <!-- RECENT -->
+      <div class="recent-panel">
+        <div class="recent-title">RECENTLY ADDED FILES</div>
+        <div class="recent-item">
+          <div class="recent-icon">📜</div>
+          <div><div class="recent-file-no">OTF-001</div><div class="recent-name">MAZZAROTH</div><div class="recent-div">Original Text Files</div></div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-icon">☿</div>
+          <div><div class="recent-file-no">AST-021</div><div class="recent-name">CANCER SEASON</div><div class="recent-div">Astrology Files</div></div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-icon" style="font-size:14px;font-weight:bold">8</div>
+          <div><div class="recent-file-no">NUM-008</div><div class="recent-name">THE NUMBER EIGHT</div><div class="recent-div">Numerology Files</div></div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-icon">💧</div>
+          <div><div class="recent-file-no">SYM-002</div><div class="recent-name">WATER</div><div class="recent-div">Symbol Files</div></div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-icon">◈</div>
+          <div><div class="recent-file-no">PAT-003</div><div class="recent-name">WHY TWELVE REPEATS</div><div class="recent-div">Pattern Files</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSTS / AGENTS -->
+    <div class="section-label" id="analysts">// DIVISION ANALYSTS — PURCHASE AGENT ACCESS</div>
+    <div class="agents-grid">
+      <div class="agent-card agent-centra">
+        <div class="agent-top">
+          <div class="agent-id">CE // THE ARCHIVE</div>
+          <div class="agent-name">CENTRA</div>
+          <div class="agent-role">CHIEF SYSTEMS ANALYST</div>
+          <div class="agent-spec">Maps bloodline patterns across all three chart systems and the original text. Pattern correlation and system mapping.</div>
+        </div>
+        <div class="agent-bottom">
+          <div class="agent-tasks">
+            <div class="agent-task">Three system lineage audit</div>
+            <div class="agent-task">Bloodline pattern mapping</div>
+            <div class="agent-task">Original text cross-reference</div>
+            <div class="agent-task">Integration truth statement</div>
+          </div>
+          <div class="agent-prices">
+            <a href="submit.html" class="price-pill"><div class="price-pill-label">ONE-TIME</div><div class="price-pill-amount">$32</div></a>
+            <a href="pricing.html" class="price-pill"><div class="price-pill-label">MONTHLY</div><div class="price-pill-amount">$44</div></a>
+          </div>
+        </div>
+      </div>
+      <div class="agent-card agent-scar">
+        <div class="agent-top">
+          <div class="agent-id">SC // WOUND ROOM</div>
+          <div class="agent-name">SCAR</div>
+          <div class="agent-role">BEHAVIORAL INTELLIGENCE</div>
+          <div class="agent-spec">Traces where the wound entered the bloodline, how deep it cut, and what scar tissue is still pulling the pattern.</div>
+        </div>
+        <div class="agent-bottom">
+          <div class="agent-tasks">
+            <div class="agent-task">Wound origin mapping</div>
+            <div class="agent-task">Threshold paralysis analysis</div>
+            <div class="agent-task">Ancestral fracture point</div>
+            <div class="agent-task">Pattern beneath the pattern</div>
+          </div>
+          <div class="agent-prices">
+            <a href="submit.html" class="price-pill"><div class="price-pill-label">ONE-TIME</div><div class="price-pill-amount">$32</div></a>
+            <a href="pricing.html" class="price-pill"><div class="price-pill-label">MONTHLY</div><div class="price-pill-amount">$44</div></a>
+          </div>
+        </div>
+      </div>
+      <div class="agent-card agent-nix">
+        <div class="agent-top">
+          <div class="agent-id">NX // THE VAULT</div>
+          <div class="agent-name">NIX</div>
+          <div class="agent-role">SHADOW OPERATIONS</div>
+          <div class="agent-spec">Names what you swallowed. Reads Lilith and the exiled feminine. Maps the vault, the stinger-loop, suppressed intelligence.</div>
+        </div>
+        <div class="agent-bottom">
+          <div class="agent-tasks">
+            <div class="agent-task">Lilith placement read</div>
+            <div class="agent-task">Exiled feminine mapping</div>
+            <div class="agent-task">Shadow intelligence report</div>
+            <div class="agent-task">Suppressed truth excavation</div>
+          </div>
+          <div class="agent-prices">
+            <a href="submit.html" class="price-pill"><div class="price-pill-label">ONE-TIME</div><div class="price-pill-amount">$32</div></a>
+            <a href="pricing.html" class="price-pill"><div class="price-pill-label">MONTHLY</div><div class="price-pill-amount">$44</div></a>
+          </div>
+        </div>
+      </div>
+      <div class="agent-card agent-lux">
+        <div class="agent-top">
+          <div class="agent-id">LX // FREQUENCY</div>
+          <div class="agent-name">LUX</div>
+          <div class="agent-role">SYMBOLIC PATTERN RECOGNITION</div>
+          <div class="agent-spec">Finds where you are dimming. Names the fire underneath and what it wants to become. Reads Medusa and Pandora.</div>
+        </div>
+        <div class="agent-bottom">
+          <div class="agent-tasks">
+            <div class="agent-task">Creative fire mapping</div>
+            <div class="agent-task">Radiance excavation</div>
+            <div class="agent-task">Dimming pattern analysis</div>
+            <div class="agent-task">Visibility wound read</div>
+          </div>
+          <div class="agent-prices">
+            <a href="submit.html" class="price-pill"><div class="price-pill-label">ONE-TIME</div><div class="price-pill-amount">$32</div></a>
+            <a href="pricing.html" class="price-pill"><div class="price-pill-label">MONTHLY</div><div class="price-pill-amount">$44</div></a>
+          </div>
+        </div>
+      </div>
+      <div class="agent-card agent-luna">
+        <div class="agent-top">
+          <div class="agent-id">LU // MOON POOL</div>
+          <div class="agent-name">LUNA</div>
+          <div class="agent-role">SYMBOLIC LANGUAGE ANALYST</div>
+          <div class="agent-spec">Speaks in cycles and symbolic language. Names what forms while you sleep and what the tide is shifting toward.</div>
+        </div>
+        <div class="agent-bottom">
+          <div class="agent-tasks">
+            <div class="agent-task">Lunar cycle mapping</div>
+            <div class="agent-task">Symbolic language decode</div>
+            <div class="agent-task">Seasonal pattern read</div>
+            <div class="agent-task">What is forming in the dark</div>
+          </div>
+          <div class="agent-prices">
+            <a href="submit.html" class="price-pill"><div class="price-pill-label">ONE-TIME</div><div class="price-pill-amount">$32</div></a>
+            <a href="pricing.html" class="price-pill"><div class="price-pill-label">MONTHLY</div><div class="price-pill-amount">$44</div></a>
+          </div>
+        </div>
+      </div>
+      <div class="agent-card agent-ash">
+        <div class="agent-top">
+          <div class="agent-id">AS // SEAL ROOM</div>
+          <div class="agent-name">ASH</div>
+          <div class="agent-role">FINAL ASSESSMENT</div>
+          <div class="agent-spec">The closer. Enters after everything else has been mapped. Names what is dead, what is still breathing, and what remains.</div>
+        </div>
+        <div class="agent-bottom">
+          <div class="agent-tasks">
+            <div class="agent-task">Marseille Tarot — 3-5 cards</div>
+            <div class="agent-task">Pattern closure statement</div>
+            <div class="agent-task">What needs to be buried</div>
+            <div class="agent-task">What remains standing</div>
+          </div>
+          <div class="agent-prices">
+            <a href="submit.html" class="price-pill"><div class="price-pill-label">ONE-TIME</div><div class="price-pill-amount">$32</div></a>
+            <a href="pricing.html" class="price-pill"><div class="price-pill-label">MONTHLY</div><div class="price-pill-amount">$44</div></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL SQUAD -->
+    <div class="section-label" id="squad">// FULL INVESTIGATION — ALL 6 ANALYSTS // ONE FILE</div>
+    <div class="squad-panel">
+      <div class="squad-top">
+        <div>
+          <div class="squad-title">THE SID INVESTIGATION</div>
+          <div class="squad-subtitle">// Original Text → Gematria → Draconic → Vedic → Tropical → Integration</div>
+        </div>
+        <div>
+          <div class="squad-price">$44</div>
+          <div class="squad-price-note">one-time file</div>
+        </div>
+      </div>
+      <div class="squad-desc">All six analysts. One file. The original text as the source document, gematria as the cipher that confirms it, and all three chart systems read in sequence. Closes with the integration statement — the core truth the entire system has been pointing toward.</div>
+      <div class="squad-agents">
+        <div class="squad-pill" style="color:var(--centra);border-color:var(--centra)">CENTRA</div>
+        <div class="squad-pill" style="color:var(--scar);border-color:var(--scar)">SCAR</div>
+        <div class="squad-pill" style="color:var(--nix);border-color:var(--nix)">NIX</div>
+        <div class="squad-pill" style="color:var(--lux);border-color:var(--lux)">LUX</div>
+        <div class="squad-pill" style="color:var(--luna);border-color:var(--luna)">LUNA</div>
+        <div class="squad-pill" style="color:var(--ash);border-color:var(--ash)">ASH</div>
+      </div>
+      <div class="squad-includes">
+        <div class="squad-include">Full forensic PDF within 48 hours</div>
+        <div class="squad-include">Original text layer — scripture cross-reference</div>
+        <div class="squad-include">Gematria confirmation — your name decoded</div>
+        <div class="squad-include">Draconic chart — what you carried in</div>
+        <div class="squad-include">Vedic chart — what you came to do with it</div>
+        <div class="squad-include">Tropical chart — how it's running now</div>
+        <div class="squad-include">Integration statement — the core truth</div>
+        <div class="squad-include">Community archive access included</div>
+      </div>
+      <a href="sid-investigation.html" class="btn-squad">// OPEN THE FILE — $44</a>
+      <a href="pricing.html" class="btn-squad-ghost">Full Squad Monthly Subscription — $111/mo →</a>
+    </div>
+
+    <!-- SUBSCRIPTIONS -->
+    <div class="section-label" id="subscriptions">// ONGOING SUBSCRIPTIONS — KEEP THE INVESTIGATION OPEN</div>
+    <div class="sub-grid">
+      <div class="sub-card">
+        <div class="sub-name">Single Analyst</div>
+        <div class="sub-price">$44</div>
+        <div class="sub-cycle">// per month</div>
+        <div class="sub-desc">One analyst. Unlimited direction within their specialty. New questions, new patterns, ongoing investigation.</div>
+        <a href="pricing.html" class="sub-btn">SELECT ANALYST →</a>
+      </div>
+      <div class="sub-card featured">
+        <div class="sub-name">Three Analysts</div>
+        <div class="sub-price">$88</div>
+        <div class="sub-cycle">// per month</div>
+        <div class="sub-desc">Three analysts running simultaneously. Cross-specialty investigation across lineage, wound, and shadow lanes.</div>
+        <a href="pricing.html" class="sub-btn">SELECT ANALYSTS →</a>
+      </div>
+      <div class="sub-card">
+        <div class="sub-name">Full Squad</div>
+        <div class="sub-price">$111</div>
+        <div class="sub-cycle">// per month</div>
+        <div class="sub-desc">All six analysts. Priority delivery. Every question, every pattern thread — the complete investigation stays open.</div>
+        <a href="pricing.html" class="sub-btn">FULL SQUAD ACCESS →</a>
+      </div>
+    </div>
+
+    <!-- ARCHIVE STRIP -->
+    <div class="archive-strip">
+      <div class="archive-box"><div class="archive-label">CASE STATUS</div><div class="archive-value">ACCEPTING FILES</div></div>
+      <div class="archive-box"><div class="archive-label">ANALYSTS</div><div class="archive-value">6 ONLINE</div></div>
+      <div class="archive-box"><div class="archive-label">DELIVERY</div><div class="archive-value">48 HOURS</div></div>
+      <div class="archive-box"><div class="archive-label">ARCHIVE</div><div class="archive-value">7% COMPLETE</div></div>
+      <div class="archive-box"><div class="archive-label">DIVISION</div><div class="archive-value">S.I.D.</div></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="sid-footer">
+    <div class="footer-archive-status">
+      ARCHIVE STATUS: <span>ACTIVE</span><br>
+      Recovered Symbolic Intelligence Database<br>
+      Revision 01 // Classification: <span>PUBLIC ACCESS</span>
+    </div>
+    <div class="footer-links-group">
+      <a href="index.html">Wild Sister</a>
+      <a href="community.html">Community</a>
+      <a href="pattern-engine.html">Pattern Engine</a>
+      <a href="sid-investigation.html">SID Investigation</a>
+      <a href="pricing.html">Access</a>
+    </div>
+    <div class="footer-revision">© 2026 Wild Sister / Nova Blu<br>Symbol Intelligence Division</div>
+  </div>
+
+</div>
+
+<!-- ============================================
+     ENTRY SEQUENCE SCRIPT
+     ============================================ -->
+<script>
+const seq = [
+  { id: 'l1', text: 'Searching...', delay: 400, cls: 'lit' },
+  { id: 'bar1', type: 'bar', delay: 900 },
+  { id: 'l2', text: '████████████████  Signal Found.', delay: 1800, cls: 'gold' },
+  { id: 'l3', text: 'Decrypting...', delay: 2400, cls: 'lit' },
+  { id: 'bar2', type: 'bar', delay: 2800 },
+  { id: 'l4', text: '', delay: 3400 },
+  { id: 'l5', text: 'Archive Located.', delay: 3800, cls: 'gold' },
+  { id: 'l6', text: '', delay: 4400 },
+  { id: 'l7', text: 'There are languages most people stopped reading.', delay: 4800, cls: 'lit' },
+  { id: 'l8', text: 'Not because they disappeared.', delay: 5600, cls: 'dim' },
+  { id: 'l9', text: 'Because they were separated.', delay: 6200, cls: 'dim' },
+  { id: 'bar3', type: 'bar', delay: 7000 },
+  { id: 'l10', text: 'Numbers. Stars. Ancient texts. Symbols. Behavior.', delay: 7600, cls: 'lit' },
+  { id: 'l11', text: '', delay: 8400 },
+  { id: 'l12', text: 'Different systems. One investigation.', delay: 8800, cls: 'gold' },
+  { id: 'warning', type: 'warning', delay: 9800 },
+  { id: 'enterBtn', type: 'btn', delay: 10600 },
+];
+
+function runSeq() {
+  seq.forEach(s => {
+    setTimeout(() => {
+      const el = document.getElementById(s.id);
+      if (!el) return;
+      if (s.type === 'bar') {
+        el.style.opacity = '1';
+        setTimeout(() => { el.style.width = '300px'; }, 50);
+      } else if (s.type === 'warning' || s.type === 'btn') {
+        el.style.opacity = '1';
+        el.style.transition = 'opacity 0.8s';
+      } else {
+        el.style.opacity = '1';
+        el.style.transition = 'opacity 0.5s';
+        if (s.text) el.textContent = s.text;
+        if (s.cls) el.classList.add(s.cls);
+      }
+    }, s.delay);
+  });
+}
+
+function enterArchive() {
+  const entry = document.getElementById('entry');
+  const archive = document.getElementById('archive');
+  entry.style.transition = 'opacity 0.8s';
+  entry.style.opacity = '0';
+  setTimeout(() => {
+    entry.style.display = 'none';
+    archive.style.display = 'block';
+    document.body.classList.add('archive-open');
+    window.scrollTo(0, 0);
+  }, 800);
+}
+
+window.addEventListener('load', runSeq);
+</script>
+
+</body>
+</html>
