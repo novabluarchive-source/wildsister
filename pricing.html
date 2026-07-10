@@ -86,6 +86,15 @@ nav { position: fixed; top: 28px; left: 0; right: 0; z-index: 99; display: flex;
 /* MEMBERSHIP TIERS */
 .tiers-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 2rem; }
 @media(max-width:700px){.tiers-grid{grid-template-columns:1fr;}}
+
+/* METHODOLOGY PANEL */
+.method-strip { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--border); }
+.method-step { flex: 1; min-width: 130px; padding: 16px 14px; border-right: 1px solid var(--border); }
+.method-step:last-child { border-right: none; }
+.method-num { font-size: 8px; letter-spacing: 0.25em; color: var(--cyan); margin-bottom: 6px; }
+.method-name { font-family: 'VT323', monospace; font-size: 1.2rem; color: var(--white); }
+@media(max-width:700px){.method-strip{flex-direction:column;}.method-step{border-right:none;border-bottom:1px solid var(--border);}.method-step:last-child{border-bottom:none;}}
+
 .tier-card { border: 1px solid var(--border); background: var(--panel); position: relative; overflow: hidden; }
 .tier-card.featured { border-color: var(--violet); }
 .tier-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
@@ -197,14 +206,14 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div class="ticker">
     <span class="tick-item"><span class="tick-dot"></span>ACCESS TIERS — NOW OPEN</span>
     <span class="tick-item"><span class="tick-dot"></span>SID TERMINAL — 3 FREE QUESTIONS // SISTER $49/MO // WILD ONE $197/MO</span>
-    <span class="tick-item"><span class="tick-dot"></span>S.I.D. AGENT ACCESS FROM $32</span>
+    <span class="tick-item"><span class="tick-dot"></span>DIVISION ACCESS FROM $32</span>
     <span class="tick-item"><span class="tick-dot"></span>FULL SQUAD INVESTIGATION $44</span>
-    <span class="tick-item"><span class="tick-dot"></span>6 AGENTS ONLINE — ACCEPTING FILES</span>
+    <span class="tick-item"><span class="tick-dot"></span>8 ANALYSTS ONLINE — ACCEPTING FILES</span>
     <span class="tick-item"><span class="tick-dot"></span>ACCESS TIERS — NOW OPEN</span>
     <span class="tick-item"><span class="tick-dot"></span>SID TERMINAL — 3 FREE QUESTIONS // SISTER $49/MO // WILD ONE $197/MO</span>
-    <span class="tick-item"><span class="tick-dot"></span>S.I.D. AGENT ACCESS FROM $32</span>
+    <span class="tick-item"><span class="tick-dot"></span>DIVISION ACCESS FROM $32</span>
     <span class="tick-item"><span class="tick-dot"></span>FULL SQUAD INVESTIGATION $44</span>
-    <span class="tick-item"><span class="tick-dot"></span>6 AGENTS ONLINE — ACCEPTING FILES</span>
+    <span class="tick-item"><span class="tick-dot"></span>8 ANALYSTS ONLINE — ACCEPTING FILES</span>
   </div>
 </div>
 
@@ -213,21 +222,40 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <a href="index.html" class="nav-logo">WILD SISTER</a>
   <ul class="nav-links">
     <li><a href="pricing.html" style="color:var(--cyan)">Pricing</a></li>
-    <li><a href="about.html">About</a></li>
+    <li><a href="about.html">The Institution</a></li>
     <li><a href="chat.html">Oracle</a></li>
     <li><a href="readings.html">Readings</a></li>
     <li><a href="community.html">Community</a></li>
     <li><a href="sid.html" style="color:var(--gold)">S.I.D.</a></li>
   </ul>
-  <a href="chat.html" class="nav-cta">Enter the SID Terminal →</a>
+  <a href="chat.html" class="nav-cta">Open New Case →</a>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-tag">// Access Tiers</div>
-  <div class="hero-title">Choose your<br>frequency.</div>
-  <div class="hero-sub">Four entry points. One world. The deeper you go, the more the squad shows up for you.</div>
+  <div class="hero-tag">// Symbol Intelligence Division</div>
+  <div class="hero-title">Access<br>Levels.</div>
+  <div class="hero-sub">Every investigation follows the same methodology. Your access level determines how deeply you can engage with the institution.</div>
 </div>
+
+<div class="holo-line"></div>
+
+<!-- METHODOLOGY PANEL -->
+<div class="section" style="padding-bottom:20px;">
+  <div class="section-tag">// The Protocol</div>
+  <div class="section-title" style="font-size:clamp(1.8rem,4vw,2.6rem);">Every investigation<br>follows the same protocol.</div>
+  <div class="method-strip" style="margin-top:20px;">
+    <div class="method-step"><div class="method-num">01</div><div class="method-name">Observation</div></div>
+    <div class="method-step"><div class="method-num">02</div><div class="method-name">Evidence Collection</div></div>
+    <div class="method-step"><div class="method-num">03</div><div class="method-name">Cross-Reference</div></div>
+    <div class="method-step"><div class="method-num">04</div><div class="method-name">Pattern Analysis</div></div>
+    <div class="method-step"><div class="method-num">05</div><div class="method-name">Cross-System Review*</div></div>
+    <div class="method-step"><div class="method-num">06</div><div class="method-name">Final Assessment</div></div>
+  </div>
+  <div style="font-size:9px;color:var(--muted);margin-top:10px;">*When the case requires it — assigned automatically, not chosen.</div>
+</div>
+
+<div class="holo-line"></div>
 
 <div class="holo-line"></div>
 
@@ -235,27 +263,27 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
 <div class="entry-band">
   <div class="entry-card">
     <div class="entry-left">
-      <div class="entry-tag">// Not Ready to Commit?</div>
+      <div class="entry-tag">// Level 01 — Visitor Access</div>
       <div class="entry-name">SID Terminal</div>
-      <div class="entry-desc">One session. One division. No commitment. Open a case, ask up to 3 questions free. Continue with an access code from a prior purchase, or move straight to a full paid read.</div>
+      <div class="entry-desc">Open one investigation. Explore one division. No membership required. Continue with an access code from a prior purchase, or move straight to a full paid read.</div>
     </div>
     <div class="entry-right">
       <div class="entry-price" style="font-size:1.4rem;">3 FREE<br>QUESTIONS</div>
-      <a href="chat.html" class="btn-entry">Enter The Terminal →</a>
+      <a href="chat.html" class="btn-entry">Open A Case →</a>
     </div>
   </div>
 </div>
 
 <!-- MEMBERSHIP TIERS -->
 <div class="section">
-  <div class="section-tag">// Community Membership</div>
-  <div class="section-title">Two tiers.<br>One world.</div>
-  <div class="section-sub">Two tiers. The deeper you go, the more the squad shows up for you.</div>
+  <div class="section-tag">// Level 02 — Archive Clearance</div>
+  <div class="section-title">Two levels.<br>Different access.</div>
+  <div class="section-sub">Become an active member of the institution. Participate in investigations. Access live divisions. Receive ongoing research. Enter the archive.</div>
 
   <div class="tiers-grid">
     <div class="tier-card tier-01">
       <div class="tier-header">
-        <div class="tier-no">01 // FOUNDATION</div>
+        <div class="tier-no">CLEARANCE LEVEL 01 // FOUNDATION</div>
         <div class="tier-name">SISTER</div>
         <div class="tier-price">$49</div>
         <div class="tier-cycle">/ month · cancel anytime</div>
@@ -280,7 +308,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
 
     <div class="tier-card tier-02 featured">
       <div class="tier-header">
-        <div class="tier-no">02 // INNER CIRCLE</div>
+        <div class="tier-no">CLEARANCE LEVEL 02 // INNER CIRCLE</div>
         <div class="tier-name">WILD ONE</div>
         <div class="tier-price">$197</div>
         <div class="tier-cycle">/ month · cancel anytime</div>
@@ -329,68 +357,87 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
 <div class="sid-section">
   <div class="sid-header">
     <div class="sid-title-block">
-      <div class="sid-tag">// Symbol Intelligence Division</div>
-      <div class="sid-title">Agent Access.<br>One-time or ongoing.</div>
-      <div class="sid-sub">Purchase a specific agent for a targeted investigation, or subscribe for ongoing direction within their specialty. Each agent reads a different symbolic frequency.</div>
+      <div class="sid-tag">// Level 03 — Division Access</div>
+      <div class="sid-title">Division Access.</div>
+      <div class="sid-sub">Open a targeted investigation with the division best suited to your case — or maintain ongoing access for continuous research. Each division runs its own lead analyst.</div>
       <a href="sid.html" class="sid-link">Enter S.I.D. →</a>
     </div>
   </div>
 
-  <!-- AGENT CARDS -->
+  <!-- DIVISION CARDS -->
   <div class="sid-agents">
-    <div class="sid-agent" style="border-top:3px solid var(--centra)">
-      <div class="sa-id">CE // THE ARCHIVE</div>
-      <div class="sa-name" style="color:var(--centra)">CENTRA</div>
-      <div class="sa-role">Lineage Auditor // Chief Systems Analyst</div>
-      <div class="sa-prices">
-        <a href="submit.html" class="sa-price"><div class="sa-price-label">ONE-TIME</div><div class="sa-price-amount">$32</div></a>
-        <a href="order.html" class="sa-price"><div class="sa-price-label">MONTHLY</div><div class="sa-price-amount">$44</div></a>
-      </div>
-    </div>
     <div class="sid-agent" style="border-top:3px solid var(--scar)">
-      <div class="sa-id">SC // WOUND ROOM</div>
+      <div class="sa-id">PSY-001 // BEHAVIORAL INTELLIGENCE DIVISION</div>
+      <div class="sa-id" style="color:var(--muted);margin-bottom:2px;">Lead Analyst</div>
       <div class="sa-name" style="color:var(--scar)">SCAR</div>
-      <div class="sa-role">Behavioral Intelligence // Wound Mapper</div>
+      <div class="sa-role">Investigates recurring behaviors, attachment patterns, and survival strategies.</div>
       <div class="sa-prices">
         <a href="submit.html" class="sa-price"><div class="sa-price-label">ONE-TIME</div><div class="sa-price-amount">$32</div></a>
         <a href="order.html" class="sa-price"><div class="sa-price-label">MONTHLY</div><div class="sa-price-amount">$44</div></a>
       </div>
     </div>
-    <div class="sid-agent" style="border-top:3px solid var(--nix)">
-      <div class="sa-id">NX // THE VAULT</div>
-      <div class="sa-name" style="color:var(--nix)">NIX</div>
-      <div class="sa-role">Shadow Operations // Vault Analyst</div>
+    <div class="sid-agent" style="border-top:3px solid var(--centra)">
+      <div class="sa-id">AST-001 // FORENSIC ASTROLOGY DIVISION</div>
+      <div class="sa-id" style="color:var(--muted);margin-bottom:2px;">Lead Analyst</div>
+      <div class="sa-name" style="color:var(--centra)">CENTRA</div>
+      <div class="sa-role">Investigates natal architecture, transits, timing, and symbolic structure.</div>
       <div class="sa-prices">
         <a href="submit.html" class="sa-price"><div class="sa-price-label">ONE-TIME</div><div class="sa-price-amount">$32</div></a>
         <a href="order.html" class="sa-price"><div class="sa-price-label">MONTHLY</div><div class="sa-price-amount">$44</div></a>
       </div>
     </div>
     <div class="sid-agent" style="border-top:3px solid var(--lux)">
-      <div class="sa-id">LX // FREQUENCY</div>
+      <div class="sa-id">OTF-001 // ORIGINAL TEXT DIVISION</div>
+      <div class="sa-id" style="color:var(--muted);margin-bottom:2px;">Lead Analyst</div>
       <div class="sa-name" style="color:var(--lux)">LUX</div>
-      <div class="sa-role">Symbolic Pattern Recognition // Radiance</div>
+      <div class="sa-role">Investigates original languages, historical context, and textual meaning.</div>
+      <div class="sa-prices">
+        <a href="submit.html" class="sa-price"><div class="sa-price-label">ONE-TIME</div><div class="sa-price-amount">$32</div></a>
+        <a href="order.html" class="sa-price"><div class="sa-price-label">MONTHLY</div><div class="sa-price-amount">$44</div></a>
+      </div>
+    </div>
+    <div class="sid-agent" style="border-top:3px solid #4de8b0">
+      <div class="sa-id">NUM-001 // NUMERIC INTELLIGENCE DIVISION</div>
+      <div class="sa-id" style="color:var(--muted);margin-bottom:2px;">Lead Analyst</div>
+      <div class="sa-name" style="color:#4de8b0">CIPHER</div>
+      <div class="sa-role">Investigates numerical structure, recurring sequences, and symbolic mathematics.</div>
       <div class="sa-prices">
         <a href="submit.html" class="sa-price"><div class="sa-price-label">ONE-TIME</div><div class="sa-price-amount">$32</div></a>
         <a href="order.html" class="sa-price"><div class="sa-price-label">MONTHLY</div><div class="sa-price-amount">$44</div></a>
       </div>
     </div>
     <div class="sid-agent" style="border-top:3px solid var(--luna)">
-      <div class="sa-id">LU // MOON POOL</div>
+      <div class="sa-id">PAT-001 // PATTERN INVESTIGATION DIVISION // FLAGSHIP</div>
+      <div class="sa-id" style="color:var(--muted);margin-bottom:2px;">Lead Analyst</div>
       <div class="sa-name" style="color:var(--luna)">LUNA</div>
-      <div class="sa-role">Symbolic Language Analyst // Cycles</div>
+      <div class="sa-role">Investigates recurring themes across behavior, history, and symbolic systems.</div>
       <div class="sa-prices">
         <a href="submit.html" class="sa-price"><div class="sa-price-label">ONE-TIME</div><div class="sa-price-amount">$32</div></a>
         <a href="order.html" class="sa-price"><div class="sa-price-label">MONTHLY</div><div class="sa-price-amount">$44</div></a>
       </div>
     </div>
-    <div class="sid-agent" style="border-top:3px solid var(--ash)">
-      <div class="sa-id">AS // SEAL ROOM</div>
-      <div class="sa-name" style="color:var(--ash)">ASH</div>
-      <div class="sa-role">Final Assessment // Case Closure</div>
+    <div class="sid-agent" style="border-top:3px solid #c17a4d">
+      <div class="sa-id">SYM-001 // SYMBOL ARCHIVE DIVISION</div>
+      <div class="sa-id" style="color:var(--muted);margin-bottom:2px;">Lead Analyst</div>
+      <div class="sa-name" style="color:#c17a4d">RELIC</div>
+      <div class="sa-role">Investigates recurring symbols, archetypes, and cultural meaning across time.</div>
       <div class="sa-prices">
         <a href="submit.html" class="sa-price"><div class="sa-price-label">ONE-TIME</div><div class="sa-price-amount">$32</div></a>
         <a href="order.html" class="sa-price"><div class="sa-price-label">MONTHLY</div><div class="sa-price-amount">$44</div></a>
       </div>
+    </div>
+  </div>
+
+  <!-- INSTITUTIONAL REVIEW (NOT PURCHASABLE) -->
+  <div class="sid-tag" style="margin:28px 0 14px;">// Institutional Review — Not Purchasable</div>
+  <div class="sid-agents" style="grid-template-columns:repeat(2,1fr);">
+    <div class="sid-agent" style="border-top:3px solid var(--nix);opacity:0.85;">
+      <div class="sa-id">NIX — Cross-System Intelligence</div>
+      <div class="sa-role" style="margin-top:6px;">Automatically assigned when multiple divisions require synthesis. Not selected — called in.</div>
+    </div>
+    <div class="sid-agent" style="border-top:3px solid var(--ash);opacity:0.85;">
+      <div class="sa-id">ASH — Final Assessment</div>
+      <div class="sa-role" style="margin-top:6px;">Automatically assigned before case closure. Not selected — called in.</div>
     </div>
   </div>
 
@@ -398,24 +445,26 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div class="sid-squad">
     <div class="ss-top">
       <div>
-        <div class="sid-tag">// Full Investigation</div>
-        <div class="ss-title">THE SID INVESTIGATION</div>
+        <div class="sid-tag">// Level 04 — Institution-Wide Investigation</div>
+        <div class="ss-title">SID CASE FILE</div>
       </div>
       <div class="ss-price-box">
         <div class="ss-price">$44</div>
-        <div class="ss-price-note">one-time file</div>
+        <div class="ss-price-note">Case Status: HIGH PRIORITY</div>
       </div>
     </div>
-    <div class="ss-desc">All six agents. One file. Original text → Gematria → Draconic → Vedic → Tropical → Integration Statement. The complete forensic read delivered within 48 hours.</div>
+    <div class="ss-desc">Every division contributes. Original Text. Numeric Intelligence. Forensic Astrology. Pattern Investigation. Behavioral Intelligence. Symbol Archive. Cross-System Review. Final Assessment. The complete forensic read, closed by ASH, delivered within 48 hours.</div>
     <div class="ss-agents">
-      <div class="ss-pill" style="color:var(--centra);border-color:var(--centra)">CENTRA</div>
       <div class="ss-pill" style="color:var(--scar);border-color:var(--scar)">SCAR</div>
-      <div class="ss-pill" style="color:var(--nix);border-color:var(--nix)">NIX</div>
+      <div class="ss-pill" style="color:var(--centra);border-color:var(--centra)">CENTRA</div>
       <div class="ss-pill" style="color:var(--lux);border-color:var(--lux)">LUX</div>
+      <div class="ss-pill" style="color:#4de8b0;border-color:#4de8b0">CIPHER</div>
       <div class="ss-pill" style="color:var(--luna);border-color:var(--luna)">LUNA</div>
+      <div class="ss-pill" style="color:#c17a4d;border-color:#c17a4d">RELIC</div>
+      <div class="ss-pill" style="color:var(--nix);border-color:var(--nix)">NIX</div>
       <div class="ss-pill" style="color:var(--ash);border-color:var(--ash)">ASH</div>
     </div>
-    <a href="sid-investigation.html" class="btn-squad">// Open the File — $44</a>
+    <a href="sid-investigation.html" class="btn-squad">// Begin Case File — $44</a>
     <a href="order.html" class="btn-squad-ghost">Full Squad Monthly — $111/mo →</a>
   </div>
 
@@ -423,25 +472,25 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div class="sid-tag" style="margin-bottom:14px">// S.I.D. Ongoing Subscriptions</div>
   <div class="sid-subs">
     <div class="sid-sub">
-      <div class="ss-sub-name">Single Analyst</div>
+      <div class="ss-sub-name">Dedicated Division Access</div>
       <div class="ss-sub-price">$44</div>
       <div class="ss-sub-cycle">// per month</div>
-      <div class="ss-sub-desc">One agent. Unlimited direction within their specialty. Ongoing investigation.</div>
-      <a href="order.html" class="btn-sid-sub">Select Analyst →</a>
+      <div class="ss-sub-desc">One division. Unlimited direction within their specialty. Ongoing investigation.</div>
+      <a href="order.html" class="btn-sid-sub">Select Division →</a>
     </div>
     <div class="sid-sub featured">
-      <div class="ss-sub-name">Three Analysts</div>
+      <div class="ss-sub-name">Multi-Division Investigation</div>
       <div class="ss-sub-price">$88</div>
       <div class="ss-sub-cycle">// per month</div>
-      <div class="ss-sub-desc">Three agents running simultaneously. Cross-specialty investigation across lineage, wound, and shadow lanes.</div>
-      <a href="order.html" class="btn-sid-sub">Select Analysts →</a>
+      <div class="ss-sub-desc">Three divisions running simultaneously. Cross-specialty investigation across behavioral, astrological, and symbolic lanes.</div>
+      <a href="order.html" class="btn-sid-sub">Select Divisions →</a>
     </div>
     <div class="sid-sub">
-      <div class="ss-sub-name">Full Squad</div>
+      <div class="ss-sub-name">Institution-Wide Investigation</div>
       <div class="ss-sub-price">$111</div>
       <div class="ss-sub-cycle">// per month</div>
-      <div class="ss-sub-desc">All six agents. Priority delivery. Every question, every pattern thread — the complete investigation stays open.</div>
-      <a href="order.html" class="btn-sid-sub">Full Squad Access →</a>
+      <div class="ss-sub-desc">Every investigation follows the same protocol: observation, evidence, cross-reference, integration, final assessment. All six divisions, priority delivery, case never closes.</div>
+      <a href="order.html" class="btn-sid-sub">Full Access →</a>
     </div>
   </div>
 </div>
@@ -450,10 +499,10 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
 
 <!-- CTA -->
 <div class="cta-band">
-  <h2>The feed is live.<br><span style="background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Are you in?</span></h2>
-  <p>Something real is already happening in there.</p>
+  <h2>THE ARCHIVE IS ACTIVE.<br><span style="background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">New investigations begin every day.</span></h2>
+  <p>The question is not whether a pattern exists. The question is whether you're ready to investigate it.</p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-    <a href="chat.html" class="btn-main">Enter the SID Terminal →</a>
+    <a href="chat.html" class="btn-main">Open New Case →</a>
     <a href="readings.html" class="btn-ghost">See Squad Reads →</a>
   </div>
 </div>
@@ -464,7 +513,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <div class="footer-links">
     <a href="index.html">Home</a>
     <a href="pricing.html">Pricing</a>
-    <a href="about.html">About</a>
+    <a href="about.html">The Institution</a>
     <a href="chat.html">Oracle</a>
     <a href="community.html">Community</a>
     <a href="sid.html">S.I.D.</a>
