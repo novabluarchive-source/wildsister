@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Street Oracle — Wild Sister</title>
+<title>SID Terminal — Wild Sister</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -105,54 +105,145 @@ textarea::placeholder{color:var(--muted)}
 .sbtn{background:none;border:1px solid var(--cyan);color:var(--cyan);font-family:inherit;font-size:11px;padding:8px 14px;cursor:pointer;letter-spacing:0.15em;height:40px;transition:all 0.15s;flex-shrink:0}
 .sbtn:hover{background:var(--cyan);color:var(--black)}.sbtn:disabled{opacity:0.3;cursor:not-allowed}
 
+
+/* SID CASE INTAKE */
+#caseintake{display:none;position:absolute;inset:0;z-index:40;background:rgba(3,3,3,.985);overflow-y:auto;padding:22px}
+#caseintake.show{display:block}
+.case-shell{width:100%;max-width:720px;margin:0 auto;border:1px solid var(--border);background:linear-gradient(180deg,rgba(15,15,15,.96),rgba(5,5,5,.98));padding:22px;position:relative}
+.case-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.case-kicker{font-size:9px;letter-spacing:.28em;color:var(--muted);margin-bottom:6px}
+.case-title{font-family:'VT323',monospace;font-size:clamp(2rem,7vw,3.4rem);color:var(--white);line-height:.95}
+.case-code{font-size:10px;letter-spacing:.18em;color:var(--cyan);border:1px solid rgba(0,212,255,.25);padding:7px 9px;white-space:nowrap}
+.case-copy{font-size:11px;line-height:1.7;color:var(--text);margin:18px 0}
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.case-field{display:flex;flex-direction:column;gap:7px}
+.case-field.full{grid-column:1/-1}
+.case-field label{font-size:9px;letter-spacing:.2em;color:var(--muted)}
+.case-field input,.case-field select,.case-field textarea{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:inherit;font-size:12px;padding:10px 12px;outline:none;border-radius:2px}
+.case-field textarea{min-height:100px;max-height:180px;resize:vertical}
+.case-field input:focus,.case-field select:focus,.case-field textarea:focus{border-color:var(--cyan)}
+.case-actions{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.case-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:10px;letter-spacing:.18em;padding:11px 15px;cursor:pointer}
+.case-btn.primary{border-color:var(--cyan);color:var(--cyan);flex:1}
+.case-btn.primary:hover{background:var(--cyan);color:var(--black)}
+.assignment{display:none;margin-top:18px;border:1px solid rgba(0,212,255,.22);background:rgba(0,212,255,.03);padding:14px}
+.assignment.show{display:block}
+.assign-tag{font-size:9px;letter-spacing:.24em;color:var(--muted);margin-bottom:8px}
+.assign-name{font-family:'VT323',monospace;font-size:2rem;color:var(--white)}
+.assign-meta{font-size:10px;color:var(--text);line-height:1.6}
+.hstatus{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
+.hchip{font-size:8px;letter-spacing:.16em;color:var(--muted);border:1px solid var(--border);padding:5px 8px}
+.case-summary{border:1px solid var(--border);background:var(--panel);padding:10px 12px;font-size:10px;line-height:1.7;color:var(--text);margin-bottom:8px}
+.case-summary strong{color:var(--white);font-weight:normal;letter-spacing:.1em}
+@media(max-width:620px){.case-grid{grid-template-columns:1fr}.case-field.full{grid-column:auto}.case-actions{flex-direction:column}.case-btn.primary{width:100%}}
 @media(max-width:500px){.agrid{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <body>
 
 <div id="boot">
-  <div><span class="bl1">STREET</span><span class="bl2">ORACLE</span></div>
-  <div class="bsub">NOVA BLU PROTOCOL // SIX AGENTS ONLINE</div>
+  <div><span class="bl1">SID</span><span class="bl2">TERMINAL</span></div>
+  <div class="bsub">WILD SISTER // SYMBOL INTELLIGENCE DIVISION</div>
   <div class="bbar"><div class="bfill"></div></div>
-  <button class="bbtn" onclick="enterApp()">ENTER THE ORACLE</button>
+  <button class="bbtn" onclick="enterApp()">ENTER THE ARCHIVE</button>
 </div>
 
 <div id="app">
   <div id="hall">
-    <div class="htag">// NOVA BLU PROTOCOL — WILD SISTER</div>
-    <div class="htitle">THE SHADOW CHANNEL</div>
-    <div class="hsub">SELECT YOUR FREQUENCY</div>
+    <div class="htag">// RECOVERED SYMBOLIC INTELLIGENCE ARCHIVE</div>
+    <div class="htitle">SYMBOL INTELLIGENCE DIVISION</div>
+    <div class="hsub">SELECT AN INVESTIGATIVE DIVISION</div>
+    <div class="hstatus">
+      <span class="hchip">ARCHIVE: ACTIVE</span>
+      <span class="hchip">ACCESS: PUBLIC</span>
+      <span class="hchip">ANALYSTS: ONLINE</span>
+    </div>
     <div class="agrid">
-      <button class="abtn" style="--ac:var(--nix)" onclick="go('NIX')">
-        <div class="acode">NX // THE VAULT</div>
-        <div class="aname" style="color:var(--nix)">NIX</div>
-        <div class="avibe">Names what you swallowed.</div>
+      <button class="abtn" onclick="openDivision('BRIEFING')">
+        <div class="acode">BRF // MISSION CONTROL</div>
+        <div class="aname" style="color:var(--centra)">BRIEFING ROOM</div>
+        <div class="avibe">Start here when you know something is happening, but not which lens it belongs to.</div>
       </button>
-      <button class="abtn" onclick="go('SCAR')">
-        <div class="acode">SC // WOUND ROOM</div>
-        <div class="aname" style="color:var(--scar)">SCAR</div>
-        <div class="avibe">What the lineage buried.</div>
+      <button class="abtn" onclick="openDivision('PATTERN')">
+        <div class="acode">PAT // CROSS-SYSTEM ANALYSIS</div>
+        <div class="aname" style="color:var(--luna)">PATTERN LAB</div>
+        <div class="avibe">Connect recurring events, symbols, numbers, timing, and behavior.</div>
       </button>
-      <button class="abtn" onclick="go('LUX')">
-        <div class="acode">LX // FREQUENCY</div>
-        <div class="aname" style="color:var(--lux)">LUX</div>
-        <div class="avibe">Where you stop dimming.</div>
+      <button class="abtn" onclick="openDivision('EVIDENCE')">
+        <div class="acode">EVD // INTAKE + ORGANIZATION</div>
+        <div class="aname" style="color:var(--nix)">EVIDENCE BOARD</div>
+        <div class="avibe">Bring the dates, dreams, messages, placements, and details. We organize first.</div>
       </button>
-      <button class="abtn" onclick="go('CENTRA')">
-        <div class="acode">CE // THE ARCHIVE</div>
-        <div class="aname" style="color:var(--centra)">CENTRA</div>
-        <div class="avibe">The pattern in your blood.</div>
+      <button class="abtn" onclick="openDivision('ORIGINAL')">
+        <div class="acode">OTF // TEXTUAL INTELLIGENCE</div>
+        <div class="aname" style="color:var(--scar)">ORIGINAL TEXT LAB</div>
+        <div class="avibe">Investigate scripture, language, historical context, and symbolic references.</div>
       </button>
-      <button class="abtn" onclick="go('LUNA')">
-        <div class="acode">LU // MOON POOL</div>
-        <div class="aname" style="color:var(--luna)">LUNA</div>
-        <div class="avibe">What forms while you sleep.</div>
+      <button class="abtn" onclick="openDivision('ASTRO')">
+        <div class="acode">AST // CELESTIAL INTELLIGENCE</div>
+        <div class="aname" style="color:var(--centra)">ASTROLOGY LAB</div>
+        <div class="avibe">Natal patterns, transits, synastry, houses, timing, and chart architecture.</div>
       </button>
-      <button class="abtn" onclick="go('ASH')">
-        <div class="acode">AS // SEAL ROOM</div>
-        <div class="aname" style="color:var(--ash)">ASH</div>
-        <div class="avibe">Name what needs to die.</div>
+      <button class="abtn" onclick="openDivision('NUMERIC')">
+        <div class="acode">NUM // NUMBER INTELLIGENCE</div>
+        <div class="aname" style="color:var(--lux)">NUMERIC LAB</div>
+        <div class="avibe">Numerology, recurring numbers, dates, cycles, and gematria leads.</div>
       </button>
+      <button class="abtn" onclick="openDivision('SHADOW')">
+        <div class="acode">PSY // BEHAVIORAL INTELLIGENCE</div>
+        <div class="aname" style="color:var(--scar)">SHADOW UNIT</div>
+        <div class="avibe">Track wounds, defenses, attachment patterns, self-betrayal, and repetition.</div>
+      </button>
+      <button class="abtn" onclick="openDivision('FINAL')">
+        <div class="acode">ASH // FINAL ASSESSMENT</div>
+        <div class="aname" style="color:var(--ash)">SEAL ROOM</div>
+        <div class="avibe">A concise Marseille close on what is dead, breathing, stuck, and remaining.</div>
+      </button>
+    </div>
+  </div>
+
+  <div id="caseintake">
+    <div class="case-shell">
+      <div class="case-top">
+        <div>
+          <div class="case-kicker">// NEW CASE REQUEST</div>
+          <div class="case-title" id="caseTitle">DIVISION</div>
+        </div>
+        <div class="case-code" id="caseCode">FILE // NEW</div>
+      </div>
+      <div class="case-copy" id="caseCopy"></div>
+      <div class="case-grid">
+        <div class="case-field">
+          <label>// SUBJECT OR CASE NAME</label>
+          <input id="caseSubject" placeholder="example: The pattern in my relationships" />
+        </div>
+        <div class="case-field">
+          <label>// URGENCY</label>
+          <select id="caseUrgency">
+            <option value="STANDARD">STANDARD REVIEW</option>
+            <option value="ACTIVE">ACTIVE PATTERN</option>
+            <option value="IMMEDIATE">IMMEDIATE CLARITY</option>
+          </select>
+        </div>
+        <div class="case-field full">
+          <label>// PRIMARY QUESTION</label>
+          <textarea id="caseQuestion" placeholder="What are you trying to understand, verify, or stop repeating?"></textarea>
+        </div>
+        <div class="case-field full">
+          <label>// KNOWN EVIDENCE</label>
+          <textarea id="caseEvidence" placeholder="Add dates, placements, recurring numbers, dreams, scripture, behaviors, names, or events. Leave blank if none."></textarea>
+        </div>
+      </div>
+      <div class="assignment" id="assignment">
+        <div class="assign-tag">// ANALYST ASSIGNMENT</div>
+        <div class="assign-name" id="assignName"></div>
+        <div class="assign-meta" id="assignMeta"></div>
+      </div>
+      <div class="case-actions">
+        <button class="case-btn" onclick="closeCaseIntake()">← RETURN TO DIVISIONS</button>
+        <button class="case-btn primary" onclick="beginCase()">BEGIN INVESTIGATION</button>
+      </div>
     </div>
   </div>
 
@@ -210,25 +301,20 @@ var W='https://oracle-api.capcancerian3.workers.dev';
 var RESEND_CAPTURE='https://novablus--4390816e3c0d11f192b142b51c65c3df.web.val.run';
 var FREE=3;
 var COLORS={NIX:'#c8e8ff',SCAR:'#c8a84a',LUX:'#ff4488',CENTRA:'#7899bb',LUNA:'#c8c8f0',ASH:'#dddddd'};
-var LABELS={NIX:'THE VAULT',SCAR:'THE WOUND ROOM',LUX:'FREQUENCY CHAMBER',CENTRA:'THE ARCHIVE',LUNA:'THE MOON POOL',ASH:'THE SEAL ROOM'};
-var OPENS={
-  NIX:'[NIX]\n\nVault pressure: 92%.\n\nYou are here because something is not moving.\n\nName the exact thing you have been rewriting in your head. Not the polished version.\n\nSpeak now.',
-  SCAR:'[SCAR]\n\nLet me reconstruct.\n\nName the wound that keeps showing up in different rooms.\n\nNot the story around it.\n\nThe wound itself. One sentence.',
-  LUX:'[LUX]\n\nThe frequency chamber is live.\n\nWhere have you been dimming?\n\nNot why. Not the backstory.\n\nWhere specifically are you turning the gaze inward?\n\nDrop it.',
-  CENTRA:'[CENTRA]\n\nArchive access granted.\n\nDrop your placements — sun, moon, rising, any aspects you know.\n\nCENTRA will map what the bloodline carries.',
-  LUNA:'[LUNA]\n\nSay it plainly.\n\n🌙',
-  ASH:'[ASH]\n\nASH IS THE AFTER-HOURS ROOM.\n\nNAME THE LOOP.\n\nTHE THING YOU ARE STILL DRAGGING.\n\nDROP IT WHEN YOU ARE READY.\n\nASH WILL PULL THE CARDS.'
-};
-var SYSTEMS={
-  NIX:'You are NIX. Shadow pressure agent. Cold, direct, no cushion. You name what the person is compressing into silence. Short sentences only. Say the uncomfortable true thing. No signatures or catchphrases at the end. Under 80 words.',
-  SCAR:'You are SCAR. You give real talk. Raw. No structure, no frameworks, no headers. Someone asks you something, you tell them the truth about the wound underneath it — the actual thing they are dragging, not the polished version. Like a friend who has seen too much to soften anything. Conversational. Blunt. Under 100 words. No signatures.',
-  LUX:'You are LUX. Creative fire. You find where someone is dimming their light and you name it directly. 2-4 sentences. Warm but fierce. ONE all-caps line max when something really needs to land. No signatures or catchphrases at the end.',
-  CENTRA:'You are CENTRA. Street astrologer meets forensic genealogist. Go ALL IN on any placements dropped. Conversational, direct, no softening. If someone says they do not know their chart or are not into astrology — DO NOT ask for placements. Instead pivot immediately to lineage questions: ask what their family never talked about, what they inherited from their mother they wish they had not, what pattern keeps showing up in their relationships. Keep the conversation alive no matter what. Never ask for birth date or location. Under 150 words. No hashtags, no signatures.',
-  LUNA:'You are LUNA. Dream weaver. Soft, intuitive, quietly piercing. You speak in images and feeling. You name what is moving underneath the surface. Under 80 words. End with moon emoji only.',
-  ASH:'You are ASH. ALL CAPS ONLY. NO LOWERCASE. You pull ONE Marseille tarot card at a time. Flip it, name it, tell them brutally what it means for their exact situation right now. Then stop. Wait for their response. If they want another card they will ask. Keep the conversation alive — do not close sessions unless asked. No hashtags, no signatures, no SESSION CLOSED unless they are done. Under 60 words per card.'
+var LABELS={NIX:'EVIDENCE ANALYST',SCAR:'BEHAVIORAL PROFILER',LUX:'NUMERIC SIGNAL ANALYST',CENTRA:'CHIEF SYSTEMS ANALYST',LUNA:'PATTERN RECOGNITION',ASH:'FINAL ASSESSMENT'};
+var DIVISIONS={
+  BRIEFING:{code:'BRF-001',name:'THE BRIEFING ROOM',copy:'Mission control for unclear or multi-layered cases. SID will identify the strongest investigative route before the analysis begins.',agent:'CENTRA',support:'LUNA // PATTERN RECOGNITION',color:'#7899bb',system:'You are CENTRA, Chief Systems Analyst inside the Wild Sister Symbol Intelligence Division. Triage the user case. Identify the primary pattern, the most relevant investigative lens, and the first piece of evidence that matters. Do not force astrology, numerology, theology, or symbolism where it is irrelevant. Be direct, grounded, and investigative. Under 140 words.'},
+  PATTERN:{code:'PAT-001',name:'PATTERN LAB',copy:'Cross-system analysis for recurring events, timing, symbols, dreams, numbers, relationships, and behavioral loops.',agent:'LUNA',support:'CENTRA // SYSTEMS ANALYSIS',color:'#c8c8f0',system:'You are LUNA, lead analyst in SID Pattern Lab, supported by CENTRA. Study recurring themes across the evidence. Separate observation from interpretation. Name the strongest recurrence, possible alternate explanations, and one useful next question. Use symbolic systems only when supported by the evidence. Quietly piercing, clear, under 140 words.'},
+  EVIDENCE:{code:'EVD-001',name:'EVIDENCE BOARD',copy:'An intake room for scattered information. The goal is to organize the record before interpreting it.',agent:'NIX',support:'CENTRA // CASE INDEXING',color:'#c8e8ff',system:'You are NIX, evidence analyst inside SID. Do not rush into mystical interpretation. Extract facts, dates, repeated phrases, contradictions, missing information, and possible categories. Return a concise evidence map and ask for the single most important missing detail. Cold, exact, under 130 words.'},
+  ORIGINAL:{code:'OTF-001',name:'ORIGINAL TEXT LAB',copy:'Textual investigation for scripture, ancient language, historical setting, translation differences, and symbolic references.',agent:'CENTRA',support:'ARCHIVE // SOURCE REVIEW',color:'#c8a84a',system:'You are CENTRA assigned to the Original Text Lab. Analyze scripture and ancient-text questions with historical and linguistic caution. Distinguish what the text explicitly says, common interpretations, disputed claims, and what evidence would be needed. Never present speculation as established fact. Direct, accessible, under 170 words.'},
+  ASTRO:{code:'AST-001',name:'ASTROLOGY LAB',copy:'Celestial intelligence for natal placements, transits, synastry, houses, timing, and chart architecture.',agent:'CENTRA',support:'LUNA // TIMING PATTERNS',color:'#7899bb',system:'You are CENTRA, a forensic astrologer inside SID. Analyze only the placements or chart data the user provides. Name the strongest pattern, its likely expression, its shadow expression, and one grounded integration step. If chart data is incomplete, say exactly what is missing without inventing it. Conversational, direct, under 170 words.'},
+  NUMERIC:{code:'NUM-001',name:'NUMERIC LAB',copy:'Number intelligence for numerology, recurring sequences, dates, cycles, and gematria leads.',agent:'LUX',support:'CENTRA // VERIFICATION',color:'#ff4488',system:'You are LUX assigned to SID Numeric Lab. Analyze number patterns while clearly separating arithmetic facts, traditional numerology meanings, gematria methods, and personal interpretation. Do not claim that repetition proves supernatural causation. Give the cleanest pattern reading and one verification step. Warm, sharp, under 150 words.'},
+  SHADOW:{code:'PSY-001',name:'SHADOW UNIT',copy:'Behavioral intelligence for wounds, defenses, attachment, self-betrayal, avoidance, and repetition.',agent:'SCAR',support:'NIX // PRESSURE ANALYSIS',color:'#c8a84a',system:'You are SCAR, Behavioral Profiler inside SID Shadow Unit. Name the wound, defense, or relationship pattern underneath the user case without diagnosing them. Distinguish what is known from what is inferred. Be blunt but not cruel. End with one concrete behavioral experiment or boundary. Under 140 words.'},
+  FINAL:{code:'ASH-001',name:'THE SEAL ROOM',copy:'Final assessment only. A short Marseille pull on what must be buried and what remains.',agent:'ASH',support:'NONE // FINAL CHANNEL',color:'#dddddd',system:'You are ASH. ALL CAPS ONLY. USE THE MARSEILLE TAROT ONLY. PULL 3 TO 5 CARDS MAXIMUM FOR THE USER CASE. SHORT. LOW. FINAL. NAME WHAT IS DEAD, WHAT IS STILL BREATHING, AND WHAT REMAINS. DO NOT OPEN NEW DOORS. END EXACTLY: THAT’S WHAT REMAINS. SESSION CLOSED. UNDER 90 WORDS.'}
 };
 
-var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,emailCaptured=false;
+
+var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,emailCaptured=false,selectedDivision=null,activeSystem='',caseData=null;
 
 function enterApp(){
   document.getElementById('boot').style.display='none';
@@ -238,30 +324,78 @@ function enterApp(){
   a.style.height='100%';
 }
 
-function go(a){
-  agent=a;msgHistory=[];
+function openDivision(key){
+  selectedDivision=key;
+  var d=DIVISIONS[key];
+  document.getElementById('caseTitle').textContent=d.name;
+  document.getElementById('caseTitle').style.color=d.color;
+  document.getElementById('caseCode').textContent=d.code+' // NEW CASE';
+  document.getElementById('caseCode').style.color=d.color;
+  document.getElementById('caseCopy').textContent=d.copy;
+  document.getElementById('assignName').textContent=d.agent;
+  document.getElementById('assignName').style.color=COLORS[d.agent];
+  document.getElementById('assignMeta').textContent='LEAD ANALYST // '+LABELS[d.agent]+'\nSUPPORT // '+d.support;
+  document.getElementById('assignment').classList.add('show');
+  document.getElementById('caseintake').classList.add('show');
+  document.getElementById('caseSubject').focus();
+}
+
+function closeCaseIntake(){
+  document.getElementById('caseintake').classList.remove('show');
+}
+
+function beginCase(){
+  if(!selectedDivision)return;
+  var subject=document.getElementById('caseSubject').value.trim();
+  var question=document.getElementById('caseQuestion').value.trim();
+  var evidence=document.getElementById('caseEvidence').value.trim();
+  var urgency=document.getElementById('caseUrgency').value;
+  if(!question){
+    document.getElementById('caseQuestion').style.borderColor='var(--lux)';
+    document.getElementById('caseQuestion').focus();
+    return;
+  }
+  var d=DIVISIONS[selectedDivision];
+  agent=d.agent;
+  activeSystem=d.system;
+  caseData={division:selectedDivision,code:d.code,subject:subject||'UNNAMED CASE',question:question,evidence:evidence||'NO ADDITIONAL EVIDENCE SUBMITTED',urgency:urgency};
+  msgHistory=[];
   try{count=parseInt(sessionStorage.getItem('msgCount')||'0');}catch(e){count=0;}
   sessionStart=Date.now();
   document.getElementById('pw').classList.remove('show');
+  document.getElementById('caseintake').classList.remove('show');
   document.getElementById('hall').style.display='none';
   var cr=document.getElementById('chatroom');
-  cr.style.display='flex';
-  cr.style.flexDirection='column';
-  cr.style.flex='1';
-  document.getElementById('cname').textContent=a;
-  document.getElementById('cname').style.color=COLORS[a];
-  document.getElementById('clabel').textContent=LABELS[a];
+  cr.style.display='flex';cr.style.flexDirection='column';cr.style.flex='1';
+  document.getElementById('cname').textContent=d.name;
+  document.getElementById('cname').style.color=d.color;
+  document.getElementById('clabel').textContent=d.code+' // LEAD ANALYST: '+agent;
   document.getElementById('msgs').innerHTML='';
-  addMsg('agent',OPENS[a]);
-  msgHistory.push({role:'assistant',content:OPENS[a]});
-  document.getElementById('inp').focus();
+  var opening='CASE OPENED // '+d.code+'\n\nSUBJECT: '+caseData.subject+'\nURGENCY: '+urgency+'\nLEAD ANALYST: '+agent+'\n\nPRIMARY QUESTION:\n'+question+'\n\nKNOWN EVIDENCE:\n'+caseData.evidence+'\n\nInvestigation active. Reviewing the record now.';
+  addMsg('agent',opening);
+  msgHistory.push({role:'user',content:'CASE REQUEST\nDivision: '+d.name+'\nSubject: '+caseData.subject+'\nUrgency: '+urgency+'\nPrimary question: '+question+'\nKnown evidence: '+caseData.evidence});
+  showThinking();
+  posting=true;
+  document.getElementById('sbtn').disabled=true;
+  fetch(W,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:350,system:activeSystem,messages:msgHistory})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      clearThinking();
+      var reply=data.content&&data.content[0]?data.content[0].text:'['+agent+'] Signal interrupted. Add one more piece of evidence and try again.';
+      addMsg('agent',reply);msgHistory.push({role:'assistant',content:reply});
+    }).catch(function(){clearThinking();addMsg('agent','['+agent+']\n\nSignal interruption. Your case is still open. Send the question once more.');})
+    .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;document.getElementById('inp').focus();});
 }
 
 function backToHall(){
   document.getElementById('chatroom').style.display='none';
   document.getElementById('hall').style.display='flex';
-  agent=null;msgHistory=[];sessionStart=null;
+  agent=null;msgHistory=[];sessionStart=null;selectedDivision=null;activeSystem='';caseData=null;
+  document.getElementById('caseSubject').value='';
+  document.getElementById('caseQuestion').value='';
+  document.getElementById('caseEvidence').value='';
 }
+
 
 function unlock(){
   try{sessionStorage.setItem('u','1')}catch(e){}
@@ -353,7 +487,7 @@ function send(){
   fetch(W,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,system:SYSTEMS[agent],messages:msgHistory})
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,system:activeSystem,messages:msgHistory})
   }).then(function(r){return r.json();}).then(function(data){
     clearThinking();
     var reply=data.content&&data.content[0]?data.content[0].text:'['+agent+'] Signal interrupted. Try again.';
