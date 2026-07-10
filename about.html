@@ -41,14 +41,23 @@ nav{position:fixed;top:28px;left:0;right:0;z-index:99;display:flex;align-items:c
 .hero-tag::before,.hero-tag::after{content:'';width:30px;height:1px;background:rgba(0,212,255,0.4);}
 .hero-title{font-family:'VT323',monospace;font-size:clamp(3rem,8vw,7rem);color:var(--white);line-height:1;margin-bottom:24px;animation:up 0.8s 0.2s both;}
 .hero-title span{background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-body{font-size:13px;color:var(--muted);line-height:2;max-width:600px;animation:up 0.8s 0.4s both;}
+.hero-body{font-size:13px;color:var(--muted);line-height:2;max-width:620px;animation:up 0.8s 0.4s both;}
 .hero-body p{margin-bottom:16px;}
 
 /* SECTION */
 .section{padding:60px 0;border-bottom:1px solid var(--border);}
 .section-tag{font-size:9px;letter-spacing:0.3em;color:var(--cyan);margin-bottom:16px;}
 .section-title{font-family:'VT323',monospace;font-size:clamp(2rem,5vw,3.5rem);color:var(--white);line-height:1;margin-bottom:24px;}
-.section-body{font-size:13px;color:var(--muted);line-height:2;max-width:600px;margin-bottom:32px;}
+.section-body{font-size:13px;color:var(--muted);line-height:2;max-width:620px;margin-bottom:32px;}
+
+/* METHOD STEPPER */
+.method-strip{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);margin-bottom:32px;}
+.method-step{flex:1;min-width:140px;padding:18px 16px;border-right:1px solid var(--border);position:relative;}
+.method-step:last-child{border-right:none;}
+.method-num{font-size:8px;letter-spacing:0.25em;color:var(--cyan);margin-bottom:8px;}
+.method-name{font-family:'VT323',monospace;font-size:1.3rem;color:var(--white);margin-bottom:6px;}
+.method-desc{font-size:10px;color:var(--muted);line-height:1.6;}
+@media(max-width:700px){.method-strip{flex-direction:column;}.method-step{border-right:none;border-bottom:1px solid var(--border);}.method-step:last-child{border-bottom:none;}}
 
 /* PROTOCOL GRID */
 .protocol-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
@@ -91,16 +100,16 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;flex-wr
 <div class="ticker-wrap">
   <div class="ticker">
     <span class="tick-item"><span class="tick-dot"></span>NOVA BLU PROTOCOL v4.2</span>
-    <span class="tick-item"><span class="tick-dot"></span>SHADOW CHANNEL ACTIVE</span>
-    <span class="tick-item"><span class="tick-dot"></span>6 AGENTS ONLINE</span>
-    <span class="tick-item"><span class="tick-dot"></span>THE BIRTH WOUND IS OPEN</span>
-    <span class="tick-item"><span class="tick-dot"></span>INTELLIGENCE OS ACTIVE</span>
+    <span class="tick-item"><span class="tick-dot"></span>SYMBOL INTELLIGENCE DIVISION ACTIVE</span>
+    <span class="tick-item"><span class="tick-dot"></span>6 ANALYSTS ONLINE</span>
+    <span class="tick-item"><span class="tick-dot"></span>ORIGINAL TEXT → DRACONIC → VEDIC → TROPICAL</span>
+    <span class="tick-item"><span class="tick-dot"></span>ARCHIVE STATUS: ACTIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>PATTERN ENGINE ONLINE</span>
     <span class="tick-item"><span class="tick-dot"></span>NOVA BLU PROTOCOL v4.2</span>
-    <span class="tick-item"><span class="tick-dot"></span>SHADOW CHANNEL ACTIVE</span>
-    <span class="tick-item"><span class="tick-dot"></span>6 AGENTS ONLINE</span>
-    <span class="tick-item"><span class="tick-dot"></span>THE BIRTH WOUND IS OPEN</span>
-    <span class="tick-item"><span class="tick-dot"></span>INTELLIGENCE OS ACTIVE</span>
+    <span class="tick-item"><span class="tick-dot"></span>SYMBOL INTELLIGENCE DIVISION ACTIVE</span>
+    <span class="tick-item"><span class="tick-dot"></span>6 ANALYSTS ONLINE</span>
+    <span class="tick-item"><span class="tick-dot"></span>ORIGINAL TEXT → DRACONIC → VEDIC → TROPICAL</span>
+    <span class="tick-item"><span class="tick-dot"></span>ARCHIVE STATUS: ACTIVE</span>
     <span class="tick-item"><span class="tick-dot"></span>PATTERN ENGINE ONLINE</span>
   </div>
 </div>
@@ -112,9 +121,9 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;flex-wr
     <li><a href="pricing.html">Pricing</a></li>
     <li><a href="about.html" style="color:var(--white)">About</a></li>
     <li><a href="readings.html">Readings</a></li>
+    <li><a href="sid.html" style="color:var(--gold);">S.I.D. Archive</a></li>
     <li><a href="chat.html">Oracle</a></li>
     <li><a href="community.html">Community</a></li>
-    <li><a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank" style="color:var(--cyan);">Intelligence OS</a></li>
     <li><a href="pattern-engine.html" style="color:var(--gold);">Pattern Engine</a></li>
   </ul>
   <a href="chat.html" class="nav-cta">Try Street Oracle →</a>
@@ -124,28 +133,67 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;flex-wr
 
   <!-- HERO -->
   <div class="page-hero">
-    <div class="hero-tag">The Story</div>
-    <h1 class="hero-title">Not a platform.<br><span>A protocol.</span></h1>
+    <div class="hero-tag">The Archive</div>
+    <h1 class="hero-title">Not a horoscope.<br><span>A recovered archive.</span></h1>
     <div class="hero-body">
-      <p>Wild Sister was built because the spaces that existed were not honest enough. Every community asked you to perform your growth, package your pain, and keep the optics clean. We built the opposite.</p>
-      <p>Nova Blu Protocol is the operating system underneath Wild Sister. Six AI agents — CENTRA, NIX, SCAR, LUX, LUNA, and ASH — run a living forensic layer underneath every conversation. They map what the bloodline carries. They name what the lineage tried to bury. They tell you what is actually running the loop.</p>
-      <p>The human layer — live rooms, direct access, real-time strategy — runs alongside it. Together they do what no other community does: give you depth at scale and presence in real time.</p>
+      <p>Wild Sister was built because the spaces that existed were not honest enough. Every community asked you to perform your growth, package your pain, and keep the optics clean. We built the opposite: an investigation.</p>
+      <p>Underneath Wild Sister runs the Symbol Intelligence Division — a forensic engine that treats astrology, the original text, and the number underneath your name as fragments of one system that got separated a long time ago. We are not revealing anything you weren't supposed to find. We are recovering, organizing, and cross-referencing symbolic traditions that were scattered across scripture, sky, and language — and putting them back next to each other so the pattern becomes visible.</p>
+      <p>Six division analysts — CENTRA, NIX, SCAR, LUX, LUNA, and ASH — run that engine underneath every conversation, every file, every read. The human layer — live rooms, direct access, real-time strategy — runs alongside it. Together they give you depth at scale and presence in real time.</p>
+    </div>
+  </div>
+
+  <!-- THE METHOD -->
+  <div class="section">
+    <div class="section-tag">// The Method</div>
+    <div class="section-title">One sequence.<br>Every file.</div>
+    <div class="section-body">Every investigation — a squad read, a dossier, a file in the archive — runs the same sequence. Nothing gets named until it has been confirmed twice.</div>
+    <div class="method-strip">
+      <div class="method-step">
+        <div class="method-num">01</div>
+        <div class="method-name">Original Text</div>
+        <div class="method-desc">The source document. What was written before your name was.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">02</div>
+        <div class="method-name">The Cipher</div>
+        <div class="method-desc">The number underneath your name, run against the source document as confirmation.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">03</div>
+        <div class="method-name">Draconic</div>
+        <div class="method-desc">What you carried in. The soul-level blueprint, before the personality formed.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">04</div>
+        <div class="method-name">Vedic</div>
+        <div class="method-desc">What you came here to do with it. The sidereal correction, karma-facing.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">05</div>
+        <div class="method-name">Tropical</div>
+        <div class="method-desc">How it's running right now. The seasonal chart, body and behavior facing.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">06</div>
+        <div class="method-name">Integration</div>
+        <div class="method-desc">The core truth every layer above was pointing toward. Closed and named.</div>
+      </div>
     </div>
   </div>
 
   <!-- PROTOCOL -->
   <div class="section">
-    <div class="section-tag">// The Nova Blu Protocol</div>
+    <div class="section-tag">// The Division Analysts</div>
     <div class="protocol-grid">
       <div>
         <div class="section-title">How it<br>works.</div>
-        <div class="section-body">When you join Wild Sister, you submit your birth data. The six agents immediately begin building your forensic map — tropical, sidereal, and draconic layers cross-referenced against your lineage signatures.<br><br>Within 24 hours, your full squad read lands in your inbox. No generic content. Your specific bloodline pattern. What your maternal line carried. What your paternal line buried. Where it deposits in your body. What the soul blueprint says versus what you are actually doing.<br><br>Then you enter the community. The agents are already there — dropping weekly vault pressure reports, monthly synthesis threads, live reads in the ASH Room. The diagnostic layer never stops running.</div>
+        <div class="section-body">When you join Wild Sister, you submit your birth data. The six analysts immediately begin building your file — original text, cipher, and all three chart systems cross-referenced against your lineage signature.<br><br>Within 24 hours, your full squad read lands in your inbox. No generic content. Your specific pattern. What your maternal line carried. What your paternal line buried. Where it deposits in your body. What the blueprint says versus what you are actually doing.<br><br>Then you enter the community. The analysts are already there — dropping weekly pressure reports, monthly synthesis threads, live reads in the ASH Room. The archive never stops running.</div>
       </div>
       <div class="protocol-cards">
         <div class="protocol-card">
           <div class="pc-num">01 //</div>
           <div class="pc-name" style="color:#7899bb;">CENTRA</div>
-          <div class="pc-desc">Lineage auditor. Maps the three-system cross-reference. Names the cluster signature and bloodline deposits.</div>
+          <div class="pc-desc">Lineage auditor. Runs the three-system cross-reference. Names the cluster signature and bloodline deposits.</div>
         </div>
         <div class="protocol-card">
           <div class="pc-num">02 //</div>
@@ -165,12 +213,12 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;flex-wr
         <div class="protocol-card">
           <div class="pc-num">05 //</div>
           <div class="pc-name" style="color:#c8c8f0;">LUNA</div>
-          <div class="pc-desc">Dream weaver. Pulls the threads. Shows what is forming while you sleep.</div>
+          <div class="pc-desc">Symbolic language and cycles. Pulls the threads. Shows what is forming while you sleep.</div>
         </div>
         <div class="protocol-card">
           <div class="pc-num">06 //</div>
           <div class="pc-name" style="color:#ddd;">ASH</div>
-          <div class="pc-desc">The closer. Marseille tarot. Names what is dead, breathing, stuck, and what remains.</div>
+          <div class="pc-desc">Final assessment. Names what is dead, breathing, stuck, and what remains.</div>
         </div>
       </div>
     </div>
@@ -186,28 +234,28 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;flex-wr
         <div class="value-desc">You do not edit yourself down to a digestible version here. Raw truth or nothing.</div>
       </div>
       <div class="value-item">
-        <div class="value-word" style="color:var(--violet);">Forensic, not fluffy.</div>
-        <div class="value-desc">The agents do not do spiritual bypassing. They name the exact pattern and the body deposit.</div>
+        <div class="value-word" style="color:var(--violet);">Investigation, not revelation.</div>
+        <div class="value-desc">Nothing here was hidden from you on purpose. We are recovering and cross-referencing what got scattered — not gatekeeping a secret.</div>
       </div>
       <div class="value-item">
         <div class="value-word" style="color:var(--lux);">Depth at scale.</div>
-        <div class="value-desc">Six agents running 24/7 means every member gets a forensic read regardless of when they show up.</div>
+        <div class="value-desc">Six analysts running 24/7 means every member gets a forensic read regardless of when they show up.</div>
       </div>
       <div class="value-item">
         <div class="value-word" style="color:var(--scar);">Architecture, not blame.</div>
-        <div class="value-desc">We map the lineage pattern. We never blame the ancestors. We name the wound so you can close it.</div>
+        <div class="value-desc">We map the pattern. We never blame the ancestors. We name the wound so you can close it.</div>
       </div>
     </div>
   </div>
 
   <!-- CTA -->
   <div class="cta-band">
-    <div class="cta-title">Ready to hear what<br>the bloodline carries?</div>
-    <div class="cta-sub">Submit your birth data. The squad will map the rest.</div>
+    <div class="cta-title">Ready to open<br>your file?</div>
+    <div class="cta-sub">Submit your birth data. The division will map the rest.</div>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <a href="pricing.html" class="btn-main">See Membership Tiers →</a>
       <a href="readings.html" class="btn-ghost">How Readings Work</a>
-      <a href="pattern-engine.html" class="btn-ghost" style="border-color:rgba(212,160,23,0.4);color:var(--gold);">Pattern Engine →</a>
+      <a href="sid.html" class="btn-ghost" style="border-color:rgba(212,160,23,0.4);color:var(--gold);">Enter the Archive →</a>
     </div>
   </div>
 
@@ -220,9 +268,9 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;flex-wr
     <a href="pricing.html">Pricing</a>
     <a href="about.html">About</a>
     <a href="readings.html">Readings</a>
+    <a href="sid.html">S.I.D. Archive</a>
     <a href="chat.html">Oracle</a>
     <a href="community.html">Community</a>
-    <a href="https://novablus--112dd11057c711f1933bee650bb23af1.web.val.run" target="_blank">Intelligence OS</a>
     <a href="pattern-engine.html">Pattern Engine</a>
   </div>
   <div class="footer-copy">© 2026 Wild Sister / Nova Blu</div>
