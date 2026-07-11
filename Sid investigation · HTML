@@ -313,7 +313,7 @@ footer { padding: 30px 24px; border-top: 1px solid var(--border); display: flex;
       <div class="price-tag-item">PDF DELIVERED</div>
       <div class="price-tag-item">COMMUNITY ACCESS</div>
     </div>
-    <a href="submit.html" class="btn-submit">// OPEN THE FILE — $44</a>
+    <a href="https://buy.stripe.com/dRm7sNaiM99p4yE3wt9EI0f" class="btn-submit">// OPEN THE FILE — $44</a>
     <a href="pattern-engine.html" class="btn-secondary">Submit Birth Data via Pattern Engine →</a>
   </div>
 
