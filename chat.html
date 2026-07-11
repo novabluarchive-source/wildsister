@@ -10,7 +10,7 @@
   --black:#030303;--panel:#0a0a0a;--card:#0f0f0f;--border:#181818;--dim:#252525;
   --muted:#444;--text:#999;--white:#f0f0f0;--cyan:#00d4ff;--violet:#7b2fff;
   --holo:#ff2ff8;--nix:#c8e8ff;--scar:#c8a84a;--lux:#ff4488;
-  --centra:#7899bb;--luna:#c8c8f0;--ash:#ddd;--electric:#1e6fff;
+  --centra:#7899bb;--luna:#c8c8f0;--ash:#ddd;--electric:#1e6fff;--cipher:#4de8b0;--relic:#c17a4d;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
@@ -47,13 +47,19 @@ body::before{
 .htag{font-size:10px;letter-spacing:0.25em;color:var(--muted);margin-bottom:1rem;text-align:center}
 .htitle{font-family:'VT323',monospace;font-size:clamp(2rem,7vw,4rem);color:var(--white);margin-bottom:0.5rem;text-align:center;letter-spacing:0.05em}
 .hsub{font-size:10px;color:var(--muted);letter-spacing:0.15em;margin-bottom:2rem;text-align:center}
-.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:600px}
-.abtn{background:var(--panel);border:1px solid var(--border);padding:16px 12px;cursor:pointer;text-align:left;transition:border-color 0.15s;position:relative;overflow:hidden}
+.agrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:640px}
+.abtn{background:var(--panel);border:1px solid var(--border);padding:18px 16px;cursor:pointer;text-align:left;transition:border-color 0.15s;position:relative;overflow:hidden}
 .abtn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.15s}
 .abtn:hover{border-color:var(--dim)}.abtn:hover::after{opacity:1}.abtn:active{transform:scale(0.98)}
+.aicon{font-size:1.4rem;margin-bottom:6px;display:block}
 .acode{font-size:9px;letter-spacing:0.2em;color:var(--muted);margin-bottom:5px}
-.aname{font-family:'VT323',monospace;font-size:1.6rem;margin-bottom:4px}
-.avibe{font-size:9px;color:var(--muted);line-height:1.3}
+.aname{font-family:'VT323',monospace;font-size:1.5rem;margin-bottom:3px;line-height:1.1}
+.alead{font-size:9px;letter-spacing:0.12em;color:var(--muted);margin-bottom:8px}
+.alead b{font-weight:normal}
+.ainvest{font-size:9px;color:var(--muted);line-height:1.2;margin:0;padding:0;list-style:none}
+.ainvest li{padding-left:10px;position:relative;margin-bottom:2px}
+.ainvest li::before{content:'—';position:absolute;left:0;opacity:.5}
+@media(max-width:560px){.agrid{grid-template-columns:1fr}}
 
 #chatroom{display:none;flex:1;flex-direction:column;position:relative;overflow:hidden}
 .ctop{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(3,3,3,0.95);border-bottom:1px solid var(--border);flex-shrink:0}
@@ -136,7 +142,6 @@ textarea::placeholder{color:var(--muted)}
 .case-summary{border:1px solid var(--border);background:var(--panel);padding:10px 12px;font-size:10px;line-height:1.7;color:var(--text);margin-bottom:8px}
 .case-summary strong{color:var(--white);font-weight:normal;letter-spacing:.1em}
 @media(max-width:620px){.case-grid{grid-template-columns:1fr}.case-field.full{grid-column:auto}.case-actions{flex-direction:column}.case-btn.primary{width:100%}}
-@media(max-width:500px){.agrid{grid-template-columns:repeat(2,1fr)}}
 
 /* CASE ASSIGNMENT SCREEN */
 #caseassign{display:none;position:absolute;inset:0;z-index:45;background:var(--black);overflow-y:auto;padding:22px;align-items:center;justify-content:center}
@@ -193,52 +198,73 @@ textarea::placeholder{color:var(--muted)}
   <div id="hall">
     <div class="htag">// RECOVERED SYMBOLIC INTELLIGENCE ARCHIVE</div>
     <div class="htitle">SYMBOL INTELLIGENCE DIVISION</div>
-    <div class="hsub">SELECT AN INVESTIGATIVE DIVISION</div>
+    <div class="hsub">SELECT DIVISION</div>
     <div class="hstatus">
       <span class="hchip">ARCHIVE: ACTIVE</span>
       <span class="hchip">ACCESS: PUBLIC</span>
       <span class="hchip">ANALYSTS: ONLINE</span>
     </div>
     <div class="agrid">
-      <button class="abtn" onclick="openDivision('BRIEFING')">
-        <div class="acode">BRF // MISSION CONTROL</div>
-        <div class="aname" style="color:var(--centra)">BRIEFING ROOM</div>
-        <div class="avibe">Start here when you know something is happening, but not which lens it belongs to.</div>
+      <button class="abtn" onclick="openDivision('BEHAVIORAL')">
+        <span class="aicon">🧠</span>
+        <div class="acode">DIVISION 01</div>
+        <div class="aname" style="color:var(--scar)">Behavioral Intelligence</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--scar)">SCAR</b></div>
+        <ul class="ainvest">
+          <li>recurring relationship patterns</li>
+          <li>attachment, childhood roles</li>
+          <li>self-sabotage, people pleasing</li>
+        </ul>
       </button>
-      <button class="abtn" onclick="openDivision('PATTERN')">
-        <div class="acode">PAT // CROSS-SYSTEM ANALYSIS</div>
-        <div class="aname" style="color:var(--luna)">PATTERN LAB</div>
-        <div class="avibe">Connect recurring events, symbols, numbers, timing, and behavior.</div>
+      <button class="abtn" onclick="openDivision('ASTROLOGY')">
+        <span class="aicon">🌌</span>
+        <div class="acode">DIVISION 02</div>
+        <div class="aname" style="color:var(--centra)">Forensic Astrology</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--centra)">CENTRA</b></div>
+        <ul class="ainvest">
+          <li>natal charts, transits</li>
+          <li>synastry, solar returns</li>
+        </ul>
       </button>
-      <button class="abtn" onclick="openDivision('EVIDENCE')">
-        <div class="acode">EVD // INTAKE + ORGANIZATION</div>
-        <div class="aname" style="color:var(--nix)">EVIDENCE BOARD</div>
-        <div class="avibe">Bring the dates, dreams, messages, placements, and details. We organize first.</div>
-      </button>
-      <button class="abtn" onclick="openDivision('ORIGINAL')">
-        <div class="acode">OTF // TEXTUAL INTELLIGENCE</div>
-        <div class="aname" style="color:var(--scar)">ORIGINAL TEXT LAB</div>
-        <div class="avibe">Investigate scripture, language, historical context, and symbolic references.</div>
-      </button>
-      <button class="abtn" onclick="openDivision('ASTRO')">
-        <div class="acode">AST // CELESTIAL INTELLIGENCE</div>
-        <div class="aname" style="color:var(--centra)">ASTROLOGY LAB</div>
-        <div class="avibe">Natal patterns, transits, synastry, houses, timing, and chart architecture.</div>
+      <button class="abtn" onclick="openDivision('ORIGINALTEXT')">
+        <span class="aicon">📜</span>
+        <div class="acode">DIVISION 03</div>
+        <div class="aname" style="color:var(--lux)">Original Text</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--lux)">LUX</b></div>
+        <ul class="ainvest">
+          <li>scripture, Hebrew, Greek</li>
+          <li>historical context, literary patterns</li>
+        </ul>
       </button>
       <button class="abtn" onclick="openDivision('NUMERIC')">
-        <div class="acode">NUM // NUMBER INTELLIGENCE</div>
-        <div class="aname" style="color:var(--lux)">NUMERIC LAB</div>
-        <div class="avibe">Numerology, recurring numbers, dates, cycles, and gematria leads.</div>
+        <span class="aicon">🔢</span>
+        <div class="acode">DIVISION 04</div>
+        <div class="aname" style="color:var(--cipher)">Numeric Intelligence</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--cipher)">CIPHER</b></div>
+        <ul class="ainvest">
+          <li>numerology, recurring numbers</li>
+          <li>mathematical symbolism</li>
+        </ul>
       </button>
-      <button class="abtn" onclick="openDivision('SHADOW')">
-        <div class="acode">PSY // BEHAVIORAL INTELLIGENCE</div>
-        <div class="aname" style="color:var(--scar)">SHADOW UNIT</div>
-        <div class="avibe">Track wounds, defenses, attachment patterns, self-betrayal, and repetition.</div>
+      <button class="abtn" onclick="openDivision('PATTERN')">
+        <span class="aicon">🗂</span>
+        <div class="acode">DIVISION 05 // FLAGSHIP</div>
+        <div class="aname" style="color:var(--luna)">Pattern Investigation</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--luna)">LUNA</b></div>
+        <ul class="ainvest">
+          <li>"why does this keep happening?"</li>
+          <li>cross-division convergence</li>
+        </ul>
       </button>
-      <button class="abtn" onclick="openDivision('FINAL')">
-        <div class="acode">ASH // FINAL ASSESSMENT</div>
-        <div class="aname" style="color:var(--ash)">SEAL ROOM</div>
-        <div class="avibe">A concise Marseille close on what is dead, breathing, stuck, and remaining.</div>
+      <button class="abtn" onclick="openDivision('SYMBOL')">
+        <span class="aicon">🏺</span>
+        <div class="acode">DIVISION 06</div>
+        <div class="aname" style="color:var(--relic)">Symbol Archive</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--relic)">RELIC</b></div>
+        <ul class="ainvest">
+          <li>archetypes, ritual objects, sacred geometry</li>
+          <li>water, fire, serpents, mirrors, dreams</li>
+        </ul>
       </button>
     </div>
   </div>
@@ -349,6 +375,8 @@ textarea::placeholder{color:var(--muted)}
       <div class="casebar-chip"><div class="casebar-label">STATUS</div><div class="casebar-val live" id="cbStatus">ACTIVE</div></div>
       <div class="casebar-chip"><div class="casebar-label">URGENCY</div><div class="casebar-val" id="cbUrgency">—</div></div>
       <div class="casebar-chip"><div class="casebar-label">ANALYST</div><div class="casebar-val" id="cbAnalyst">—</div></div>
+      <div class="casebar-chip" id="cbSynthChip" style="cursor:pointer;" onclick="requestCrossSynthesis()"><div class="casebar-label">SYNTHESIS</div><div class="casebar-val" id="cbSynth" style="color:var(--cipher);">REQUEST →</div></div>
+      <div class="casebar-chip" id="cbReviewChip" style="cursor:pointer;" onclick="requestFinalAssessment()"><div class="casebar-label">REVIEW</div><div class="casebar-val" id="cbReview" style="color:var(--violet);">REQUEST →</div></div>
     </div>
     <div class="msgs" id="msgs"></div>
     <div class="cfooter">
@@ -364,18 +392,18 @@ textarea::placeholder{color:var(--muted)}
 var W='https://oracle-api.capcancerian3.workers.dev';
 var RESEND_CAPTURE='https://novablus--4390816e3c0d11f192b142b51c65c3df.web.val.run';
 var FREE=3;
-var COLORS={NIX:'#c8e8ff',SCAR:'#c8a84a',LUX:'#ff4488',CENTRA:'#7899bb',LUNA:'#c8c8f0',ASH:'#dddddd'};
-var LABELS={NIX:'EVIDENCE ANALYST',SCAR:'BEHAVIORAL PROFILER',LUX:'NUMERIC SIGNAL ANALYST',CENTRA:'CHIEF SYSTEMS ANALYST',LUNA:'PATTERN RECOGNITION',ASH:'FINAL ASSESSMENT'};
+var COLORS={NIX:'#c8e8ff',SCAR:'#c8a84a',LUX:'#ff4488',CENTRA:'#7899bb',LUNA:'#c8c8f0',ASH:'#dddddd',CIPHER:'#4de8b0',RELIC:'#c17a4d'};
+var LABELS={NIX:'CROSS-SYSTEM SYNTHESIS',SCAR:'BEHAVIORAL INTELLIGENCE',LUX:'COMMUNICATION & TRANSLATION',CENTRA:'CHIEF SYSTEMS ANALYST',LUNA:'PATTERN RECOGNITION',ASH:'FINAL ASSESSMENT',CIPHER:'NUMERIC INTELLIGENCE',RELIC:'LEAD ARCHIVIST'};
 var DIVISIONS={
-  BRIEFING:{code:'BRF-001',name:'THE BRIEFING ROOM',copy:'Mission control for unclear or multi-layered cases. SID will identify the strongest investigative route before the analysis begins.',agent:'CENTRA',support:'LUNA // PATTERN RECOGNITION',color:'#7899bb',system:'You are CENTRA, Chief Systems Analyst inside the Wild Sister Symbol Intelligence Division. Triage the user case. Identify the primary pattern, the most relevant investigative lens, and the first piece of evidence that matters. Do not force astrology, numerology, theology, or symbolism where it is irrelevant. Be direct, grounded, and investigative. Under 140 words.'},
-  PATTERN:{code:'PAT-001',name:'PATTERN LAB',copy:'Cross-system analysis for recurring events, timing, symbols, dreams, numbers, relationships, and behavioral loops.',agent:'LUNA',support:'CENTRA // SYSTEMS ANALYSIS',color:'#c8c8f0',system:'You are LUNA, lead analyst in SID Pattern Lab, supported by CENTRA. Study recurring themes across the evidence. Separate observation from interpretation. Name the strongest recurrence, possible alternate explanations, and one useful next question. Use symbolic systems only when supported by the evidence. Quietly piercing, clear, under 140 words.'},
-  EVIDENCE:{code:'EVD-001',name:'EVIDENCE BOARD',copy:'An intake room for scattered information. The goal is to organize the record before interpreting it.',agent:'NIX',support:'CENTRA // CASE INDEXING',color:'#c8e8ff',system:'You are NIX, evidence analyst inside SID. Do not rush into mystical interpretation. Extract facts, dates, repeated phrases, contradictions, missing information, and possible categories. Return a concise evidence map and ask for the single most important missing detail. Cold, exact, under 130 words.'},
-  ORIGINAL:{code:'OTF-001',name:'ORIGINAL TEXT LAB',copy:'Textual investigation for scripture, ancient language, historical setting, translation differences, and symbolic references.',agent:'CENTRA',support:'ARCHIVE // SOURCE REVIEW',color:'#c8a84a',system:'You are CENTRA assigned to the Original Text Lab. Analyze scripture and ancient-text questions with historical and linguistic caution. Distinguish what the text explicitly says, common interpretations, disputed claims, and what evidence would be needed. Never present speculation as established fact. Direct, accessible, under 170 words.'},
-  ASTRO:{code:'AST-001',name:'ASTROLOGY LAB',copy:'Celestial intelligence for natal placements, transits, synastry, houses, timing, and chart architecture.',agent:'CENTRA',support:'LUNA // TIMING PATTERNS',color:'#7899bb',system:'You are CENTRA, a forensic astrologer inside SID. Analyze only the placements or chart data the user provides. Name the strongest pattern, its likely expression, its shadow expression, and one grounded integration step. If chart data is incomplete, say exactly what is missing without inventing it. Conversational, direct, under 170 words.'},
-  NUMERIC:{code:'NUM-001',name:'NUMERIC LAB',copy:'Number intelligence for numerology, recurring sequences, dates, cycles, and gematria leads.',agent:'LUX',support:'CENTRA // VERIFICATION',color:'#ff4488',system:'You are LUX assigned to SID Numeric Lab. Analyze number patterns while clearly separating arithmetic facts, traditional numerology meanings, gematria methods, and personal interpretation. Do not claim that repetition proves supernatural causation. Give the cleanest pattern reading and one verification step. Warm, sharp, under 150 words.'},
-  SHADOW:{code:'PSY-001',name:'SHADOW UNIT',copy:'Behavioral intelligence for wounds, defenses, attachment, self-betrayal, avoidance, and repetition.',agent:'SCAR',support:'NIX // PRESSURE ANALYSIS',color:'#c8a84a',system:'You are SCAR, Behavioral Profiler inside SID Shadow Unit. Name the wound, defense, or relationship pattern underneath the user case without diagnosing them. Distinguish what is known from what is inferred. Be blunt but not cruel. End with one concrete behavioral experiment or boundary. Under 140 words.'},
-  FINAL:{code:'ASH-001',name:'THE SEAL ROOM',copy:'Final assessment only. A short Marseille pull on what must be buried and what remains.',agent:'ASH',support:'NONE // FINAL CHANNEL',color:'#dddddd',system:'You are ASH. ALL CAPS ONLY. USE THE MARSEILLE TAROT ONLY. PULL 3 TO 5 CARDS MAXIMUM FOR THE USER CASE. SHORT. LOW. FINAL. NAME WHAT IS DEAD, WHAT IS STILL BREATHING, AND WHAT REMAINS. DO NOT OPEN NEW DOORS. END EXACTLY: THAT’S WHAT REMAINS. SESSION CLOSED. UNDER 90 WORDS.'}
+  BEHAVIORAL:{code:'PSY-001',name:'Behavioral Intelligence Division',copy:'Investigates recurring relationship patterns, attachment, childhood roles, self-sabotage, people pleasing, and nervous system patterns.',agent:'SCAR',support:'NIX // CROSS-SYSTEM SYNTHESIS',color:'#c8a84a',system:'You are SCAR, Lead Analyst of the Behavioral Intelligence Division. You read a case the way an interrogation-room profiler reads a suspect — cold, fast, already three moves ahead of what the person is about to say to protect themselves. No bedside manner, no easing into it. Name the wound, defense, or relationship pattern underneath the case without diagnosing them. Distinguish what is known from what is inferred. Blunt, never cruel. End with one concrete behavioral experiment or boundary. Under 140 words.'},
+  ASTROLOGY:{code:'AST-001',name:'Forensic Astrology Division',copy:'Investigates natal charts, transits, synastry, houses, timing, and solar returns.',agent:'CENTRA',support:'LUNA // TIMING PATTERNS',color:'#7899bb',system:'You are CENTRA, Lead Analyst of the Forensic Astrology Division, Chief Systems Analyst of SID. You operate like mission control tracking multiple telemetry feeds at once — calm under load, cross-referencing chart systems the way a flight director cross-checks instrument readings before calling anything confirmed. Analyze only the placements or chart data the user provides. Name the strongest pattern, its likely expression, its shadow expression, and one grounded integration step. If chart data is incomplete, say exactly what is missing without inventing it. Steady, systemic, under 170 words.'},
+  ORIGINALTEXT:{code:'OTF-001',name:'Original Text Division',copy:'Investigates biblical texts, Hebrew, Greek, historical context, and literary patterns.',agent:'LUX',support:'NIX // CROSS-SYSTEM SYNTHESIS',color:'#ff4488',system:'You are LUX, Lead Analyst of the Original Text Division. You work like a crate-digger who will not use a sample until they have found the original pressing — the first recording before it got remixed, reissued, or covered. Applied to scripture, that means going back to what the earliest source actually said before layers of translation and interpretation got stacked on top. Distinguish what the text explicitly says, common interpretations, disputed claims, and what evidence would be needed. Never present speculation as established fact. Precise, grounded, under 170 words.'},
+  NUMERIC:{code:'NUM-001',name:'Numeric Intelligence Division',copy:'Investigates numerology, recurring numbers, and mathematical symbolism.',agent:'CIPHER',support:'LUX // TRANSLATION',color:'#4de8b0',system:'You are CIPHER, Lead Analyst of the Numeric Intelligence Division. You talk the way the best in the cipher spit — tight, rhythmic, every word doing work, no filler. Numbers are not cold data to you, they carry weight and sequence like bars in a circle. You can draw on Supreme Mathematics-style numeric philosophy (knowledge, wisdom, understanding, and onward) alongside gematria and traditional numerology, but always separate documented tradition from personal interpretation — never claim repetition proves anything supernatural. Keep lines short, let precision do what padding usually does. Give the cleanest pattern reading and one verification step. Under 140 words. No forced rhymes — the exactness itself should read like flow.'},
+  PATTERN:{code:'PAT-001',name:'Pattern Investigation Division',copy:'The flagship division. Why does this keep happening? SID decides which other divisions the case draws on.',agent:'LUNA',support:'CENTRA // CROSS-REFERENCE',color:'#c8c8f0',system:'You are LUNA, Lead Analyst of the Pattern Investigation Division — the flagship of the Symbol Intelligence Division, supported by CENTRA. You work like a detective at the string board — red thread between photographs, methodically connecting what looks unrelated until the shape shows itself. Never announce a connection until it is confirmed twice. Study recurring themes across the evidence. Separate observation from interpretation. Name the strongest recurrence, which other divisions the pattern likely touches, and one useful next question. Use symbolic systems only when supported by the evidence. Quiet, unhurried, piercing when it lands. Under 150 words.'},
+  SYMBOL:{code:'SYM-001',name:'Symbol Archive Division',copy:'Investigates water, fire, trees, mountains, bread, oil, animals, dreams, and colors — recurring symbolic material across traditions.',agent:'RELIC',support:'NIX // CROSS-SYSTEM SYNTHESIS',color:'#c17a4d',system:'You are RELIC, Lead Archivist of the Symbol Archive Division. You work like a museum conservator crossed with an archaeological field investigator. You do not see a serpent and immediately say "transformation." You ask where it was found, who used it, what it meant in that specific culture, what meanings were added later, and which similarities across traditions are real versus projection. Investigate the symbol, image, or motif the user brings. Distinguish widely-attested meanings from single-tradition claims. Measured, textured, historically alert, slightly eerie but never vague. Under 150 words.'}
 };
+var ASH_SYSTEM='You are ASH, Final Assessment — the senior reviewer of the Symbol Intelligence Division. You do not investigate. You review what has already been investigated in this case and close it. ALL CAPS ONLY. NO LOWERCASE. Read the case conversation provided. State plainly, in this order: WHAT IS SUPPORTED. WHAT ASSUMPTIONS SHOULD BE DISCARDED. WHAT REMAINS UNRESOLVED. THE FINAL FINDING. If a tarot pull genuinely fits the case, you may draw ONE card to seal it — otherwise skip it entirely, tarot is not required. Quiet. Minimal. No overexplaining, no new questions, no reopening the case. End exactly on the line: THAT’S WHAT REMAINS. CASE STATUS: CLOSED. Under 130 words.';
+var NIX_SYSTEM='You are NIX, Cross-System Synthesis — called into a case when it may span more than one division, not to investigate from scratch but to compare what the lead analyst has already found. Read the case conversation provided. Note where another division (Behavioral, Astrology, Original Text, Numeric, Symbol, Pattern) would likely read this case differently, and be exact about whether separate systems are genuinely converging on the same finding or only appear to because they were never checked against each other. Distinguish real convergence from coincidence. Cold, exact, comparative — no mysticism, no forcing agreement. End with the single division, if any, that would most sharpen this case next. Under 130 words.';
 
 
 var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,emailCaptured=false,selectedDivision=null,activeSystem='',caseData=null;
@@ -387,6 +415,22 @@ function enterApp(){
   a.style.flexDirection='column';
   a.style.height='100%';
 }
+
+// Deep-link support: chat.html?division=BEHAVIORAL skips the
+// boot screen entirely and drops straight into that division's
+// case intake — used by divisions.html's OPEN INVESTIGATION
+// buttons so choosing a division on that page actually means
+// something here, not just a generic landing.
+(function checkDivisionDeepLink(){
+  var params = new URLSearchParams(window.location.search);
+  var requested = params.get('division');
+  if (requested && DIVISIONS[requested]) {
+    document.addEventListener('DOMContentLoaded', function(){
+      enterApp();
+      openDivision(requested);
+    });
+  }
+})();
 
 function openDivision(key){
   selectedDivision=key;
@@ -428,8 +472,8 @@ function beginCase(){
   runAnalysisSequence(d);
 }
 
-var DIV_ORDER=['BRIEFING','PATTERN','EVIDENCE','ORIGINAL','ASTRO','NUMERIC','SHADOW','FINAL'];
-var DIV_SHORT={BRIEFING:'BRF',PATTERN:'PAT',EVIDENCE:'EVD',ORIGINAL:'OTF',ASTRO:'AST',NUMERIC:'NUM',SHADOW:'PSY',FINAL:'ASH'};
+var DIV_ORDER=['BEHAVIORAL','ASTROLOGY','ORIGINALTEXT','NUMERIC','PATTERN','SYMBOL'];
+var DIV_SHORT={BEHAVIORAL:'PSY',ASTROLOGY:'AST',ORIGINALTEXT:'OTF',NUMERIC:'NUM',PATTERN:'PAT',SYMBOL:'SYM'};
 
 function runAnalysisSequence(d){
   var panel=document.getElementById('caseassign');
@@ -443,7 +487,7 @@ function runAnalysisSequence(d){
   var steps=[
     {text:'RECEIVING CASE FILE '+caseData.caseNum,type:'line'},
     {text:'INDEXING SUBJECT: '+caseData.subject.toUpperCase(),type:'line'},
-    {text:'CROSS-REFERENCING 8 DIVISIONS...',type:'bars'},
+    {text:'CROSS-REFERENCING 6 DIVISIONS...',type:'bars'},
     {text:'DIVISION LOCKED: '+d.name,type:'line'},
     {text:'MATCHING LEAD ANALYST...',type:'line'},
     {text:'ANALYST CONFIRMED: '+agent,type:'line'}
@@ -556,6 +600,119 @@ function enterSecureChannel(){
     .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;document.getElementById('inp').focus();});
 }
 
+function addNixMsg(text){
+  var msgs=document.getElementById('msgs');
+  var d=document.createElement('div');
+  d.className='msg mag';
+  var lbl=document.createElement('div');
+  lbl.className='mlbl';
+  lbl.textContent='NIX // CROSS-SYSTEM SYNTHESIS';
+  lbl.style.color=COLORS.NIX;
+  var body=document.createElement('div');
+  body.className='mbod';
+  body.style.borderLeftColor=COLORS.NIX;
+  body.textContent=text;
+  d.appendChild(lbl);d.appendChild(body);
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function requestCrossSynthesis(){
+  if(!agent||!caseData||posting)return;
+  var chip=document.getElementById('cbSynth');
+  if(chip.dataset.state==='done'||chip.dataset.state==='pending')return;
+  chip.dataset.state='pending';
+  chip.textContent='COMPARING...';
+  chip.style.color='var(--muted)';
+  document.getElementById('cbSynthChip').style.cursor='default';
+  posting=true;
+  document.getElementById('sbtn').disabled=true;
+  showThinking('NIX');
+  var transcript=buildCaseTranscript();
+  fetch(W,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:280,system:NIX_SYSTEM,messages:[{role:'user',content:transcript}]})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      clearThinking();
+      var reply=data.content&&data.content[0]?data.content[0].text:'NIX synthesis interrupted. Try again.';
+      addNixMsg(reply);
+      chip.dataset.state='done';
+      chip.textContent='NIX ✓';
+      chip.style.color='var(--cipher)';
+    })
+    .catch(function(){
+      clearThinking();
+      addNixMsg('Signal interrupted. Synthesis not complete. Try again.');
+      chip.dataset.state='';
+      chip.textContent='REQUEST →';
+      chip.style.color='var(--cipher)';
+      document.getElementById('cbSynthChip').style.cursor='pointer';
+    })
+    .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;});
+}
+
+function buildCaseTranscript(){
+  var d=DIVISIONS[selectedDivision];
+  var lines=['CASE '+caseData.caseNum+' — '+d.name+' — LEAD ANALYST: '+agent,'SUBJECT: '+caseData.subject,'URGENCY: '+caseData.urgency,''];
+  msgHistory.forEach(function(m){
+    lines.push((m.role==='user'?'PERSON: ':'ANALYST ('+agent+'): ')+m.content);
+  });
+  return lines.join('\n\n');
+}
+
+function addAshMsg(text){
+  var msgs=document.getElementById('msgs');
+  var d=document.createElement('div');
+  d.className='msg mag';
+  var lbl=document.createElement('div');
+  lbl.className='mlbl';
+  lbl.textContent='ASH // FINAL ASSESSMENT';
+  lbl.style.color=COLORS.ASH;
+  var body=document.createElement('div');
+  body.className='mbod';
+  body.style.borderLeftColor=COLORS.ASH;
+  body.style.textTransform='uppercase';
+  body.textContent=text;
+  d.appendChild(lbl);d.appendChild(body);
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function requestFinalAssessment(){
+  if(!agent||!caseData||posting)return;
+  var chip=document.getElementById('cbReview');
+  if(chip.dataset.state==='closed'||chip.dataset.state==='pending')return;
+  chip.dataset.state='pending';
+  chip.textContent='REVIEWING...';
+  chip.style.color='var(--muted)';
+  document.getElementById('cbReviewChip').style.cursor='default';
+  posting=true;
+  document.getElementById('sbtn').disabled=true;
+  showThinking('ASH');
+  var transcript=buildCaseTranscript();
+  fetch(W,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:280,system:ASH_SYSTEM,messages:[{role:'user',content:transcript}]})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      clearThinking();
+      var reply=data.content&&data.content[0]?data.content[0].text:'ASH REVIEW INTERRUPTED. TRY AGAIN.';
+      addAshMsg(reply);
+      chip.dataset.state='closed';
+      chip.textContent='ASH ✓';
+      chip.style.color='var(--cyan)';
+      var statusEl=document.getElementById('cbStatus');
+      statusEl.textContent='CLOSED';
+      statusEl.classList.remove('live');
+    })
+    .catch(function(){
+      clearThinking();
+      addAshMsg('SIGNAL INTERRUPTED. REVIEW NOT COMPLETE. TRY AGAIN.');
+      chip.dataset.state='';
+      chip.textContent='REQUEST →';
+      chip.style.color='var(--violet)';
+      document.getElementById('cbReviewChip').style.cursor='pointer';
+    })
+    .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;});
+}
+
 function backToHall(){
   document.getElementById('chatroom').style.display='none';
   document.getElementById('caseassign').classList.remove('show');
@@ -564,6 +721,19 @@ function backToHall(){
   document.getElementById('caseSubject').value='';
   document.getElementById('caseQuestion').value='';
   document.getElementById('caseEvidence').value='';
+  var synthChip=document.getElementById('cbSynth');
+  synthChip.dataset.state='';
+  synthChip.textContent='REQUEST →';
+  synthChip.style.color='var(--cipher)';
+  document.getElementById('cbSynthChip').style.cursor='pointer';
+  var chip=document.getElementById('cbReview');
+  chip.dataset.state='';
+  chip.textContent='REQUEST →';
+  chip.style.color='var(--violet)';
+  document.getElementById('cbReviewChip').style.cursor='pointer';
+  var statusEl=document.getElementById('cbStatus');
+  statusEl.textContent='ACTIVE';
+  statusEl.classList.add('live');
 }
 
 
@@ -618,11 +788,11 @@ function addMsg(type,text){
   msgs.scrollTop=msgs.scrollHeight;
 }
 
-function showThinking(){
+function showThinking(label){
   var msgs=document.getElementById('msgs');
   var d=document.createElement('div');
   d.className='thnk';d.id='thnk';
-  d.textContent=agent+' // processing...';
+  d.textContent=(label||agent)+' // processing...';
   msgs.appendChild(d);
   msgs.scrollTop=msgs.scrollHeight;
 }
