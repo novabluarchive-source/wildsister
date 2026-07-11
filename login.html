@@ -3,240 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enter the Channel — Wild Sister</title>
+<title>Member Access — Wild Sister</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root {
-  --black: #080808;
-  --panel: #111111;
-  --border: #1a1a1a;
-  --muted: #555555;
-  --text: #aaaaaa;
-  --white: #f0f0f0;
-  --cyan: #00d4ff;
-  --violet: #7b2fff;
-  --lux: #FF6699;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: var(--black); color: var(--text); font-family: 'Share Tech Mono', monospace; }
+:root{--black:#030303;--panel:#0a0a0a;--card:#0f0f0f;--border:#161616;--dim:#222;--muted:#444;--text:#888;--white:#f0f0f0;--cyan:#00d4ff;--violet:#7b2fff;--electric:#1e6fff;--gold:#d4a017;--lux:#ff4488;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--black);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 220px 90px at 10% 15%,rgba(0,212,255,0.08) 0%,transparent 70%),radial-gradient(ellipse 90px 220px at 90% 85%,rgba(123,47,255,0.08) 0%,transparent 70%),repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);}
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    radial-gradient(ellipse 18px 10px at 7% 8%, rgba(0,212,255,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 10px 20px at 18% 22%, rgba(123,47,255,0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 22px 12px at 31% 6%, rgba(0,212,255,0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 14px 24px at 43% 18%, rgba(255,47,248,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 20px 11px at 56% 9%, rgba(123,47,255,0.17) 0%, transparent 70%),
-    radial-gradient(ellipse 24px 13px at 79% 14%, rgba(255,47,248,0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 26px 14px at 14% 48%, rgba(0,212,255,0.17) 0%, transparent 70%),
-    radial-gradient(ellipse 21px 12px at 37% 55%, rgba(0,212,255,0.16) 0%, transparent 70%),
-    radial-gradient(ellipse 28px 15px at 61% 52%, rgba(123,47,255,0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 20px 13px at 22% 78%, rgba(255,47,248,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 25px 14px at 46% 85%, rgba(0,212,255,0.17) 0%, transparent 70%),
-    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
-  pointer-events: none;
-  z-index: 0;
-}
+nav{position:fixed;top:0;left:0;right:0;z-index:99;padding:16px 24px;background:rgba(3,3,3,0.9);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+.nav-logo{font-family:'VT323',monospace;font-size:1.4rem;letter-spacing:0.15em;background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;}
 
-.container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  position: relative;
-  z-index: 1;
-}
+.wrap{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 24px 40px;}
+.auth-shell{width:100%;max-width:420px;border:1px solid var(--border);background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:36px 30px;position:relative;}
+.auth-shell::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);}
 
-.logo { font-family: 'VT323', monospace; font-size: 1.4rem; letter-spacing: 0.15em; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 3rem; }
+.auth-tag{font-size:9px;letter-spacing:0.3em;color:var(--cyan);margin-bottom:10px;text-align:center;}
+.auth-title{font-family:'VT323',monospace;font-size:2.2rem;color:var(--white);text-align:center;margin-bottom:24px;line-height:1;}
 
-.card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 3rem;
-  max-width: 420px;
-  width: 100%;
-  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
-  position: relative;
-}
-.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); opacity: 0.4; }
+.mode-toggle{display:flex;border:1px solid var(--border);margin-bottom:24px;}
+.mode-btn{flex:1;background:none;border:none;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.15em;padding:10px;cursor:pointer;}
+.mode-btn.active{color:var(--cyan);background:rgba(0,212,255,0.06);}
 
-.card-title { font-family: 'VT323', monospace; font-size: 2.2rem; color: var(--white); margin-bottom: 0.5rem; }
-.card-sub { font-size: 12px; color: var(--muted); line-height: 1.8; margin-bottom: 2rem; }
+.field-group{margin-bottom:16px;}
+.field-label{font-size:9px;letter-spacing:0.2em;color:var(--muted);margin-bottom:6px;display:block;}
+.field-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:'Share Tech Mono',monospace;font-size:13px;padding:11px 14px;outline:none;}
+.field-input:focus{border-color:var(--cyan);}
 
-.form-group { margin-bottom: 1rem; }
-label { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); display: block; margin-bottom: 6px; text-transform: uppercase; }
-input[type="email"], input[type="text"] {
-  width: 100%;
-  background: var(--black);
-  border: 1px solid var(--border);
-  color: var(--white);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 13px;
-  padding: 10px 14px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-input:focus { border-color: var(--cyan); }
-input::placeholder { color: var(--muted); }
+.auth-btn{width:100%;background:linear-gradient(135deg,var(--electric),var(--violet));color:white;border:none;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.2em;padding:14px;cursor:pointer;margin-top:8px;}
+.auth-btn:hover{opacity:0.85;}
+.auth-btn:disabled{opacity:0.4;cursor:not-allowed;}
 
-.submit-btn {
-  width: 100%;
-  background: linear-gradient(135deg, #1e6fff, #7b2fff);
-  color: white;
-  border: none;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  padding: 14px;
-  cursor: pointer;
-  margin-top: 1.5rem;
-  transition: opacity 0.15s;
-}
-.submit-btn:hover { opacity: 0.85; }
-.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.status-msg{font-size:11px;line-height:1.7;padding:12px 14px;margin-top:16px;display:none;}
+.status-msg.error{display:block;color:var(--lux);border:1px solid rgba(255,68,136,0.3);background:rgba(255,68,136,0.05);}
+.status-msg.success{display:block;color:var(--cyan);border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.05);}
 
-.message { font-size: 12px; margin-top: 1rem; padding: 12px 14px; border-left: 2px solid; line-height: 1.6; }
-.message.success { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.05); }
-.message.error { border-color: var(--lux); color: var(--lux); background: rgba(255,102,153,0.05); }
-
-.divider { height: 1px; background: var(--border); margin: 2rem 0; }
-.back-link { font-size: 11px; color: var(--muted); text-decoration: none; letter-spacing: 0.1em; display: block; text-align: center; margin-top: 1.5rem; transition: color 0.15s; }
-.back-link:hover { color: var(--cyan); }
-
-.sent-state { display: none; text-align: center; }
-.sent-icon { font-family: 'VT323', monospace; font-size: 3rem; color: var(--cyan); margin-bottom: 1rem; }
-.sent-title { font-family: 'VT323', monospace; font-size: 1.8rem; color: var(--white); margin-bottom: 0.75rem; }
-.sent-text { font-size: 12px; color: var(--muted); line-height: 1.8; }
+.auth-footnote{font-size:9px;color:var(--dim);letter-spacing:0.1em;text-align:center;margin-top:20px;line-height:1.8;}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="logo">WILD SISTER</div>
+<nav>
+  <a href="index.html" class="nav-logo">WILD SISTER</a>
+</nav>
 
-  <div class="card">
-    <!-- LOGIN FORM -->
-    <div id="loginForm">
-      <div class="card-title">Enter the channel.</div>
-      <div class="card-sub">Enter your email and we'll send you a magic link. No password needed. Link expires in 15 minutes.</div>
+<div class="wrap">
+  <div class="auth-shell">
+    <div class="auth-tag">// SYMBOL INTELLIGENCE DIVISION</div>
+    <div class="auth-title">MEMBER ACCESS</div>
 
-      <div class="form-group">
-        <label>Your name</label>
-        <input type="text" id="nameInput" placeholder="what do you go by..." maxlength="40" />
-      </div>
-
-      <div class="form-group">
-        <label>Email address</label>
-        <input type="email" id="emailInput" placeholder="your@email.com" />
-      </div>
-
-      <button class="submit-btn" id="submitBtn" onclick="sendLink()">SEND MY ACCESS LINK →</button>
-
-      <div id="message"></div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnSignIn" onclick="setMode('signin')">SIGN IN</button>
+      <button class="mode-btn" id="btnSignUp" onclick="setMode('signup')">CREATE ACCOUNT</button>
     </div>
 
-    <!-- SENT STATE -->
-    <div class="sent-state" id="sentState">
-      <div class="sent-icon">✦</div>
-      <div class="sent-title">Check your inbox.</div>
-      <div class="sent-text">The access link is on its way to <span id="sentEmail" style="color:var(--cyan)"></span>.<br><br>Click the link in the email to enter the channel. It expires in 15 minutes.</div>
-      <div class="divider"></div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.8;">Didn't get it? Check your spam folder or <button onclick="resetForm()" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px;text-decoration:underline;">try again</button>.</div>
-    </div>
+    <form id="authForm" onsubmit="handleSubmit(event)">
+      <div class="field-group">
+        <label class="field-label">// EMAIL</label>
+        <input type="email" class="field-input" id="email" required autocomplete="email">
+      </div>
+      <div class="field-group">
+        <label class="field-label">// PASSWORD</label>
+        <input type="password" class="field-input" id="password" required autocomplete="current-password" minlength="6">
+      </div>
+      <button type="submit" class="auth-btn" id="submitBtn">SIGN IN →</button>
+    </form>
+
+    <div class="status-msg" id="statusMsg"></div>
+
+    <div class="auth-footnote">Access requires an active Institution-Wide clearance.<br>Not a member yet? <a href="pricing.html" style="color:var(--cyan);">See Access Levels →</a></div>
   </div>
-
-  <a href="index.html" class="back-link">← back to wildsister.co</a>
 </div>
 
+<script src="assets/js/supabase-client.js"></script>
 <script>
-const AUTH_URL = 'https://wildsister-auth.capcancerian3.workers.dev';
+var mode = 'signin';
 
-// Check for error params
-window.addEventListener('load', () => {
-  const params = new URLSearchParams(window.location.search);
-  const error = params.get('error');
-  if (error) {
-    const msg = document.getElementById('message');
-    const messages = {
-      'invalid': 'That link is invalid or already used. Request a new one.',
-      'expired': 'That link has expired. Request a new one.',
-      'missing': 'Something went wrong. Please try again.'
-    };
-    msg.className = 'message error';
-    msg.textContent = messages[error] || 'Something went wrong. Please try again.';
-  }
-
-  // Check if already logged in
-  checkSession();
-});
-
-async function checkSession() {
-  try {
-    const res = await fetch(`${AUTH_URL}/api/auth/me`);
-    const data = await res.json();
-    if (data.authenticated) {
-      window.location.href = '/community.html';
-    }
-  } catch(e) {}
+function setMode(m){
+  mode = m;
+  document.getElementById('btnSignIn').classList.toggle('active', m==='signin');
+  document.getElementById('btnSignUp').classList.toggle('active', m==='signup');
+  document.getElementById('submitBtn').textContent = m==='signin' ? 'SIGN IN →' : 'CREATE ACCOUNT →';
+  document.getElementById('statusMsg').className = 'status-msg';
+  document.getElementById('statusMsg').textContent = '';
 }
 
-async function sendLink() {
-  const email = document.getElementById('emailInput').value.trim();
-  const name = document.getElementById('nameInput').value.trim();
-  const btn = document.getElementById('submitBtn');
-  const msg = document.getElementById('message');
-
-  if (!email || !email.includes('@')) {
-    msg.className = 'message error';
-    msg.textContent = 'Enter a valid email address.';
-    return;
-  }
-
+async function handleSubmit(e){
+  e.preventDefault();
+  var email = document.getElementById('email').value.trim();
+  var password = document.getElementById('password').value;
+  var statusEl = document.getElementById('statusMsg');
+  var btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'SENDING...';
-  msg.textContent = '';
+  statusEl.className = 'status-msg';
 
   try {
-    const res = await fetch(`${AUTH_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('sentEmail').textContent = email;
-      document.getElementById('sentState').style.display = 'block';
+    if (mode === 'signin') {
+      var { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+      if (error) throw error;
+      window.location.href = 'dashboard/index.html';
     } else {
-      msg.className = 'message error';
-      msg.textContent = data.error || 'Something went wrong. Try again.';
-      btn.disabled = false;
-      btn.textContent = 'SEND MY ACCESS LINK →';
+      var { data, error } = await supabaseClient.auth.signUp({ email: email, password: password });
+      if (error) throw error;
+      if (data.session) {
+        // Email confirmation is off — signed in immediately
+        window.location.href = 'dashboard/index.html';
+      } else {
+        // Email confirmation is on — tell them to check inbox
+        statusEl.className = 'status-msg success';
+        statusEl.textContent = 'Account created. Check your email to confirm before signing in.';
+      }
     }
-  } catch(e) {
-    msg.className = 'message error';
-    msg.textContent = 'Connection error. Try again.';
+  } catch (err) {
+    statusEl.className = 'status-msg error';
+    statusEl.textContent = err.message || 'Something went wrong. Try again.';
+  } finally {
     btn.disabled = false;
-    btn.textContent = 'SEND MY ACCESS LINK →';
   }
 }
 
-function resetForm() {
-  document.getElementById('loginForm').style.display = 'block';
-  document.getElementById('sentState').style.display = 'none';
-  document.getElementById('submitBtn').disabled = false;
-  document.getElementById('submitBtn').textContent = 'SEND MY ACCESS LINK →';
-}
-
-document.getElementById('emailInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendLink();
-});
+// If already signed in, skip straight to the dashboard
+(async function(){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) window.location.href = 'dashboard/index.html';
+})();
 </script>
+
 </body>
 </html>
