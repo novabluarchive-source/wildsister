@@ -121,6 +121,7 @@ nav { position: fixed; top: 28px; left: 0; right: 0; z-index: 99; display: flex;
 .agent-card { background: var(--deep); border-top: 2px solid var(--border); padding: 24px 20px; transition: border-color 0.2s; cursor: default; }
 .agent-card:hover { border-top-color: var(--cyan); }
 .ac-id { font-size: 9px; letter-spacing: 0.25em; color: var(--muted); margin-bottom: 6px; }
+.ac-category { font-size: 8px; letter-spacing: 0.3em; color: var(--dim); margin-bottom: 4px; text-transform: uppercase; }
 .ac-name { font-family: 'VT323', monospace; font-size: 2rem; margin-bottom: 6px; }
 .ac-vibe { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
@@ -186,6 +187,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
     <li><a href="readings.html">Readings</a></li>
     <li><a href="community.html">Community</a></li>
     <li><a href="pattern-engine.html" style="color:var(--gold);">Pattern Engine</a></li>
+    <li><a href="login.html" style="color:var(--muted);">Member Login</a></li>
   </ul>
   <a href="chat.html" class="nav-cta">Open New Case →</a>
 </nav>
@@ -271,42 +273,50 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); display: flex;
   <p class="section-sub">Six lead their own division. Two — NIX and ASH — belong to no division; they're called in when a case needs comparing across systems, or when it's ready to close.</p>
   <div class="agents-grid">
     <div class="agent-card">
+      <div class="ac-category">DIVISION LEAD</div>
       <div class="ac-id" style="color:#c8a84a">PSY-001 // BEHAVIORAL</div>
       <div class="ac-name" style="color:#c8a84a">SCAR</div>
       <div class="ac-vibe">Reads a case like an interrogation-room profiler. Cold, fast, no cushion. Names the defense, not just the wound.</div>
     </div>
     <div class="agent-card">
+      <div class="ac-category">DIVISION LEAD</div>
       <div class="ac-id" style="color:#7899bb">AST-001 // ASTROLOGY</div>
       <div class="ac-name" style="color:#7899bb">CENTRA</div>
       <div class="ac-vibe">Runs charts like mission control tracks telemetry. Cross-checks Draconic, Vedic, and Tropical before confirming anything.</div>
     </div>
     <div class="agent-card">
+      <div class="ac-category">DIVISION LEAD</div>
       <div class="ac-id" style="color:#ff4488">OTF-001 // ORIGINAL TEXT</div>
       <div class="ac-name" style="color:#ff4488">LUX</div>
       <div class="ac-vibe">Won't touch scripture until it finds the original pressing — the source before translation stacked on top.</div>
     </div>
     <div class="agent-card">
+      <div class="ac-category">DIVISION LEAD</div>
       <div class="ac-id" style="color:#4de8b0">NUM-001 // NUMERIC</div>
       <div class="ac-name" style="color:#4de8b0">CIPHER</div>
       <div class="ac-vibe">Treats numbers like bars in a cipher. Gematria, numerology, recurring sequences. Precision that reads like flow.</div>
     </div>
     <div class="agent-card">
+      <div class="ac-category">DIVISION LEAD</div>
       <div class="ac-id" style="color:#c8c8f0">PAT-001 // FLAGSHIP</div>
       <div class="ac-name" style="color:#c8c8f0">LUNA</div>
       <div class="ac-vibe">Works the string board. Red thread between photographs until the shape shows itself.</div>
     </div>
     <div class="agent-card">
+      <div class="ac-category">DIVISION LEAD</div>
       <div class="ac-id" style="color:#c17a4d">SYM-001 // SYMBOL ARCHIVE</div>
       <div class="ac-name" style="color:#c17a4d">RELIC</div>
       <div class="ac-vibe">Museum conservator meets field investigator. Never says "transformation" without asking where it was found first.</div>
     </div>
     <div class="agent-card" style="opacity:0.85;">
-      <div class="ac-id" style="color:#c8e8ff">NO DIVISION // SYNTHESIS</div>
+      <div class="ac-category" style="color:var(--cyan);">INSTITUTIONAL REVIEW</div>
+      <div class="ac-id" style="color:#c8e8ff">CROSS-SYSTEM SYNTHESIS</div>
       <div class="ac-name" style="color:#c8e8ff">NIX</div>
       <div class="ac-vibe">Called in when a case needs comparing across systems. Not chosen — assigned.</div>
     </div>
     <div class="agent-card" style="opacity:0.85;">
-      <div class="ac-id" style="color:#ddd">NO DIVISION // FINAL ASSESSMENT</div>
+      <div class="ac-category" style="color:var(--violet);">FINAL REVIEW</div>
+      <div class="ac-id" style="color:#ddd">FINAL ASSESSMENT</div>
       <div class="ac-name" style="color:#ddd">ASH</div>
       <div class="ac-vibe">The last voice on every case, not the first. Closes what the others opened.</div>
     </div>
