@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Received — Wild Sister</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--black:#030303;--panel:#0a0a0a;--border:#161616;--dim:#222;--muted:#444;--text:#888;--white:#f0f0f0;--cyan:#00d4ff;--violet:#7b2fff;--electric:#1e6fff;--gold:#d4a017;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--text);font-family:'Share Tech Mono',monospace;overflow-x:hidden;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 200px 80px at 10% 20%,rgba(0,212,255,0.08) 0%,transparent 70%),radial-gradient(ellipse 80px 200px at 90% 10%,rgba(123,47,255,0.09) 0%,transparent 70%),repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:99;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(3,3,3,0.9);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+.nav-logo{font-family:'VT323',monospace;font-size:1.4rem;letter-spacing:0.15em;background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;}
+
+.wrap{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 24px 60px;}
+.case-shell{width:100%;max-width:560px;border:1px solid var(--border);background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:40px 32px;text-align:center;position:relative;}
+.case-shell::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);}
+
+.stamp{display:inline-block;font-size:9px;letter-spacing:0.3em;color:var(--cyan);border:1px solid rgba(0,212,255,0.3);padding:6px 14px;margin-bottom:24px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+.title{font-family:'VT323',monospace;font-size:clamp(2.5rem,8vw,3.5rem);color:var(--white);line-height:1;margin-bottom:28px;letter-spacing:0.02em;}
+
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;border:1px solid var(--border);margin-bottom:28px;text-align:left;}
+.meta-item{background:var(--panel);padding:14px 16px;}
+.meta-label{font-size:8px;letter-spacing:0.2em;color:var(--muted);margin-bottom:6px;}
+.meta-value{font-family:'VT323',monospace;font-size:1.3rem;color:var(--white);}
+.meta-value.status{color:var(--gold);}
+
+.body-text{font-size:12px;color:var(--muted);line-height:1.9;margin-bottom:32px;}
+.body-text strong{color:var(--text);font-weight:normal;}
+
+.btn-main{background:linear-gradient(135deg,var(--electric),var(--violet));color:white;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.2em;padding:14px 28px;text-decoration:none;display:inline-block;transition:opacity 0.15s;margin-bottom:12px;}
+.btn-main:hover{opacity:0.85;}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.2em;padding:14px 28px;text-decoration:none;display:inline-block;transition:all 0.15s;}
+.btn-ghost:hover{border-color:var(--dim);color:var(--white);}
+
+.footnote{font-size:9px;color:var(--dim);letter-spacing:0.1em;margin-top:24px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">WILD SISTER</a>
+</nav>
+
+<div class="wrap">
+  <div class="case-shell">
+    <div class="stamp">// TRANSMISSION CONFIRMED</div>
+    <div class="title">CASE RECEIVED</div>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="meta-label">CASE NUMBER</div>
+        <div class="meta-value" id="caseNumber">SID-—</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">STATUS</div>
+        <div class="meta-value status">AWAITING ASSIGNMENT</div>
+      </div>
+    </div>
+
+    <div class="body-text">The Symbol Intelligence Division has received your investigation. <strong>You'll receive your next instructions shortly</strong> — check the email you used at checkout.</div>
+
+    <a href="community.html" class="btn-main">Enter Community →</a><br>
+    <a href="index.html" class="btn-ghost">Return to Archive</a>
+
+    <div class="footnote">WILD SISTER // SYMBOL INTELLIGENCE DIVISION</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var year = new Date().getFullYear();
+  var caseId = params.get('case');
+  if(!caseId){
+    var rand = Math.floor(1000 + Math.random()*9000);
+    caseId = 'SID-' + year + '-' + rand;
+  }
+  document.getElementById('caseNumber').textContent = caseId;
+})();
+</script>
+
+</body>
+</html>
