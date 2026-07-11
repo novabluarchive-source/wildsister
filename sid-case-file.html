@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SID Case File — Wild Sister</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#050505;
+  --panel:#0b0b0b;
+  --card:#101010;
+  --border:#1c1c1c;
+  --dim:#2a2a2a;
+  --muted:#575757;
+  --text:#aaa;
+  --white:#f2f2f2;
+  --cyan:#00d4ff;
+  --violet:#7b2fff;
+  --gold:#d4a017;
+  --scar:#c8a84a;
+  --centra:#7899bb;
+  --lux:#ff4488;
+  --cipher:#4de8b0;
+  --luna:#c8c8f0;
+  --relic:#c17a4d;
+  --nix:#c8e8ff;
+  --ash:#ddd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--black)}
+body{
+  min-height:100vh;
+  background:var(--black);
+  color:var(--text);
+  font-family:'Share Tech Mono',monospace;
+}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(ellipse 230px 95px at 8% 12%,rgba(0,212,255,.06),transparent 70%),
+    radial-gradient(ellipse 110px 240px at 92% 8%,rgba(123,47,255,.07),transparent 70%),
+    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.08) 3px,rgba(0,0,0,.08) 4px);
+}
+.container{
+  position:relative;
+  z-index:1;
+  max-width:860px;
+  margin:0 auto;
+  padding:52px 24px 74px;
+}
+.topline{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  font-size:9px;
+  letter-spacing:.24em;
+  color:var(--muted);
+  margin-bottom:16px;
+}
+.header{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:28px 0;
+  margin-bottom:28px;
+}
+.kicker{
+  font-size:9px;
+  letter-spacing:.34em;
+  color:var(--cyan);
+  margin-bottom:10px;
+}
+.title{
+  font-family:'VT323',monospace;
+  color:var(--white);
+  font-size:clamp(3rem,9vw,6rem);
+  line-height:.9;
+  margin-bottom:20px;
+}
+.meta{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+.meta-cell{
+  background:var(--panel);
+  padding:14px;
+}
+.meta-cell span{
+  display:block;
+  font-size:8px;
+  letter-spacing:.18em;
+  color:var(--muted);
+  margin-bottom:5px;
+}
+.meta-cell strong{
+  font-weight:normal;
+  font-size:11px;
+  color:var(--white);
+}
+@media(max-width:680px){.meta{grid-template-columns:1fr}}
+
+.section{
+  margin-top:34px;
+}
+.section-label{
+  font-size:9px;
+  letter-spacing:.25em;
+  color:var(--cyan);
+  margin-bottom:10px;
+}
+.section-title{
+  font-family:'VT323',monospace;
+  font-size:2rem;
+  color:var(--white);
+  margin-bottom:16px;
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:20px;
+}
+.panel p,
+.panel li{
+  font-size:12px;
+  line-height:1.85;
+}
+.panel ul{padding-left:18px}
+.panel li{margin-bottom:6px}
+
+.summary-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.summary-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:18px;
+}
+.summary-card span{
+  display:block;
+  font-size:8px;
+  letter-spacing:.18em;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.summary-card p{
+  font-size:12px;
+  line-height:1.8;
+  color:var(--text);
+}
+@media(max-width:680px){.summary-grid{grid-template-columns:1fr}}
+
+.divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);
+  opacity:.25;
+  margin:38px 0;
+}
+
+.report{
+  margin-bottom:34px;
+}
+.report-head{
+  border-bottom:1px solid;
+  padding-bottom:10px;
+}
+.report-code{
+  font-size:8px;
+  letter-spacing:.22em;
+  margin-bottom:5px;
+}
+.report-name{
+  font-family:'VT323',monospace;
+  font-size:2.2rem;
+  letter-spacing:.08em;
+}
+.report-body{
+  border-left:2px solid;
+  padding:20px 0 0 18px;
+  font-size:12px;
+  line-height:1.95;
+  white-space:pre-wrap;
+}
+.scar .report-head,.scar .report-body{border-color:var(--scar)}
+.scar .report-code,.scar .report-name{color:var(--scar)}
+.centra .report-head,.centra .report-body{border-color:var(--centra)}
+.centra .report-code,.centra .report-name{color:var(--centra)}
+.lux .report-head,.lux .report-body{border-color:var(--lux)}
+.lux .report-code,.lux .report-name{color:var(--lux)}
+.cipher .report-head,.cipher .report-body{border-color:var(--cipher)}
+.cipher .report-code,.cipher .report-name{color:var(--cipher)}
+.luna .report-head,.luna .report-body{border-color:var(--luna)}
+.luna .report-code,.luna .report-name{color:var(--luna)}
+.relic .report-head,.relic .report-body{border-color:var(--relic)}
+.relic .report-code,.relic .report-name{color:var(--relic)}
+.nix .report-head,.nix .report-body{border-color:var(--nix)}
+.nix .report-code,.nix .report-name{color:var(--nix)}
+.ash .report-head,.ash .report-body{border-color:#444}
+.ash .report-code,.ash .report-name{color:var(--ash)}
+
+.findings{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.finding{
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:18px;
+}
+.finding span{
+  display:block;
+  font-size:8px;
+  letter-spacing:.18em;
+  margin-bottom:8px;
+}
+.finding p{
+  font-size:12px;
+  line-height:1.8;
+}
+.supported span{color:var(--cyan)}
+.discarded span{color:var(--scar)}
+.open span{color:var(--gold)}
+.next span{color:var(--lux)}
+@media(max-width:680px){.findings{grid-template-columns:1fr}}
+
+.related-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.related-card{
+  display:block;
+  text-decoration:none;
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:14px;
+}
+.related-card:hover{border-color:var(--cyan)}
+.related-card small{
+  display:block;
+  font-size:8px;
+  letter-spacing:.16em;
+  color:var(--muted);
+  margin-bottom:5px;
+}
+.related-card strong{
+  font-size:11px;
+  color:var(--white);
+  font-weight:normal;
+}
+@media(max-width:680px){.related-grid{grid-template-columns:1fr}}
+
+.dashboard-cta{
+  margin-top:38px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-left:3px solid var(--cyan);
+  padding:22px;
+}
+.dashboard-cta .label{
+  font-size:9px;
+  letter-spacing:.22em;
+  color:var(--cyan);
+  margin-bottom:9px;
+}
+.dashboard-cta h2{
+  font-family:'VT323',monospace;
+  font-size:2rem;
+  color:var(--white);
+  margin-bottom:8px;
+}
+.dashboard-cta p{
+  font-size:12px;
+  line-height:1.8;
+  color:var(--muted);
+  margin-bottom:16px;
+}
+.dashboard-cta a{
+  display:inline-block;
+  text-decoration:none;
+  font-size:10px;
+  letter-spacing:.18em;
+  padding:12px 18px;
+  color:white;
+  background:linear-gradient(135deg,var(--violet),#1e6fff);
+}
+.footer{
+  margin-top:42px;
+  border-top:1px solid var(--border);
+  padding-top:20px;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
+  font-size:9px;
+  letter-spacing:.14em;
+  color:var(--muted);
+  line-height:1.8;
+}
+@media print{
+  body::before{display:none}
+  .dashboard-cta{display:none}
+  .container{max-width:none;padding:20px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topline">
+    <span>SYMBOL INTELLIGENCE DIVISION</span>
+    <span>OPERATING STANDARD: SID-OM-001</span>
+  </div>
+
+  <header class="header">
+    <div class="kicker">// CASE DELIVERY</div>
+    <div class="title">SID CASE FILE</div>
+
+    <div class="meta">
+      <div class="meta-cell"><span>CASE ID</span><strong>{{CASE_ID}}</strong></div>
+      <div class="meta-cell"><span>MEMBER</span><strong>{{NAME}}</strong></div>
+      <div class="meta-cell"><span>STATUS</span><strong>{{STATUS}}</strong></div>
+      <div class="meta-cell"><span>CLASSIFICATION</span><strong>{{CLASSIFICATION}}</strong></div>
+      <div class="meta-cell"><span>DATE OPENED</span><strong>{{DATE_OPENED}}</strong></div>
+      <div class="meta-cell"><span>DATE CLOSED</span><strong>{{DATE_CLOSED}}</strong></div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-label">// EXECUTIVE SUMMARY</div>
+    <div class="section-title">Case architecture.</div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <span>PRIMARY QUESTION</span>
+        <p>{{QUESTION}}</p>
+      </div>
+      <div class="summary-card">
+        <span>LEAD DIVISION</span>
+        <p>{{LEAD_DIVISION}}</p>
+      </div>
+      <div class="summary-card">
+        <span>PARTICIPATING DIVISIONS</span>
+        <p>{{PARTICIPATING_DIVISIONS}}</p>
+      </div>
+      <div class="summary-card">
+        <span>CASE SCOPE</span>
+        <p>{{CASE_SCOPE}}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">// EVIDENCE LOG</div>
+    <div class="section-title">Submitted record.</div>
+    <div class="panel">
+      <ul>
+        {{EVIDENCE_ITEMS}}
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="report scar">
+    <div class="report-head">
+      <div class="report-code">PSY-001 // BEHAVIORAL INTELLIGENCE</div>
+      <div class="report-name">SCAR</div>
+    </div>
+    <div class="report-body">{{SCAR_REPORT}}</div>
+  </section>
+
+  <section class="report centra">
+    <div class="report-head">
+      <div class="report-code">AST-001 // FORENSIC ASTROLOGY</div>
+      <div class="report-name">CENTRA</div>
+    </div>
+    <div class="report-body">{{CENTRA_REPORT}}</div>
+  </section>
+
+  <section class="report lux">
+    <div class="report-head">
+      <div class="report-code">OTF-001 // ORIGINAL TEXT</div>
+      <div class="report-name">LUX</div>
+    </div>
+    <div class="report-body">{{LUX_REPORT}}</div>
+  </section>
+
+  <section class="report cipher">
+    <div class="report-head">
+      <div class="report-code">NUM-001 // NUMERIC INTELLIGENCE</div>
+      <div class="report-name">CIPHER</div>
+    </div>
+    <div class="report-body">{{CIPHER_REPORT}}</div>
+  </section>
+
+  <section class="report luna">
+    <div class="report-head">
+      <div class="report-code">PAT-001 // PATTERN INVESTIGATION</div>
+      <div class="report-name">LUNA</div>
+    </div>
+    <div class="report-body">{{LUNA_REPORT}}</div>
+  </section>
+
+  <section class="report relic">
+    <div class="report-head">
+      <div class="report-code">SYM-001 // SYMBOL ARCHIVE</div>
+      <div class="report-name">RELIC</div>
+    </div>
+    <div class="report-body">{{RELIC_REPORT}}</div>
+  </section>
+
+  <section class="report nix">
+    <div class="report-head">
+      <div class="report-code">XSI-001 // CROSS-SYSTEM SYNTHESIS</div>
+      <div class="report-name">NIX</div>
+    </div>
+    <div class="report-body">{{NIX_REPORT}}</div>
+  </section>
+
+  <section class="report ash">
+    <div class="report-head">
+      <div class="report-code">FINAL REVIEW // CASE CLOSURE</div>
+      <div class="report-name">ASH</div>
+    </div>
+    <div class="report-body">{{ASH_FINAL_ASSESSMENT}}</div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section">
+    <div class="section-label">// CASE STATUS</div>
+    <div class="section-title">What the evidence supports.</div>
+
+    <div class="findings">
+      <div class="finding supported">
+        <span>SUPPORTED FINDINGS</span>
+        <p>{{SUPPORTED_FINDINGS}}</p>
+      </div>
+
+      <div class="finding discarded">
+        <span>DISCARDED FINDINGS</span>
+        <p>{{DISCARDED_FINDINGS}}</p>
+      </div>
+
+      <div class="finding open">
+        <span>OPEN QUESTIONS</span>
+        <p>{{OPEN_QUESTIONS}}</p>
+      </div>
+
+      <div class="finding next">
+        <span>NEXT RECOMMENDED FILE</span>
+        <p>{{NEXT_RECOMMENDED_FILE}}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">// RELATED ARCHIVE FILES</div>
+    <div class="section-title">Cross-references.</div>
+
+    <div class="related-grid">
+      {{RELATED_FILES}}
+    </div>
+  </section>
+
+  <section class="dashboard-cta">
+    <div class="label">// INVESTIGATION ARCHIVED</div>
+    <h2>This case now lives in your dashboard.</h2>
+    <p>
+      Reopen the file, add evidence, review analyst reports, discover related archive material,
+      or begin the next investigation from your private SID workspace.
+    </p>
+    <a href="dashboard/index.html">OPEN MEMBER DASHBOARD →</a>
+  </section>
+
+  <footer class="footer">
+    <div>
+      SYMBOL INTELLIGENCE DIVISION<br>
+      ARCHIVE STATUS: ACTIVE
+    </div>
+    <div>
+      CASE STATUS: {{STATUS}}<br>
+      wildsister.co
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
