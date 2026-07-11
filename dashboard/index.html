@@ -127,14 +127,44 @@ var currentUserId = null;
 async function init(){
   const session = await requireAuth();
   if (!session) return; // requireAuth already redirected to login.html
-  currentUserId = session.user.id;
+
+  const user = session.user;
+
+  // Email verification is required before dashboard creation/access.
+  // Supabase may create the auth user before confirmation, but SID does not
+  // load clearance, cases, reports, or dashboard content until confirmed.
+  if (!user.email_confirmed_at) {
+    const next = encodeURIComponent('dashboard/index.html');
+    window.location.replace('../verify-email.html?next=' + next);
+    return;
+  }
+
+  currentUserId = user.id;
 
   document.getElementById('loadingGate').style.display = 'none';
   document.getElementById('dashboardContent').style.display = 'block';
 
+  await ensureVerifiedProfile(user);
   await loadClearance();
   await loadCases();
   await loadArchiveCount();
+}
+
+async function ensureVerifiedProfile(user){
+  // Creates/updates the member profile only after email confirmation.
+  // Requires a profiles table with user_id as the primary key or unique field.
+  const { error } = await supabaseClient
+    .from('profiles')
+    .upsert({
+      user_id: user.id,
+      email: user.email,
+      email_verified: true,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
+  if (error) {
+    console.warn('Verified profile sync failed:', error.message);
+  }
 }
 
 async function loadClearance(){
