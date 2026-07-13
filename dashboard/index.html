@@ -534,7 +534,7 @@ function renderCaseCabinet(cases){
   grid.innerHTML = cases.map(function(c){
     const status = normalizeStatus(c.status);
     const subject = c.subject || c.title || 'Untitled Investigation';
-    const division = c.lead_division || c.division || c.division_code || 'Division pending';
+    const division = c.lead_division || 'Division pending';
     const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString() : 'No date';
 
     return '<button class="case-file-card ' +
@@ -575,53 +575,50 @@ function selectCase(caseId, scrollToBoard){
   }
 }
 
-function populateBoard(c){
-  const status = normalizeStatus(c.status);
-  const caseNumber = c.case_number || c.file_code || 'SID CASE';
-  const subject = c.subject || c.title || 'Untitled Investigation';
-  const division = c.lead_division || c.division || c.division_code || 'Division pending';
-  const lead = c.lead_analyst || 'Pending assignment';
+function populateBoard(c,evidence,reports,analysts){
+  var status=normalizeStatus(c.status);
+  var caseNumber=c.case_number||'SID CASE';
+  var subject=c.subject||'Untitled Investigation';
+  var division=c.lead_division||'Division pending';
+  var lead=analysts.find(function(a){return a.role==='lead';});
 
-  document.getElementById('wallHeader').textContent =
-    'CASE WALL // ' + caseNumber + ' // ' + subject.toUpperCase() +
-    ' // STATUS: ' + status.toUpperCase().replaceAll('_',' ');
+  document.getElementById('wallHeader').textContent='CASE WALL // '+caseNumber+' // '+subject.toUpperCase()+' // STATUS: '+status.toUpperCase();
+  document.getElementById('systemStatus').textContent=status==='closed'?'CASE CLOSED':'ACTIVE';
+  setBoardText('boardQuestion',c.primary_question||'No question submitted.');
+  setBoardText('boardBirthData','Identity data is stored as evidence when submitted.');
+  setBoardText('boardEvidence',evidence.length?evidence.map(function(e){return e.content;}).join('
 
-  setBoardText('boardQuestion', c.question || c.investigation_question || 'No question submitted.');
-  setBoardText('boardBirthData', c.birth_data || c.identity_record || 'No birth or identity data submitted.');
-  setBoardText('boardEvidence', c.known_evidence || c.evidence || c.early_evidence || 'No evidence has been added yet.');
-  setBoardText('boardTheme', c.current_theme || c.theme || 'Awaiting analyst review.');
-  setBoardText('boardSynthesis', c.analyst_synthesis || c.nix_synthesis || c.integration || 'No synthesis has been filed.');
-  setBoardText('boardPattern', c.key_pattern || c.case_pattern || c.final_finding || 'No confirmed pattern yet.');
+'):'No evidence has been added yet.');
+  setBoardText('boardTheme',c.current_finding||'Awaiting analyst review.');
 
-  document.getElementById('boardChartLabel').textContent = division.toUpperCase() + ' // ' + lead.toUpperCase();
-  document.getElementById('boardChartText').textContent = buildCaseOverview(c);
+  var synthesis=reports.filter(function(r){return r.report_type==='cross_system_synthesis';}).slice(-1)[0];
+  var finalReport=reports.filter(function(r){return r.report_type==='final_assessment';}).slice(-1)[0];
+  setBoardText('boardSynthesis',synthesis?synthesis.content:'No synthesis has been filed.');
+  setBoardText('boardPattern',finalReport?finalReport.content:(c.current_finding||'No confirmed pattern yet.'));
 
-  renderEvidenceFolders(c);
+  document.getElementById('boardChartLabel').textContent=division.toUpperCase()+' // '+(lead?lead.analyst:'PENDING');
+  document.getElementById('boardChartText').textContent=buildCaseOverview(c,analysts);
+  renderEvidenceFolders(evidence,reports,analysts);
 }
 
-function buildCaseOverview(c){
-  const lines = [];
-  if (c.urgency) lines.push('Priority: ' + c.urgency);
-  if (c.lead_analyst) lines.push('Lead Analyst: ' + c.lead_analyst);
-  if (c.division || c.lead_division) lines.push('Division: ' + (c.lead_division || c.division));
-  if (c.created_at) lines.push('Opened: ' + new Date(c.created_at).toLocaleDateString());
-  if (c.updated_at) lines.push('Last Activity: ' + new Date(c.updated_at).toLocaleDateString());
-  return lines.length ? lines.join('\n') : 'Case metadata is still being assembled.';
+function buildCaseOverview(c,analysts){
+  var lines=[];
+  if(c.urgency)lines.push('Priority: '+c.urgency);
+  if(c.lead_division)lines.push('Division: '+c.lead_division);
+  if(analysts&&analysts.length)lines.push('Analysts: '+analysts.map(function(a){return a.analyst+' ('+a.role+')';}).join(', '));
+  if(c.created_at)lines.push('Opened: '+new Date(c.created_at).toLocaleDateString());
+  if(c.updated_at)lines.push('Last Activity: '+new Date(c.updated_at).toLocaleDateString());
+  return lines.length?lines.join('
+'):'Case metadata is still being assembled.';
 }
 
-function renderEvidenceFolders(c){
-  const folders = [];
-  if (hasText(c.birth_data)) folders.push('Birth Data');
-  if (hasText(c.known_evidence || c.evidence)) folders.push('Known Evidence');
-  if (hasText(c.timeline)) folders.push('Timeline');
-  if (hasText(c.sources)) folders.push('Sources');
-  if (hasText(c.analyst_synthesis || c.nix_synthesis)) folders.push('Synthesis');
-  if (hasText(c.key_pattern || c.final_finding)) folders.push('Final Finding');
-  if (!folders.length) folders.push('No evidence files yet');
-
-  document.getElementById('evidenceFolders').innerHTML = folders.map(function(name){
-    return '<div class="folder"><small>EVIDENCE FILE</small>' + escapeHtml(name) + '</div>';
-  }).join('');
+function renderEvidenceFolders(evidence,reports,analysts){
+  var container=document.getElementById('evidenceFolders');
+  var html=[];
+  evidence.forEach(function(e){html.push('<div class="folder"><small>EVIDENCE FILE</small>'+escapeHtml(e.type||'evidence')+'</div>');});
+  reports.forEach(function(r){html.push('<div class="folder"><small>REPORT FILE</small>'+escapeHtml((r.analyst||'SID')+' · '+(r.report_type||'report'))+'</div>');});
+  analysts.forEach(function(a){html.push('<div class="folder"><small>ASSIGNED ANALYST</small>'+escapeHtml((a.analyst||'SID')+' · '+(a.role||'assigned'))+'</div>');});
+  container.innerHTML=html.join('')||'<div class="folder"><small>EVIDENCE FILE</small>No files yet</div>';
 }
 
 async function loadArchiveCount(){
@@ -691,51 +688,17 @@ function clearCaseSearch(){
 }
 
 async function refreshSelectedCase(){
-  if (!selectedCaseId) return;
-
-  const { data, error } = await supabaseClient
-    .from('cases')
-    .select('*')
-    .eq('id', selectedCaseId)
-    .eq('user_id', currentUserId)
-    .single();
-
-  if (error) {
-    alert('Could not refresh selected case: ' + error.message);
-    return;
-  }
-
-  allCases = allCases.map(function(c){ return c.id === data.id ? data : c; });
-  selectCase(data.id, false);
+  if(!selectedCaseId)return;
+  await loadCases();
+  await selectCase(selectedCaseId,false);
 }
 
 async function prepareReport(){
-  if (!selectedCase) return;
-
-  if (normalizeStatus(selectedCase.status) !== 'closed') {
-    alert('The case must be closed before a final report can be prepared.');
-    return;
+  if(!selectedCase)return;
+  if(normalizeStatus(selectedCase.status)!=='closed'){
+    alert('The case must be closed by ASH before SCRIBE can prepare the final file.');return;
   }
-
-  const confirmed = window.confirm('Prepare this closed case for SCRIBE review?');
-  if (!confirmed) return;
-
-  const { error } = await supabaseClient
-    .from('cases')
-    .update({
-      report_status:'ready_for_scribe',
-      updated_at:new Date().toISOString()
-    })
-    .eq('id', selectedCase.id)
-    .eq('user_id', currentUserId);
-
-  if (error) {
-    alert('Could not prepare report: ' + error.message);
-    return;
-  }
-
-  alert('Case marked READY FOR SCRIBE.');
-  await refreshSelectedCase();
+  alert('This case is closed and ready for SCRIBE. The publishing function is the next connection.');
 }
 
 async function syncOperations(){
