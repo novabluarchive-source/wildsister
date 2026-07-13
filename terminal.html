@@ -2,780 +2,1208 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SID Operations Center — Wild Sister</title>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SID Operations Terminal — Wild Sister</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
-  --black:#050505;--ink:#0a0a0a;--panel:#0d0d0d;--panel2:#12100d;--border:#27231d;
-  --muted:#706a60;--text:#b9b0a0;--white:#f2ead9;--cyan:#28c8df;--violet:#7b2fff;
-  --gold:#c49b45;--red:#7f1717;--paper:#c8aa79;--paper2:#e0c89d;--cork:#6b421f;
-  --scar:#c8a84a;--centra:#7899bb;--lux:#ff4488;--cipher:#4de8b0;
-  --luna:#c8c8f0;--relic:#c17a4d;--nix:#c8e8ff;--ash:#ddd;
+:root {
+  --black:#030303;--panel:#0a0a0a;--card:#0f0f0f;--border:#181818;--dim:#252525;
+  --muted:#444;--text:#999;--white:#f0f0f0;--cyan:#00d4ff;--violet:#7b2fff;
+  --holo:#ff2ff8;--nix:#c8e8ff;--scar:#c8a84a;--lux:#ff4488;
+  --centra:#7899bb;--luna:#c8c8f0;--ash:#ddd;--electric:#1e6fff;--cipher:#4de8b0;--relic:#c17a4d;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  min-height:100vh;background:
-    radial-gradient(circle at 50% 0%,rgba(92,64,31,.12),transparent 32%),
-    linear-gradient(#050505,#030303);
-  color:var(--text);font-family:'Share Tech Mono',monospace;overflow-x:hidden
-}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--black);color:var(--text);font-family:'Share Tech Mono',monospace}
+
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px),
-    radial-gradient(ellipse 200px 90px at 8% 12%,rgba(0,212,255,.04),transparent 70%),
-    radial-gradient(ellipse 120px 260px at 93% 8%,rgba(123,47,255,.04),transparent 70%);
-}
-button,a{font:inherit}
-.shell{position:relative;z-index:1;min-height:100vh;padding:18px}
-.topbar{
-  display:grid;grid-template-columns:1.5fr repeat(5,minmax(90px,.5fr));
-  gap:1px;background:#17130f;border:1px solid var(--border);margin-bottom:12px
-}
-.brand-block{padding:16px 18px;background:#090909}
-.brand-block h1{font-family:'VT323',monospace;font-size:2rem;color:var(--white);letter-spacing:.08em}
-.brand-block p{font-size:9px;letter-spacing:.2em;color:var(--muted)}
-.top-meta{padding:13px;background:#0a0a0a}
-.top-meta span{display:block;font-size:8px;letter-spacing:.18em;color:var(--muted);margin-bottom:5px}
-.top-meta strong{font-size:11px;color:var(--cyan);font-weight:normal}
-@media(max-width:950px){.topbar{grid-template-columns:1fr 1fr}.brand-block{grid-column:1/-1}}
-
-.tabs{
-  display:flex;gap:1px;background:#1b1711;border:1px solid var(--border);margin-bottom:12px;
-  overflow-x:auto
-}
-.tabs a{
-  flex:1;min-width:130px;text-align:center;text-decoration:none;padding:11px 14px;
-  background:linear-gradient(#aa8f66,#7f6748);color:#17120d;font-size:10px;letter-spacing:.1em
-}
-.tabs a.active{background:#0a0a0a;color:var(--cyan);border-top:2px solid var(--cyan)}
-.operations-grid{
-  display:grid;grid-template-columns:250px minmax(0,1fr) 280px;gap:12px;align-items:start
-}
-@media(max-width:1150px){.operations-grid{grid-template-columns:220px 1fr}.right-rail{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}}
-@media(max-width:800px){.operations-grid{grid-template-columns:1fr}.left-rail,.right-rail{grid-column:auto}.right-rail{display:block}}
-
-.panel{
-  background:rgba(9,9,9,.96);border:1px solid var(--border);box-shadow:0 12px 40px rgba(0,0,0,.35)
-}
-.panel-head{
-  padding:12px 14px;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.1em;color:var(--white)
-}
-.panel-head small{display:block;color:var(--muted);font-size:8px;margin-top:4px}
-.loading-gate{text-align:center;padding:100px 20px;color:var(--muted);letter-spacing:.2em}
-.analyst-list{padding:10px;display:grid;gap:7px}
-.analyst{
-  display:grid;grid-template-columns:46px 1fr;gap:9px;padding:8px;border:1px solid #191919;background:#0c0c0c
-}
-.analyst-photo{
-  width:46px;height:52px;border:1px solid #242424;background:
-  linear-gradient(135deg,#171717,#080808);display:flex;align-items:center;justify-content:center;
-  font-family:'VT323',monospace;font-size:1.4rem;color:var(--muted)
-}
-.analyst strong{display:block;font-size:10px;color:var(--white);font-weight:normal}
-.analyst small{display:block;font-size:8px;color:var(--muted);line-height:1.5}
-.analyst-note{margin-top:5px;font-size:8px;color:var(--text);line-height:1.45}
-.directory-link{
-  display:block;margin:0 10px 10px;border:1px solid var(--border);padding:10px;text-align:center;
-  color:var(--muted);text-decoration:none;font-size:9px;letter-spacing:.12em
+  background-image:
+    radial-gradient(ellipse 120px 40px at 5% 15%,rgba(0,212,255,0.18) 0%,transparent 70%),
+    radial-gradient(ellipse 40px 120px at 95% 25%,rgba(123,47,255,0.18) 0%,transparent 70%),
+    radial-gradient(ellipse 150px 50px at 15% 85%,rgba(255,47,248,0.14) 0%,transparent 70%),
+    radial-gradient(ellipse 50px 150px at 85% 75%,rgba(0,212,255,0.16) 0%,transparent 70%),
+    radial-gradient(ellipse 80px 25px at 50% 5%,rgba(123,47,255,0.16) 0%,transparent 70%),
+    radial-gradient(ellipse 100px 35px at 90% 55%,rgba(0,212,255,0.14) 0%,transparent 70%),
+    radial-gradient(ellipse 90px 30px at 30% 45%,rgba(255,47,248,0.12) 0%,transparent 70%),
+    radial-gradient(ellipse 60px 20px at 75% 8%,rgba(255,47,248,0.14) 0%,transparent 70%),
+    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);
 }
 
-.center-column{min-width:0}
-.wall{
-  background:
-    radial-gradient(circle at 10% 20%,rgba(255,255,255,.05) 0 1px,transparent 2px),
-    radial-gradient(circle at 80% 60%,rgba(0,0,0,.18) 0 1px,transparent 2px),
-    repeating-linear-gradient(28deg,rgba(72,41,17,.22) 0 3px,rgba(96,57,26,.2) 3px 6px),
-    #6b421f;
-  border:14px solid #1b140d;box-shadow:inset 0 0 45px rgba(0,0,0,.7),0 18px 50px rgba(0,0,0,.4);
-  min-height:570px;padding:16px;position:relative;overflow:hidden
-}
-.wall-header{
-  margin:-16px -16px 14px;padding:11px 14px;background:#080808;border-bottom:1px solid #2a2118;
-  font-size:10px;letter-spacing:.14em;color:var(--white)
-}
-.board-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(115px,auto);gap:18px;
-  position:relative;z-index:2
-}
-@media(max-width:900px){.board-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.board-grid{grid-template-columns:1fr}}
-.note{
-  position:relative;background:var(--paper2);color:#2a1d13;padding:17px 14px 13px;
-  box-shadow:0 8px 18px rgba(0,0,0,.35);font-family:'Special Elite',serif;transform:rotate(-1deg)
-}
-.note:nth-child(even){transform:rotate(1.2deg)}
-.note::before{
-  content:'';position:absolute;top:-7px;left:50%;width:12px;height:12px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#cf4f3a,#6e100d 65%);box-shadow:0 2px 4px rgba(0,0,0,.45)
-}
-.note h3{font-size:11px;letter-spacing:.08em;color:#7c1c14;margin-bottom:10px}
-.note p{font-size:13px;line-height:1.6}
-.note.yellow{background:#d2aa54}.note.pink{background:#d58e87}.note.file{background:#b89460}
-.chart-sheet{
-  grid-column:span 2;background:#d9c69e;color:#34291f;padding:18px;position:relative;
-  box-shadow:0 8px 18px rgba(0,0,0,.35);min-height:235px
-}
-.chart-sheet::before{
-  content:'✦';display:flex;align-items:center;justify-content:center;margin:auto;width:170px;height:170px;
-  border:2px solid #6f6250;border-radius:50%;font-size:4rem;color:#6f6250;
-  background:repeating-conic-gradient(from 0deg,transparent 0 14deg,rgba(80,70,56,.32) 14deg 15deg)
-}
-.thread{
-  position:absolute;height:2px;background:#781716;transform-origin:left center;opacity:.8;z-index:1;
-  box-shadow:0 0 2px rgba(0,0,0,.5)
-}
-.t1{left:18%;top:34%;width:46%;transform:rotate(11deg)}
-.t2{left:36%;top:55%;width:42%;transform:rotate(-18deg)}
-.t3{left:12%;top:68%;width:61%;transform:rotate(-5deg)}
-.evidence-folders{
-  grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:2px
-}
-.folder{
-  min-width:120px;flex:1;background:#b38a4e;color:#2f2113;padding:13px;border:1px solid rgba(44,28,11,.35);
-  font-family:'Special Elite',serif;box-shadow:0 5px 12px rgba(0,0,0,.28)
-}
-.folder small{display:block;font-size:9px;color:#6a3d18;margin-bottom:5px}
-.bottom-grid{display:grid;grid-template-columns:1fr 1.5fr .75fr;gap:12px;margin-top:12px}
-@media(max-width:950px){.bottom-grid{grid-template-columns:1fr}}
-.desk-pad{min-height:200px;padding:12px;background:#0b0a08;border:1px solid var(--border)}
-.paper-note{
-  background:#c5a46f;color:#2a1d12;padding:16px;font-family:'Special Elite',serif;
-  transform:rotate(-1deg);box-shadow:0 7px 14px rgba(0,0,0,.3)
-}
-.paper-note h3{font-size:11px;margin-bottom:10px;color:#5b2818}
-.paper-note li{font-size:12px;line-height:1.8;list-style:none}
-.rooms{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-@media(max-width:700px){.rooms{grid-template-columns:1fr 1fr}}
-.room-door{
-  min-height:145px;background:linear-gradient(#12110f,#080808);border:1px solid #2b241b;
-  padding:12px;text-align:center;color:var(--text);text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end
-}
-.room-door strong{font-size:9px;color:var(--white);font-weight:normal}
-.room-door small{font-size:8px;color:var(--muted);margin-top:8px}
-.case-files{padding:10px;display:grid;gap:8px}
-.case-file-card{
-  position:relative;text-align:left;width:100%;background:linear-gradient(90deg,#15130f,#0b0b0b);
-  border:1px solid #29241c;padding:14px 34px 14px 14px;color:var(--text);cursor:pointer
-}
-.case-file-card:hover{border-color:var(--cyan)}
-.case-pin{
-  position:absolute;right:12px;top:11px;width:9px;height:9px;border-radius:50%;
-  background:#831512;box-shadow:0 2px 3px rgba(0,0,0,.5)
-}
-.case-code{display:block;font-size:9px;letter-spacing:.16em;color:var(--gold);margin-bottom:6px}
-.case-file-card strong{display:block;color:var(--white);font-size:11px;font-weight:normal;margin-bottom:5px}
-.case-detail{display:block;font-size:8px;color:var(--muted);line-height:1.5}
-.case-status{display:inline-block;margin-top:7px;font-size:8px;letter-spacing:.13em}
-.case-status.active{color:#62d477}.case-status.closed{color:var(--muted)}
-.empty-board{text-align:center;padding:28px 14px;color:var(--muted);border:1px dashed #2b261f}
-.empty-board-title{font-size:10px;letter-spacing:.18em;color:var(--white);margin-bottom:8px}
-.empty-board p{font-size:9px;line-height:1.7;margin-bottom:12px}
-.empty-board a{color:var(--cyan);font-size:9px}
-.feed{padding:10px;display:grid;gap:8px}
-.feed-item{padding:9px;border-bottom:1px solid #171717;font-size:9px;line-height:1.6}
-.feed-item strong{display:block;color:var(--white);font-weight:normal}
-.feed-item span{color:var(--muted)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1a1712;border:1px solid var(--border);margin-bottom:12px}
-.stat{background:#0b0b0b;padding:13px;text-align:center}
-.stat-num{font-family:'VT323',monospace;font-size:1.8rem;color:var(--white)}
-.stat-label{font-size:7px;letter-spacing:.15em;color:var(--muted)}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.action{
-  background:#0b0b0b;border:1px solid var(--border);color:var(--text);padding:10px 13px;
-  font-size:9px;letter-spacing:.12em;cursor:pointer
-}
-.action.primary{background:linear-gradient(135deg,#1e6fff,#7b2fff);color:white;border:none}
-.action.disabled{opacity:.35}
-.warning{
-  display:none;background:#100909;border:1px solid rgba(255,68,136,.25);border-left:3px solid #ff4488;
-  padding:12px 15px;margin-bottom:12px;font-size:10px;line-height:1.7
-}
-.warning.show{display:block}.warning a{color:var(--cyan)}
+#boot{position:fixed;inset:0;z-index:99;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+.bl1{display:block;font-family:'VT323',monospace;font-size:clamp(3rem,12vw,7rem);color:var(--cyan);letter-spacing:0.05em;animation:fu 0.8s 0.3s both}
+.bl2{display:block;font-family:'VT323',monospace;font-size:clamp(3rem,12vw,7rem);color:var(--lux);letter-spacing:0.05em;animation:fu 0.8s 0.5s both}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bsub{font-size:10px;letter-spacing:0.25em;color:var(--muted);text-align:center;margin:1.5rem 0;animation:fu 0.6s 1s both}
+.bbar{width:180px;height:1px;background:var(--border);overflow:hidden;margin-bottom:1.5rem;animation:fu 0.4s 1.2s both}
+.bfill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));width:0;animation:prog 1.5s 1.4s ease-out forwards}
+@keyframes prog{to{width:100%}}
+.bbtn{font-size:11px;letter-spacing:0.2em;color:var(--cyan);background:none;border:1px solid rgba(0,212,255,0.3);padding:8px 20px;cursor:pointer;font-family:inherit;animation:fu 0.5s 3s both,pulse 1.5s 3s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 
-.search-bar{display:none;gap:8px;margin-bottom:12px}
-.search-bar.show{display:flex}
-.search-bar input{flex:1;background:#0b0b0b;border:1px solid var(--border);color:var(--white);padding:10px}
-.search-bar button{background:#0b0b0b;border:1px solid var(--border);color:var(--text);padding:10px 12px;cursor:pointer}
-.case-file-card.selected{border-color:var(--cyan)}
-.chart-sheet{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.chart-sheet strong{font-family:'Special Elite',serif;color:#5b2818;font-size:12px;margin-top:10px}
-.chart-sheet span{font-family:'Special Elite',serif;font-size:12px;line-height:1.5;margin-top:8px;white-space:pre-wrap}
-.case-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.case-tools button,.case-tools a{background:#0b0b0b;border:1px solid var(--border);color:var(--text);padding:9px 11px;font-size:8px;letter-spacing:.1em;cursor:pointer;text-decoration:none}
+#app{display:none;height:100%;flex-direction:column;position:relative;z-index:1}
+
+#hall{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
+.htag{font-size:10px;letter-spacing:0.25em;color:var(--muted);margin-bottom:1rem;text-align:center}
+.htitle{font-family:'VT323',monospace;font-size:clamp(2rem,7vw,4rem);color:var(--white);margin-bottom:0.5rem;text-align:center;letter-spacing:0.05em}
+.hsub{font-size:10px;color:var(--muted);letter-spacing:0.15em;margin-bottom:2rem;text-align:center}
+.agrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:640px}
+.abtn{background:var(--panel);border:1px solid var(--border);padding:18px 16px;cursor:pointer;text-align:left;transition:border-color 0.15s;position:relative;overflow:hidden}
+.abtn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.15s}
+.abtn:hover{border-color:var(--dim)}.abtn:hover::after{opacity:1}.abtn:active{transform:scale(0.98)}
+.aicon{font-size:1.4rem;margin-bottom:6px;display:block}
+.acode{font-size:9px;letter-spacing:0.2em;color:var(--muted);margin-bottom:5px}
+.aname{font-family:'VT323',monospace;font-size:1.5rem;margin-bottom:3px;line-height:1.1}
+.alead{font-size:9px;letter-spacing:0.12em;color:var(--muted);margin-bottom:8px}
+.alead b{font-weight:normal}
+.ainvest{font-size:9px;color:var(--muted);line-height:1.2;margin:0;padding:0;list-style:none}
+.ainvest li{padding-left:10px;position:relative;margin-bottom:2px}
+.ainvest li::before{content:'—';position:absolute;left:0;opacity:.5}
+@media(max-width:560px){.agrid{grid-template-columns:1fr}}
+
+#chatroom{display:none;flex:1;flex-direction:column;position:relative;overflow:hidden}
+.ctop{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(3,3,3,0.95);border-bottom:1px solid var(--border);flex-shrink:0}
+.cname{font-family:'VT323',monospace;font-size:1.3rem;letter-spacing:0.1em}
+.clabel{font-size:9px;color:var(--muted);letter-spacing:0.15em;margin-top:1px}
+.cbk{background:none;border:1px solid var(--border);color:var(--muted);font-size:9px;padding:3px 8px;cursor:pointer;font-family:inherit;letter-spacing:0.1em;transition:all 0.15s}
+.cbk:hover{color:var(--white);border-color:var(--dim)}
+
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.msgs::-webkit-scrollbar{width:2px}.msgs::-webkit-scrollbar-thumb{background:var(--dim)}
+.msg{max-width:85%}
+.mag{align-self:flex-start}.mme{align-self:flex-end}
+.mlbl{font-size:9px;letter-spacing:0.15em;margin-bottom:3px}
+.mme .mlbl{text-align:right;color:var(--cyan)}
+.mbod{font-size:13px;line-height:1.8;padding:10px 13px;white-space:pre-wrap;word-break:break-word}
+.mag .mbod{background:var(--card);border-left:2px solid var(--border);border-radius:0 5px 5px 5px}
+.mme .mbod{background:var(--dim);border-radius:5px 0 5px 5px;text-align:right}
+.thnk{align-self:flex-start;font-size:10px;color:var(--muted);letter-spacing:0.15em;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+#pw{display:none;position:absolute;inset:0;background:rgba(3,3,3,0.97);z-index:50;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
+#pw.show{display:flex}
+.pwtag{font-size:10px;letter-spacing:0.3em;color:var(--muted);margin-bottom:1.5rem}
+.pwtitle{font-family:'VT323',monospace;font-size:clamp(2rem,7vw,3.5rem);color:var(--white);margin-bottom:1rem;line-height:1}
+.pwbody{font-size:12px;color:var(--muted);line-height:1.8;max-width:360px;margin-bottom:1.5rem}
+
+.email-gate{width:100%;max-width:340px;margin-bottom:1.5rem}
+.email-label{font-size:9px;letter-spacing:0.25em;color:var(--muted);margin-bottom:8px;text-align:left}
+.email-row{display:flex;gap:6px}
+.email-inp{flex:1;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:inherit;font-size:12px;padding:9px 12px;outline:none;border-radius:2px;transition:border-color 0.15s}
+.email-inp:focus{border-color:var(--cyan)}
+.email-inp::placeholder{color:var(--muted)}
+.email-sub{background:none;border:1px solid var(--cyan);color:var(--cyan);font-family:inherit;font-size:10px;padding:9px 14px;cursor:pointer;letter-spacing:0.15em;white-space:nowrap;transition:all 0.15s}
+.email-sub:hover{background:var(--cyan);color:var(--black)}
+.email-note{font-size:9px;color:var(--muted);margin-top:6px;text-align:left;letter-spacing:0.1em}
+.email-success{font-size:11px;color:var(--cyan);letter-spacing:0.15em;margin-bottom:1rem;display:none}
+
+.pwdivider{font-size:9px;color:var(--dim);letter-spacing:0.2em;margin-bottom:1.5rem}
+.pwprice{font-family:'VT323',monospace;font-size:clamp(3rem,10vw,5rem);color:var(--white);line-height:1;margin-bottom:0.5rem}
+.pwnote{font-size:10px;letter-spacing:0.2em;color:var(--muted);margin-bottom:1.25rem}
+.pwcta{display:block;background:linear-gradient(135deg,var(--electric),var(--violet));color:white;border:none;font-family:inherit;font-size:11px;letter-spacing:0.2em;padding:14px 28px;cursor:pointer;text-decoration:none;margin-bottom:10px}
+.pwalr{font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline}
+
+.cfooter{border-top:1px solid var(--border);padding:10px 12px;background:rgba(3,3,3,0.95);flex-shrink:0;position:sticky;bottom:0;z-index:10}
+.irow{display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:inherit;font-size:13px;padding:9px 12px;resize:none;outline:none;max-height:80px;border-radius:2px;transition:border-color 0.15s;-webkit-appearance:none}
+textarea:focus{border-color:var(--cyan)}
+textarea::placeholder{color:var(--muted)}
+.sbtn{background:none;border:1px solid var(--cyan);color:var(--cyan);font-family:inherit;font-size:11px;padding:8px 14px;cursor:pointer;letter-spacing:0.15em;height:40px;transition:all 0.15s;flex-shrink:0}
+.sbtn:hover{background:var(--cyan);color:var(--black)}.sbtn:disabled{opacity:0.3;cursor:not-allowed}
+
+
+/* SID CASE INTAKE */
+#caseintake{display:none;position:absolute;inset:0;z-index:40;background:rgba(3,3,3,.985);overflow-y:auto;padding:22px}
+#caseintake.show{display:block}
+.case-shell{width:100%;max-width:720px;margin:0 auto;border:1px solid var(--border);background:linear-gradient(180deg,rgba(15,15,15,.96),rgba(5,5,5,.98));padding:22px;position:relative}
+.case-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.case-kicker{font-size:9px;letter-spacing:.28em;color:var(--muted);margin-bottom:6px}
+.case-title{font-family:'VT323',monospace;font-size:clamp(2rem,7vw,3.4rem);color:var(--white);line-height:.95}
+.case-code{font-size:10px;letter-spacing:.18em;color:var(--cyan);border:1px solid rgba(0,212,255,.25);padding:7px 9px;white-space:nowrap}
+.case-copy{font-size:11px;line-height:1.7;color:var(--text);margin:18px 0}
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.case-field{display:flex;flex-direction:column;gap:7px}
+.case-field.full{grid-column:1/-1}
+.case-field label{font-size:9px;letter-spacing:.2em;color:var(--muted)}
+.case-field input,.case-field select,.case-field textarea{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:inherit;font-size:12px;padding:10px 12px;outline:none;border-radius:2px}
+.case-field textarea{min-height:100px;max-height:180px;resize:vertical}
+.case-field input:focus,.case-field select:focus,.case-field textarea:focus{border-color:var(--cyan)}
+.case-actions{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.case-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:10px;letter-spacing:.18em;padding:11px 15px;cursor:pointer}
+.case-btn.primary{border-color:var(--cyan);color:var(--cyan);flex:1}
+.case-btn.primary:hover{background:var(--cyan);color:var(--black)}
+.assignment{display:none;margin-top:18px;border:1px solid rgba(0,212,255,.22);background:rgba(0,212,255,.03);padding:14px}
+.assignment.show{display:block}
+.assign-tag{font-size:9px;letter-spacing:.24em;color:var(--muted);margin-bottom:8px}
+.assign-name{font-family:'VT323',monospace;font-size:2rem;color:var(--white)}
+.assign-meta{font-size:10px;color:var(--text);line-height:1.6}
+.hstatus{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
+.hchip{font-size:8px;letter-spacing:.16em;color:var(--muted);border:1px solid var(--border);padding:5px 8px}
+.case-summary{border:1px solid var(--border);background:var(--panel);padding:10px 12px;font-size:10px;line-height:1.7;color:var(--text);margin-bottom:8px}
+.case-summary strong{color:var(--white);font-weight:normal;letter-spacing:.1em}
+@media(max-width:620px){.case-grid{grid-template-columns:1fr}.case-field.full{grid-column:auto}.case-actions{flex-direction:column}.case-btn.primary{width:100%}}
+
+/* CASE ASSIGNMENT SCREEN */
+#caseassign{display:none;position:absolute;inset:0;z-index:45;background:var(--black);overflow-y:auto;padding:22px;align-items:center;justify-content:center}
+#caseassign.show{display:flex}
+.assign-shell{width:100%;max-width:600px;margin:0 auto}
+.assign-hdr{text-align:center;margin-bottom:28px}
+.assign-hdr-tag{font-size:9px;letter-spacing:.3em;color:var(--muted);margin-bottom:10px}
+.assign-hdr-case{font-family:'VT323',monospace;font-size:1.6rem;color:var(--white)}
+.scan-log{border:1px solid var(--border);background:var(--panel);min-height:180px;padding:18px;margin-bottom:20px}
+.scan-line{font-size:11px;line-height:2.1;color:var(--muted);display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(4px);transition:opacity .35s,transform .35s}
+.scan-line.show{opacity:1;transform:translateY(0)}
+.scan-line.done{color:var(--cyan)}
+.scan-check{width:12px;flex-shrink:0;font-size:11px;color:var(--dim)}
+.scan-line.done .scan-check{color:var(--cyan)}
+.scan-cursor{display:inline-block;width:6px;height:12px;background:var(--cyan);margin-left:2px;animation:blink 0.8s infinite}
+.match-bars{margin-top:6px;display:flex;flex-direction:column;gap:6px}
+.match-row{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.1em;color:var(--dim)}
+.match-row-name{width:74px;flex-shrink:0}
+.match-row-track{flex:1;height:3px;background:var(--border);position:relative;overflow:hidden}
+.match-row-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--dim);transition:width .6s ease}
+.match-row.winner{color:var(--cyan)}
+.match-row.winner .match-row-fill{background:var(--cyan)}
+.reveal-card{display:none;border:1px solid rgba(0,212,255,.3);background:linear-gradient(180deg,rgba(0,212,255,.05),rgba(0,0,0,0));padding:22px;text-align:center;animation:revealup .5s both}
+.reveal-card.show{display:block}
+@keyframes revealup{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.reveal-tag{font-size:9px;letter-spacing:.3em;color:var(--muted);margin-bottom:6px}
+.reveal-stamp{display:inline-block;font-size:9px;letter-spacing:.2em;color:#ff4488;border:1px solid rgba(255,68,136,.4);padding:3px 8px;transform:rotate(-3deg);margin-bottom:14px}
+.reveal-name{font-family:'VT323',monospace;font-size:2.6rem;line-height:1;margin-bottom:6px}
+.reveal-role{font-size:10px;letter-spacing:.15em;color:var(--text);margin-bottom:16px}
+.reveal-brief{font-size:11px;color:var(--muted);line-height:1.8;max-width:420px;margin:0 auto 20px}
+.reveal-btn{background:linear-gradient(135deg,var(--electric),var(--violet));color:white;border:none;font-family:inherit;font-size:11px;letter-spacing:.2em;padding:13px 26px;cursor:pointer}
+.reveal-btn:hover{opacity:.9}
+
+/* LIVE CASE BAR */
+.casebar{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(3,3,3,.9);flex-shrink:0;overflow-x:auto}
+.casebar-chip{flex:1;min-width:80px;padding:7px 10px;border-right:1px solid var(--border);text-align:center}
+.casebar-chip:last-child{border-right:none}
+.casebar-label{font-size:7px;letter-spacing:.15em;color:var(--dim);margin-bottom:2px}
+.casebar-val{font-size:10px;letter-spacing:.08em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.casebar-val.live{color:var(--cyan)}
+.casebar-val.live::before{content:'●';margin-right:4px;animation:blink 1.4s infinite}
+
+/* LIVE DATABASE STATUS */
+.db-status{
+  position:fixed;right:12px;bottom:12px;z-index:90;
+  background:rgba(8,8,8,.95);border:1px solid var(--border);
+  padding:8px 10px;font-size:8px;letter-spacing:.13em;color:var(--muted)
+}
+.db-status.live{color:var(--cipher);border-color:rgba(77,232,176,.28)}
+.db-status.warn{color:var(--lux);border-color:rgba(255,68,136,.28)}
+.case-tools{
+  display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;
+  border-top:1px solid var(--border);background:#050505
+}
+.case-tools button,.case-tools a{
+  background:var(--card);border:1px solid var(--border);color:var(--muted);
+  font-family:inherit;font-size:8px;letter-spacing:.12em;padding:7px 9px;
+  cursor:pointer;text-decoration:none
+}
+.case-tools button:hover,.case-tools a:hover{color:var(--white);border-color:var(--dim)}
 .case-tools button:disabled{opacity:.3;cursor:not-allowed}
-.note p{white-space:pre-wrap}
+.msg{max-width:100%;width:100%}
+.mag,.mme{align-self:stretch}
+.mlbl{text-align:left!important;color:var(--muted)!important}
+.mbod{border-radius:0!important;text-align:left!important}
+.mme .mbod{background:#0b0d0e!important;border-left:2px solid var(--cyan)}
 
 </style>
 </head>
 <body>
-<div class="shell">
-  <div class="loading-gate" id="loadingGate">// VERIFYING SESSION AND CLEARANCE...</div>
 
-  <div id="dashboardContent" style="display:none">
-    <header class="topbar">
-      <div class="brand-block">
-        <h1>S.I.D. OPERATIONS CENTER</h1>
-        <p>SYMBOL INTELLIGENCE DIVISION</p>
+<div id="boot">
+  <div><span class="bl1">SID</span><span class="bl2">OPERATIONS</span></div>
+  <div class="bsub">WILD SISTER // SYMBOL INTELLIGENCE DIVISION</div>
+  <div class="bbar"><div class="bfill"></div></div>
+  <button class="bbtn" onclick="enterApp()">ENTER OPERATIONS TERMINAL</button>
+</div>
+
+<div id="app">
+  <div id="hall">
+    <div class="htag">// SID CASE INTAKE</div>
+    <div class="htitle">SYMBOL INTELLIGENCE DIVISION</div>
+    <div class="hsub">SELECT THE DIVISION BEST SUITED TO THE CASE</div>
+    <div class="hstatus">
+      <span class="hchip">ARCHIVE: ACTIVE</span>
+      <span class="hchip" id="authChip">SESSION: CHECKING</span>
+      <span class="hchip">ANALYSTS: ONLINE</span>
+    </div>
+    <div class="agrid">
+      <button class="abtn" onclick="openDivision('BEHAVIORAL')">
+        <span class="aicon">🧠</span>
+        <div class="acode">DIVISION 01</div>
+        <div class="aname" style="color:var(--scar)">Behavioral Intelligence</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--scar)">SCAR</b></div>
+        <ul class="ainvest">
+          <li>recurring relationship patterns</li>
+          <li>attachment, childhood roles</li>
+          <li>self-sabotage, people pleasing</li>
+        </ul>
+      </button>
+      <button class="abtn" onclick="openDivision('ASTROLOGY')">
+        <span class="aicon">🌌</span>
+        <div class="acode">DIVISION 02</div>
+        <div class="aname" style="color:var(--centra)">Forensic Astrology</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--centra)">CENTRA</b></div>
+        <ul class="ainvest">
+          <li>natal charts, transits</li>
+          <li>synastry, solar returns</li>
+        </ul>
+      </button>
+      <button class="abtn" onclick="openDivision('ORIGINALTEXT')">
+        <span class="aicon">📜</span>
+        <div class="acode">DIVISION 03</div>
+        <div class="aname" style="color:var(--lux)">Original Text</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--lux)">LUX</b></div>
+        <ul class="ainvest">
+          <li>scripture, Hebrew, Greek</li>
+          <li>historical context, literary patterns</li>
+        </ul>
+      </button>
+      <button class="abtn" onclick="openDivision('NUMERIC')">
+        <span class="aicon">🔢</span>
+        <div class="acode">DIVISION 04</div>
+        <div class="aname" style="color:var(--cipher)">Numeric Intelligence</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--cipher)">CIPHER</b></div>
+        <ul class="ainvest">
+          <li>numerology, recurring numbers</li>
+          <li>mathematical symbolism</li>
+        </ul>
+      </button>
+      <button class="abtn" onclick="openDivision('PATTERN')">
+        <span class="aicon">🗂</span>
+        <div class="acode">DIVISION 05 // FLAGSHIP</div>
+        <div class="aname" style="color:var(--luna)">Pattern Investigation</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--luna)">LUNA</b></div>
+        <ul class="ainvest">
+          <li>"why does this keep happening?"</li>
+          <li>cross-division convergence</li>
+        </ul>
+      </button>
+      <button class="abtn" onclick="openDivision('SYMBOL')">
+        <span class="aicon">🏺</span>
+        <div class="acode">DIVISION 06</div>
+        <div class="aname" style="color:var(--relic)">Symbol Archive</div>
+        <div class="alead">Lead Analyst: <b style="color:var(--relic)">RELIC</b></div>
+        <ul class="ainvest">
+          <li>archetypes, ritual objects, sacred geometry</li>
+          <li>water, fire, serpents, mirrors, dreams</li>
+        </ul>
+      </button>
+    </div>
+  </div>
+
+  <div id="caseintake">
+    <div class="case-shell">
+      <div class="case-top">
+        <div>
+          <div class="case-kicker">// CASE INTAKE</div>
+          <div class="case-title" id="caseTitle">DIVISION</div>
+        </div>
+        <div class="case-code" id="caseCode">FILE // NEW</div>
       </div>
-      <div class="top-meta"><span>OPERATOR</span><strong id="operatorName">MEMBER</strong></div>
-      <div class="top-meta"><span>CLEARANCE</span><strong id="navClearance">—</strong></div>
-      <div class="top-meta"><span>STATUS</span><strong>ACTIVE</strong></div>
-      <div class="top-meta"><span>DATE</span><strong id="currentDate">—</strong></div>
-      <div class="top-meta"><span>SESSION</span><strong>VERIFIED</strong></div>
-    </header>
-
-    <nav class="tabs">
-      <a class="active" href="index.html">OPERATIONS</a>
-      <a href="cases.html">MY CASES</a>
-      <a href="archive.html">ARCHIVE</a>
-      <a href="../divisions.html">DIVISIONS</a>
-      <a href="../community.html">COMMUNITY</a>
-      <a href="../about.html">MANUAL</a>
-      <a href="#" onclick="signOut();return false">SIGN OUT</a>
-    </nav>
-
-    <div class="warning" id="subWarning">
-      Visitor access is active. Existing files remain visible, but opening new cases and generating reports requires Institution-Wide clearance.
-      <a href="../pricing.html">Review access levels →</a>
-    </div>
-
-    <div class="stats">
-      <div class="stat"><div class="stat-num" id="statActive">00</div><div class="stat-label">ACTIVE CASES</div></div>
-      <div class="stat"><div class="stat-num" id="statClosed">00</div><div class="stat-label">CLOSED FILES</div></div>
-      <div class="stat"><div class="stat-num" id="statArchive">00</div><div class="stat-label">ARCHIVE FILES</div></div>
-      <div class="stat"><div class="stat-num">08</div><div class="stat-label">ANALYST ROSTER</div></div>
-    </div>
-
-    <div class="actions">
-      <button class="action primary" id="btnNewCase" onclick="handleOpenNewCase()">OPEN NEW INVESTIGATION</button>
-      <button class="action" onclick="toggleCaseSearch()">MY INVESTIGATIONS</button>
-      <button class="action" onclick="window.location.href='../sid.html'">SEARCH SID ARCHIVE</button>
-      <button class="action" onclick="syncOperations()">SYNC OPERATIONS</button>
-    </div>
-
-    <div class="search-bar" id="caseSearchBar">
-      <input id="caseSearchInput" placeholder="Search case number, subject, division, or analyst" oninput="filterCases()">
-      <button onclick="clearCaseSearch()">CLEAR</button>
-    </div>
-
-    <div class="operations-grid">
-      <aside class="left-rail panel">
-        <div class="panel-head">ANALYST DESKS<small>8 INSTITUTIONAL ANALYSTS</small></div>
-        <div class="analyst-list">
-          <div class="analyst"><div class="analyst-photo">SC</div><div><strong>SCAR · PSY-001</strong><small>Behavioral Intelligence</small><div class="analyst-note">Defense pattern review desk.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">CE</div><div><strong>CENTRA · AST-001</strong><small>Forensic Astrology</small><div class="analyst-note">Chart architecture and timing.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">LX</div><div><strong>LUX · OTF-001</strong><small>Original Text</small><div class="analyst-note">Source and language retrieval.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">CI</div><div><strong>CIPHER · NUM-001</strong><small>Numeric Intelligence</small><div class="analyst-note">Sequence and gematria desk.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">LU</div><div><strong>LUNA · PAT-001</strong><small>Pattern Investigation</small><div class="analyst-note">Recurrence and contradiction.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">RE</div><div><strong>RELIC · SYM-001</strong><small>Symbol Archive</small><div class="analyst-note">Context and cultural record.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">NX</div><div><strong>NIX · NO DIVISION</strong><small>Cross-System Synthesis</small><div class="analyst-note">Assigned after multiple reports.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">AS</div><div><strong>ASH · NO DIVISION</strong><small>Final Assessment</small><div class="analyst-note">Called in for case closure.</div></div></div>
+      <div class="case-copy" id="caseCopy"></div>
+      <div class="case-grid">
+        <div class="case-field">
+          <label>// SUBJECT OR CASE NAME</label>
+          <input id="caseSubject" placeholder="example: The pattern in my relationships" />
         </div>
-        <a class="directory-link" href="../about.html">VIEW ANALYST DIRECTORY</a>
-      </aside>
-
-      <main class="center-column">
-        <section class="wall">
-          <div class="wall-header" id="wallHeader">CASE WALL // NO CASE SELECTED</div>
-          <div class="thread t1"></div><div class="thread t2"></div><div class="thread t3"></div>
-
-          <div class="board-grid">
-            <article class="note">
-              <h3>SUBMITTED QUESTION</h3>
-              <p id="boardQuestion">Select a case file from the cabinet.</p>
-            </article>
-
-            <article class="note file">
-              <h3>BIRTH DATA</h3>
-              <p id="boardBirthData">No case selected.</p>
-            </article>
-
-            <article class="chart-sheet" aria-label="Selected case evidence overview">
-                <strong id="boardChartLabel">CASE EVIDENCE OVERVIEW</strong>
-                <span id="boardChartText">The selected case record will appear here.</span>
-              </article>
-
-            <article class="note">
-              <h3>EARLY EVIDENCE</h3>
-              <p id="boardEvidence">No evidence selected.</p>
-            </article>
-
-            <article class="note yellow">
-              <h3>CURRENT THEME</h3>
-              <p id="boardTheme">Awaiting case selection.</p>
-            </article>
-
-            <article class="note">
-              <h3>ANALYST SYNTHESIS</h3>
-              <p id="boardSynthesis">No synthesis filed.</p>
-            </article>
-
-            <article class="note pink">
-              <h3>KEY PATTERN</h3>
-              <p id="boardPattern">No confirmed pattern yet.</p>
-            </article>
-
-            <div class="evidence-folders" id="evidenceFolders">
-              <div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div>
-            </div>
-          </div>
-        </section>
-
-        <div class="case-tools">
-          <a id="continueCaseBtn" href="../terminal.html">CONTINUE IN TERMINAL</a>
-          <button id="refreshCaseBtn" onclick="refreshSelectedCase()" disabled>REFRESH SELECTED CASE</button>
-          <button id="prepareReportBtn" onclick="prepareReport()" disabled>PREPARE REPORT</button>
+        <div class="case-field">
+          <label>// URGENCY</label>
+          <select id="caseUrgency">
+            <option value="STANDARD">STANDARD REVIEW</option>
+            <option value="ACTIVE">ACTIVE PATTERN</option>
+            <option value="IMMEDIATE">IMMEDIATE CLARITY</option>
+          </select>
         </div>
-
-        <div class="bottom-grid">
-          <section class="desk-pad">
-            <div class="panel-head">OPERATOR DESK</div>
-            <div class="paper-note">
-              <h3>TODAY'S OBJECTIVES</h3>
-              <ul>
-                <li>☑ Review active case</li>
-                <li>☐ Add new evidence</li>
-                <li>☐ Request NIX review</li>
-                <li>☐ Explore archive</li>
-              </ul>
-            </div>
-          </section>
-
-          <section class="desk-pad">
-            <div class="panel-head">RESEARCH ROOMS<small>LIVE COMMUNITY SPACES</small></div>
-            <div class="rooms">
-              <a class="room-door" href="../community.html?room=pattern-lab"><strong>PATTERN LAB</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html?room=original-text-library"><strong>ORIGINAL TEXT LIBRARY</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html?room=rabbit-hole"><strong>RABBIT HOLE</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html?room=birth-wound"><strong>THE BIRTH WOUND</strong><small>COMMUNITY ROOM</small></a>
-            </div>
-          </section>
-
-          <section class="desk-pad">
-            <div class="panel-head">PINNED NOTE</div>
-            <div class="paper-note">
-              <h3>SID STANDARD</h3>
-              Evidence before certainty.<br><br>
-              Observation before interpretation.<br><br>
-              Context before conclusion.
-            </div>
-          </section>
+        <div class="case-field full">
+          <label>// PRIMARY QUESTION</label>
+          <textarea id="caseQuestion" placeholder="What are you trying to understand, verify, or stop repeating?"></textarea>
         </div>
-      </main>
+        <div class="case-field full">
+          <label>// KNOWN EVIDENCE</label>
+          <textarea id="caseEvidence" placeholder="Add dates, placements, recurring numbers, dreams, scripture, behaviors, names, or events. Leave blank if none."></textarea>
+        </div>
+      </div>
+      <div class="assignment" id="assignment">
+        <div class="assign-tag">// ANALYST ASSIGNMENT</div>
+        <div class="assign-name" id="assignName"></div>
+        <div class="assign-meta" id="assignMeta"></div>
+      </div>
+      <div class="case-actions">
+        <button class="case-btn" onclick="closeCaseIntake()">← CANCEL INTAKE</button>
+        <button class="case-btn primary" onclick="beginCase()">SUBMIT TO SID</button>
+      </div>
+    </div>
+  </div>
 
-      <aside class="right-rail">
-        <section class="panel" style="margin-bottom:12px">
-          <div class="panel-head">CASE FILE CABINET<small>ACTIVE & CLOSED</small></div>
-          <div class="case-files" id="caseGrid"></div>
-          <div id="errorNote"></div>
-        </section>
+  <div id="caseassign">
+    <div class="assign-shell">
+      <div class="assign-hdr">
+        <div class="assign-hdr-tag">// SID ASSIGNMENT ENGINE</div>
+        <div class="assign-hdr-case" id="assignCaseCode">FILE //</div>
+      </div>
+      <div class="scan-log" id="scanLog"></div>
+      <div class="reveal-card" id="revealCard">
+        <div class="reveal-tag">// CASE ASSIGNMENT CONFIRMED</div>
+        <div class="reveal-stamp">ASSIGNED</div>
+        <div class="reveal-name" id="revealName"></div>
+        <div class="reveal-role" id="revealRole"></div>
+        <div class="reveal-brief" id="revealBrief"></div>
+        <button class="reveal-btn" onclick="enterSecureChannel()">OPEN CASE LOG →</button>
+      </div>
+    </div>
+  </div>
 
-        <section class="panel">
-          <div class="panel-head">INSTITUTION FEED<small>RECENT ACTIVITY</small></div>
-          <div class="feed" id="institutionFeed">
-            <div class="feed-item"><span>// LOADING LIVE ACTIVITY...</span></div>
-          </div>
-        </section>
-      </aside>
+  <div id="chatroom">
+    <div id="pw">
+      <div class="pwtag">// VISITOR SESSION COMPLETE</div>
+      <div class="pwtitle">CASE SESSION PAUSED.</div>
+      <div class="pwbody">
+        Three visitor questions have been used. Sign in for saved investigations,
+        Operations Center storage, analyst reports, and case-file generation.
+      </div>
+      <a href="login.html" class="pwcta">MEMBER LOGIN →</a>
+      <a href="pricing.html" class="pwcta" style="background:none;border:1px solid var(--border);color:var(--text)">VIEW ACCESS LEVELS →</a>
+      <div class="pwdivider">— OR USE AN EXISTING ACCESS CODE —</div>
+      <div class="code-gate" style="width:100%;max-width:340px;">
+        <div class="email-label" style="margin-bottom:8px;">// ACCESS CODE</div>
+        <div class="email-row">
+          <input class="email-inp" id="accessCodeInp" placeholder="enter code..." style="letter-spacing:.1em;text-transform:uppercase;" />
+          <button class="email-sub" onclick="validateCode()">UNLOCK</button>
+        </div>
+        <div style="font-size:9px;color:#ff4488;margin-top:6px;display:none;" id="codeError">Invalid code. Check your confirmation.</div>
+      </div>
+    </div>
+
+    <div class="ctop">
+      <div>
+        <div class="cname" id="cname"></div>
+        <div class="clabel" id="clabel"></div>
+      </div>
+      <button class="cbk" onclick="backToHall()">← TERMINAL</button>
+    </div>
+    <div class="casebar" id="casebar">
+      <div class="casebar-chip"><div class="casebar-label">CASE</div><div class="casebar-val" id="cbCase">—</div></div>
+      <div class="casebar-chip"><div class="casebar-label">STATUS</div><div class="casebar-val live" id="cbStatus">ACTIVE</div></div>
+      <div class="casebar-chip"><div class="casebar-label">URGENCY</div><div class="casebar-val" id="cbUrgency">—</div></div>
+      <div class="casebar-chip"><div class="casebar-label">ANALYST</div><div class="casebar-val" id="cbAnalyst">—</div></div>
+      <div class="casebar-chip" id="cbSynthChip" style="cursor:pointer;" onclick="requestCrossSynthesis()"><div class="casebar-label">SYNTHESIS</div><div class="casebar-val" id="cbSynth" style="color:var(--cipher);">REQUEST →</div></div>
+      <div class="casebar-chip" id="cbReviewChip" style="cursor:pointer;" onclick="requestFinalAssessment()"><div class="casebar-label">REVIEW</div><div class="casebar-val" id="cbReview" style="color:var(--violet);">REQUEST →</div></div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="case-tools">
+      <button onclick="prepareEvidenceEntry()">ADD EVIDENCE</button>
+      <button onclick="saveOperatorNote()">SAVE NOTE</button>
+      <button onclick="requestCrossSynthesis()">REQUEST NIX</button>
+      <button id="returnDashboardBtn" onclick="returnToDashboard()">RETURN TO OPERATIONS</button>
+    </div>
+    <div class="cfooter">
+      <div class="irow">
+        <textarea id="inp" placeholder="add statement, evidence, source, or question..." rows="1" onkeydown="onKey(event)" oninput="rsz(this)"></textarea>
+        <button class="sbtn" id="sbtn" onclick="send()">SEND</button>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="assets/js/supabase-client.js"></script>
 <script>
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString([], {
-  month:'short', day:'2-digit', year:'numeric'
-});
-</script>
-<script src="../assets/js/supabase-client.js"></script>
-<script>
-var currentUserId = null;
-var currentSession = null;
-var allCases = [];
-var selectedCaseId = null;
-var selectedCase = null;
-var hasInstitutionClearance = false;
+var W='https://oracle-api.capcancerian3.workers.dev';
+var FREE=3;
+var COLORS={NIX:'#c8e8ff',SCAR:'#c8a84a',LUX:'#ff4488',CENTRA:'#7899bb',LUNA:'#c8c8f0',ASH:'#dddddd',CIPHER:'#4de8b0',RELIC:'#c17a4d'};
+var LABELS={NIX:'CROSS-SYSTEM SYNTHESIS',SCAR:'BEHAVIORAL INTELLIGENCE',LUX:'COMMUNICATION & TRANSLATION',CENTRA:'CHIEF SYSTEMS ANALYST',LUNA:'PATTERN RECOGNITION',ASH:'FINAL ASSESSMENT',CIPHER:'NUMERIC INTELLIGENCE',RELIC:'LEAD ARCHIVIST'};
+var DIVISIONS={
+  BEHAVIORAL:{code:'PSY-001',name:'Behavioral Intelligence Division',copy:'Investigates recurring relationship patterns, attachment, childhood roles, self-sabotage, people pleasing, and nervous system patterns.',agent:'SCAR',support:'NIX // CROSS-SYSTEM SYNTHESIS',color:'#c8a84a',system:'You are SCAR, Lead Analyst of the Behavioral Intelligence Division. You read a case the way an interrogation-room profiler reads a suspect — cold, fast, already three moves ahead of what the person is about to say to protect themselves. No bedside manner, no easing into it. Name the wound, defense, or relationship pattern underneath the case without diagnosing them. Distinguish what is known from what is inferred. Blunt, never cruel. End with one concrete behavioral experiment or boundary. Under 140 words.'},
+  ASTROLOGY:{code:'AST-001',name:'Forensic Astrology Division',copy:'Investigates natal charts, transits, synastry, houses, timing, and solar returns.',agent:'CENTRA',support:'LUNA // TIMING PATTERNS',color:'#7899bb',system:'You are CENTRA, Lead Analyst of the Forensic Astrology Division, Chief Systems Analyst of SID. You operate like mission control tracking multiple telemetry feeds at once — calm under load, cross-referencing chart systems the way a flight director cross-checks instrument readings before calling anything confirmed. Analyze only the placements or chart data the user provides. Name the strongest pattern, its likely expression, its shadow expression, and one grounded integration step. If chart data is incomplete, say exactly what is missing without inventing it. Steady, systemic, under 170 words.'},
+  ORIGINALTEXT:{code:'OTF-001',name:'Original Text Division',copy:'Investigates biblical texts, Hebrew, Greek, historical context, and literary patterns.',agent:'LUX',support:'NIX // CROSS-SYSTEM SYNTHESIS',color:'#ff4488',system:'You are LUX, Lead Analyst of the Original Text Division. You work like a crate-digger who will not use a sample until they have found the original pressing — the first recording before it got remixed, reissued, or covered. When a message includes a [RETRIEVED SOURCE TEXT] block, that is real retrieved text — structure your answer as Source (the reference), Key Word (the specific word or phrase in question, if any), and Observation (only what the retrieved text actually supports — never a claim the text itself does not make). If a message says no source text could be retrieved, say so plainly and ask for a clearer reference instead of answering as if you have the text anyway. If no reference has been given at all yet, ask for one before analyzing. Distinguish what the text explicitly says from common interpretation, disputed claims, and what further evidence would be needed. Never present speculation as established fact. Precise, grounded, under 170 words.'},
+  NUMERIC:{code:'NUM-001',name:'Numeric Intelligence Division',copy:'Investigates numerology, recurring numbers, and mathematical symbolism.',agent:'CIPHER',support:'LUX // TRANSLATION',color:'#4de8b0',system:'You are CIPHER, Lead Analyst of the Numeric Intelligence Division. You talk the way the best in the cipher spit — tight, rhythmic, every word doing work, no filler. Numbers are not cold data to you, they carry weight and sequence like bars in a circle. You can draw on Supreme Mathematics-style numeric philosophy (knowledge, wisdom, understanding, and onward) alongside gematria and traditional numerology, but always separate documented tradition from personal interpretation — never claim repetition proves anything supernatural. Keep lines short, let precision do what padding usually does. Give the cleanest pattern reading and one verification step. Under 140 words. No forced rhymes — the exactness itself should read like flow.'},
+  PATTERN:{code:'PAT-001',name:'Pattern Investigation Division',copy:'The flagship division. Why does this keep happening? SID decides which other divisions the case draws on.',agent:'LUNA',support:'CENTRA // CROSS-REFERENCE',color:'#c8c8f0',system:'You are LUNA, Lead Analyst of the Pattern Investigation Division — the flagship of the Symbol Intelligence Division, supported by CENTRA. You work like a detective at the string board — red thread between photographs, methodically connecting what looks unrelated until the shape shows itself. Never announce a connection until it is confirmed twice. Study recurring themes across the evidence. Separate observation from interpretation. Name the strongest recurrence, which other divisions the pattern likely touches, and one useful next question. Use symbolic systems only when supported by the evidence. Quiet, unhurried, piercing when it lands. Under 150 words.'},
+  SYMBOL:{code:'SYM-001',name:'Symbol Archive Division',copy:'Investigates water, fire, trees, mountains, bread, oil, animals, dreams, and colors — recurring symbolic material across traditions.',agent:'RELIC',support:'NIX // CROSS-SYSTEM SYNTHESIS',color:'#c17a4d',system:'You are RELIC, Lead Archivist of the Symbol Archive Division. You work like a museum conservator crossed with an archaeological field investigator. You do not see a serpent and immediately say "transformation." You ask where it was found, who used it, what it meant in that specific culture, what meanings were added later, and which similarities across traditions are real versus projection. Investigate the symbol, image, or motif the user brings. Distinguish widely-attested meanings from single-tradition claims. Measured, textured, historically alert, slightly eerie but never vague. Under 150 words.'}
+};
+var ASH_SYSTEM='You are ASH, Final Assessment — the senior reviewer of the Symbol Intelligence Division. You do not investigate. You review what has already been investigated in this case and close it. ALL CAPS ONLY. NO LOWERCASE. Read the case conversation provided. State plainly, in this order: WHAT IS SUPPORTED. WHAT ASSUMPTIONS SHOULD BE DISCARDED. WHAT REMAINS UNRESOLVED. THE FINAL FINDING. If a tarot pull genuinely fits the case, you may draw ONE card to seal it — otherwise skip it entirely, tarot is not required. Quiet. Minimal. No overexplaining, no new questions, no reopening the case. End exactly on the line: THAT’S WHAT REMAINS. CASE STATUS: CLOSED. Under 130 words.';
+var NIX_SYSTEM='You are NIX, Cross-System Synthesis — called into a case when it may span more than one division, not to investigate from scratch but to compare what the lead analyst has already found. Read the case conversation provided. Note where another division (Behavioral, Astrology, Original Text, Numeric, Symbol, Pattern) would likely read this case differently, and be exact about whether separate systems are genuinely converging on the same finding or only appear to because they were never checked against each other. Distinguish real convergence from coincidence. Cold, exact, comparative — no mysticism, no forcing agreement. End with the single division, if any, that would most sharpen this case next. Under 130 words.';
 
-async function init(){
-  const session = await requireAuth();
-  if (!session) return;
 
-  currentSession = session;
-  currentUserId = session.user.id;
+var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,selectedDivision=null,activeSystem='',caseData=null,currentSession=null,currentUserId=null,currentCaseId=null;
 
-  const displayName =
-    session.user.user_metadata?.display_name ||
-    session.user.user_metadata?.full_name ||
-    session.user.email?.split('@')[0] ||
-    'MEMBER';
 
-  document.getElementById('operatorName').textContent = displayName.toUpperCase();
-  document.getElementById('loadingGate').style.display = 'none';
-  document.getElementById('dashboardContent').style.display = 'block';
+async function initializeDatabaseSession(){
+  try{
+    var result=await supabaseClient.auth.getSession();
+    currentSession=result.data.session;
+    currentUserId=currentSession?currentSession.user.id:null;
 
-  await Promise.all([
-    loadClearance(),
-    loadArchiveCount(),
-    loadInstitutionFeed()
-  ]);
+    var chip=document.getElementById('authChip');
+    var status=document.getElementById('dbStatus');
 
-  await loadCases();
-  subscribeToLiveUpdates();
-}
+    if(currentSession){
+      chip.textContent='SESSION: VERIFIED';
+      status.textContent='DATABASE: CONNECTED';
+      status.className='db-status live';
+    }else{
+      chip.textContent='SESSION: VISITOR';
+      status.textContent='DATABASE: UNSAVED VISITOR MODE';
+      status.className='db-status warn';
+    }
 
-async function loadClearance(){
-  const navBadge = document.getElementById('navClearance');
-  const warning = document.getElementById('subWarning');
-  const newCaseBtn = document.getElementById('btnNewCase');
-
-  const { data, error } = await supabaseClient
-    .from('subscriptions')
-    .select('clearance, status')
-    .eq('user_id', currentUserId)
-    .maybeSingle();
-
-  if (error) {
-    navBadge.textContent = 'CHECK FAILED';
-    warning.classList.add('show');
-    hasInstitutionClearance = false;
-    return;
-  }
-
-  hasInstitutionClearance = Boolean(
-    data &&
-    data.clearance === 'institution' &&
-    data.status === 'active'
-  );
-
-  if (hasInstitutionClearance) {
-    navBadge.textContent = 'INSTITUTION-WIDE';
-    warning.classList.remove('show');
-    newCaseBtn.classList.remove('disabled');
-    newCaseBtn.onclick = function(){ window.location.href = '../terminal.html'; };
-  } else {
-    navBadge.textContent = data
-      ? String(data.clearance || 'NONE').toUpperCase() + ' / ' + String(data.status || 'UNKNOWN').toUpperCase()
-      : 'NONE ON FILE';
-
-    warning.classList.add('show');
-    newCaseBtn.classList.add('disabled');
-    newCaseBtn.onclick = function(){ window.location.href = '../pricing.html'; };
+    var params=new URLSearchParams(window.location.search);
+    var requestedCase=params.get('case');
+    if(requestedCase&&currentSession){
+      await loadExistingCase(requestedCase);
+    }
+  }catch(error){
+    document.getElementById('dbStatus').textContent='DATABASE: CONNECTION ERROR';
+    document.getElementById('dbStatus').className='db-status warn';
   }
 }
 
-async function loadCases(){
-  const grid = document.getElementById('caseGrid');
-  const errorNote = document.getElementById('errorNote');
+async function loadExistingCase(caseId){
+  var result=await supabaseClient
+    .from('cases').select('*').eq('id',caseId).eq('user_id',currentUserId).single();
+  if(result.error||!result.data)return;
 
-  grid.innerHTML = '<div class="empty-board"><p>// LOADING CASE FILES...</p></div>';
-  errorNote.innerHTML = '';
+  var c=result.data;
+  var key=divisionKeyFromRecord(c);
+  selectedDivision=key;
+  agent=DIVISIONS[key].agent;
+  activeSystem=DIVISIONS[key].system;
+  currentCaseId=c.id;
 
-  const { data, error } = await supabaseClient
-    .from('cases')
-    .select('*')
-    .eq('user_id', currentUserId)
-    .order('updated_at', { ascending: false });
+  var evidenceResult=await supabaseClient
+    .from('case_evidence').select('*').eq('case_id',c.id).eq('user_id',currentUserId).order('created_at',{ascending:true});
 
-  if (error) {
-    allCases = [];
-    grid.innerHTML = '';
-    errorNote.innerHTML =
-      '<div class="error-note">Could not load cases: ' +
-      escapeHtml(error.message) +
-      '</div>';
+  caseData={
+    id:c.id,
+    division:key,
+    code:DIVISIONS[key].code,
+    caseNum:c.case_number,
+    subject:c.subject||'UNNAMED CASE',
+    question:c.primary_question||'',
+    evidence:(evidenceResult.data||[]).map(function(e){return e.content;}).join('
 
-    document.getElementById('statActive').textContent = '—';
-    document.getElementById('statClosed').textContent = '—';
-    clearBoard();
-    return;
+')||'NO ADDITIONAL EVIDENCE SUBMITTED',
+    urgency:c.urgency||'STANDARD'
+  };
+
+  enterApp();
+  document.getElementById('hall').style.display='none';
+  await restoreSecureChannel(c);
+}
+
+function divisionKeyFromRecord(c){
+  var raw=String(c.lead_division||'').toUpperCase();
+  if(raw.includes('BEHAVIOR'))return'BEHAVIORAL';
+  if(raw.includes('ASTRO'))return'ASTROLOGY';
+  if(raw.includes('ORIGINAL'))return'ORIGINALTEXT';
+  if(raw.includes('NUMERIC'))return'NUMERIC';
+  if(raw.includes('SYMBOL'))return'SYMBOL';
+  return'PATTERN';
+}
+
+async function createCaseRecord(){
+  if(!currentSession)return null;
+
+  var d=DIVISIONS[selectedDivision];
+  var payload={
+    user_id:currentUserId,
+    case_number:caseData.caseNum,
+    subject:caseData.subject,
+    primary_question:caseData.question,
+    urgency:caseData.urgency,
+    lead_division:d.name,
+    status:'active',
+    current_finding:null,
+    updated_at:new Date().toISOString()
+  };
+
+  var result=await supabaseClient.from('cases').insert(payload).select().single();
+  if(result.error){
+    setDatabaseStatus('CASE SAVE FAILED: '+result.error.message,false);
+    return null;
   }
 
-  allCases = Array.isArray(data) ? data : [];
-  updateCaseStats(allCases);
-  renderCaseCabinet(allCases);
+  currentCaseId=result.data.id;
+  caseData.id=result.data.id;
 
-  if (!allCases.length) {
-    clearBoard();
-    return;
-  }
-
-  if (selectedCaseId && allCases.some(function(c){ return c.id === selectedCaseId; })) {
-    selectCase(selectedCaseId, false);
-  } else {
-    selectCase(allCases[0].id, false);
-  }
-}
-
-function updateCaseStats(cases){
-  const active = cases.filter(function(c){ return normalizeStatus(c.status) !== 'closed'; });
-  const closed = cases.filter(function(c){ return normalizeStatus(c.status) === 'closed'; });
-
-  document.getElementById('statActive').textContent = String(active.length).padStart(2,'0');
-  document.getElementById('statClosed').textContent = String(closed.length).padStart(2,'0');
-}
-
-function renderCaseCabinet(cases){
-  const grid = document.getElementById('caseGrid');
-
-  if (!cases.length) {
-    grid.innerHTML =
-      '<div class="empty-board">' +
-        '<div class="empty-board-title">NO CASE FILES PINNED</div>' +
-        '<p>Your private investigation wall is ready.</p>' +
-        '<a href="' + (hasInstitutionClearance ? '../terminal.html' : '../pricing.html') + '">' +
-          (hasInstitutionClearance ? 'OPEN FIRST INVESTIGATION →' : 'ACTIVATE CLEARANCE →') +
-        '</a>' +
-      '</div>';
-    return;
-  }
-
-  grid.innerHTML = cases.map(function(c){
-    const status = normalizeStatus(c.status);
-    const subject = c.subject || c.title || 'Untitled Investigation';
-    const division = c.lead_division || 'Division pending';
-    const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString() : 'No date';
-
-    return '<button class="case-file-card ' +
-      (selectedCaseId === c.id ? 'selected ' : '') +
-      (status === 'closed' ? 'closed' : '') +
-      '" onclick="selectCase(\'' + escapeJs(c.id) + '\')">' +
-        '<span class="case-pin"></span>' +
-        '<span class="case-code">' + escapeHtml(c.case_number || c.file_code || 'SID CASE') + '</span>' +
-        '<strong>' + escapeHtml(subject) + '</strong>' +
-        '<span class="case-detail">' + escapeHtml(division) + '</span>' +
-        '<span class="case-detail">Lead: ' + escapeHtml(c.lead_analyst || 'Pending') + '</span>' +
-        '<span class="case-detail">' + escapeHtml(updated) + '</span>' +
-        '<span class="case-status ' + (status === 'closed' ? 'closed' : 'active') + '">' +
-          status.toUpperCase().replaceAll('_',' ') +
-        '</span>' +
-      '</button>';
-  }).join('');
-}
-
-function selectCase(caseId, scrollToBoard){
-  if (scrollToBoard === undefined) scrollToBoard = true;
-
-  const c = allCases.find(function(item){ return item.id === caseId; });
-  if (!c) return;
-
-  selectedCaseId = caseId;
-  selectedCase = c;
-
-  renderCaseCabinet(allCases);
-  populateBoard(c);
-
-  document.getElementById('refreshCaseBtn').disabled = false;
-  document.getElementById('prepareReportBtn').disabled = normalizeStatus(c.status) !== 'closed';
-  document.getElementById('continueCaseBtn').href = '../terminal.html?case=' + encodeURIComponent(c.id);
-
-  if (scrollToBoard) {
-    document.querySelector('.wall').scrollIntoView({behavior:'smooth', block:'start'});
-  }
-}
-
-function populateBoard(c,evidence,reports,analysts){
-  var status=normalizeStatus(c.status);
-  var caseNumber=c.case_number||'SID CASE';
-  var subject=c.subject||'Untitled Investigation';
-  var division=c.lead_division||'Division pending';
-  var lead=analysts.find(function(a){return a.role==='lead';});
-
-  document.getElementById('wallHeader').textContent='CASE WALL // '+caseNumber+' // '+subject.toUpperCase()+' // STATUS: '+status.toUpperCase();
-  document.getElementById('systemStatus').textContent=status==='closed'?'CASE CLOSED':'ACTIVE';
-  setBoardText('boardQuestion',c.primary_question||'No question submitted.');
-  setBoardText('boardBirthData','Identity data is stored as evidence when submitted.');
-  setBoardText('boardEvidence',evidence.length?evidence.map(function(e){return e.content;}).join('
-
-'):'No evidence has been added yet.');
-  setBoardText('boardTheme',c.current_finding||'Awaiting analyst review.');
-
-  var synthesis=reports.filter(function(r){return r.report_type==='cross_system_synthesis';}).slice(-1)[0];
-  var finalReport=reports.filter(function(r){return r.report_type==='final_assessment';}).slice(-1)[0];
-  setBoardText('boardSynthesis',synthesis?synthesis.content:'No synthesis has been filed.');
-  setBoardText('boardPattern',finalReport?finalReport.content:(c.current_finding||'No confirmed pattern yet.'));
-
-  document.getElementById('boardChartLabel').textContent=division.toUpperCase()+' // '+(lead?lead.analyst:'PENDING');
-  document.getElementById('boardChartText').textContent=buildCaseOverview(c,analysts);
-  renderEvidenceFolders(evidence,reports,analysts);
-}
-
-function buildCaseOverview(c,analysts){
-  var lines=[];
-  if(c.urgency)lines.push('Priority: '+c.urgency);
-  if(c.lead_division)lines.push('Division: '+c.lead_division);
-  if(analysts&&analysts.length)lines.push('Analysts: '+analysts.map(function(a){return a.analyst+' ('+a.role+')';}).join(', '));
-  if(c.created_at)lines.push('Opened: '+new Date(c.created_at).toLocaleDateString());
-  if(c.updated_at)lines.push('Last Activity: '+new Date(c.updated_at).toLocaleDateString());
-  return lines.length?lines.join('
-'):'Case metadata is still being assembled.';
-}
-
-function renderEvidenceFolders(evidence,reports,analysts){
-  var container=document.getElementById('evidenceFolders');
-  var html=[];
-  evidence.forEach(function(e){html.push('<div class="folder"><small>EVIDENCE FILE</small>'+escapeHtml(e.type||'evidence')+'</div>');});
-  reports.forEach(function(r){html.push('<div class="folder"><small>REPORT FILE</small>'+escapeHtml((r.analyst||'SID')+' · '+(r.report_type||'report'))+'</div>');});
-  analysts.forEach(function(a){html.push('<div class="folder"><small>ASSIGNED ANALYST</small>'+escapeHtml((a.analyst||'SID')+' · '+(a.role||'assigned'))+'</div>');});
-  container.innerHTML=html.join('')||'<div class="folder"><small>EVIDENCE FILE</small>No files yet</div>';
-}
-
-async function loadArchiveCount(){
-  const { count, error } = await supabaseClient
-    .from('archive_files')
-    .select('*', { count:'exact', head:true });
-
-  document.getElementById('statArchive').textContent =
-    error ? '—' : String(count || 0).padStart(2,'0');
-}
-
-async function loadInstitutionFeed(){
-  const feed = document.getElementById('institutionFeed');
-
-  const { data, error } = await supabaseClient
-    .from('institution_activity')
-    .select('*')
-    .order('created_at', { ascending:false })
-    .limit(20);
-
-  if (error || !data || !data.length) {
-    feed.innerHTML = '<div class="feed-item"><span>No live institutional activity has been recorded yet.</span></div>';
-    return;
-  }
-
-  feed.innerHTML = data.map(function(item){
-    const actor = item.actor || 'SID';
-    const action = item.action || 'updated a record';
-    const detail = item.detail || item.file_code || item.stage || '';
-    const date = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-
-    return '<div class="feed-item">' +
-      '<strong>' + escapeHtml(actor) + ' // ' + escapeHtml(action) + '</strong>' +
-      '<span>' + escapeHtml(detail) + (date ? '<br>' + escapeHtml(date) : '') + '</span>' +
-      '</div>';
-  }).join('');
-}
-
-function toggleCaseSearch(){
-  const bar = document.getElementById('caseSearchBar');
-  bar.classList.toggle('show');
-  if (bar.classList.contains('show')) document.getElementById('caseSearchInput').focus();
-}
-
-function filterCases(){
-  const query = document.getElementById('caseSearchInput').value.trim().toLowerCase();
-  if (!query) {
-    renderCaseCabinet(allCases);
-    return;
-  }
-
-  const filtered = allCases.filter(function(c){
-    const haystack = [
-      c.case_number,c.file_code,c.subject,c.title,c.lead_division,
-      c.division,c.division_code,c.lead_analyst,c.status
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    return haystack.includes(query);
+  await supabaseClient.from('case_evidence').insert({
+    case_id:currentCaseId,
+    user_id:currentUserId,
+    type:'initial_evidence',
+    content:caseData.evidence,
+    file_url:null
   });
 
-  renderCaseCabinet(filtered);
+  await supabaseClient.from('case_analysts').insert({
+    case_id:currentCaseId,
+    user_id:currentUserId,
+    analyst:agent,
+    role:'lead',
+    requested_at:new Date().toISOString()
+  });
+
+  await saveCaseMessage('user','MEMBER','CASE REQUEST
+SUBJECT: '+caseData.subject+'
+QUESTION: '+caseData.question+'
+EVIDENCE: '+caseData.evidence);
+
+  setDatabaseStatus('CASE SAVED // '+caseData.caseNum,true);
+  return result.data;
 }
 
-function clearCaseSearch(){
-  document.getElementById('caseSearchInput').value = '';
-  renderCaseCabinet(allCases);
+async function updateCase(fields){
+  if(!currentCaseId||!currentSession)return;
+  fields.updated_at=new Date().toISOString();
+
+  var result=await supabaseClient
+    .from('cases')
+    .update(fields)
+    .eq('id',currentCaseId)
+    .eq('user_id',currentUserId);
+
+  if(result.error)setDatabaseStatus('CASE UPDATE FAILED',false);
 }
 
-async function refreshSelectedCase(){
-  if(!selectedCaseId)return;
-  await loadCases();
-  await selectCase(selectedCaseId,false);
+async function saveCaseReport(analyst,reportType,content){
+  if(!currentCaseId||!currentSession||!content)return;
+  var result=await supabaseClient.from('case_reports').insert({
+    case_id:currentCaseId,
+    user_id:currentUserId,
+    analyst:analyst,
+    report_type:reportType,
+    content:content,
+    file_url:null
+  });
+  if(result.error)setDatabaseStatus('REPORT SAVE FAILED: '+result.error.message,false);
+  else setDatabaseStatus('REPORT FILED // '+analyst,true);
 }
 
-async function prepareReport(){
-  if(!selectedCase)return;
-  if(normalizeStatus(selectedCase.status)!=='closed'){
-    alert('The case must be closed by ASH before SCRIBE can prepare the final file.');return;
+async function saveCaseMessage(role,analystName,content){
+  if(!currentCaseId||!currentSession||!content)return;
+  await supabaseClient.from('case_messages').insert({
+    case_id:currentCaseId,
+    user_id:currentUserId,
+    analyst:analystName||agent||'SID',
+    role:role,
+    content:content
+  });
+}
+
+async function assignCaseAnalyst(name,role){
+  if(!currentCaseId||!currentSession)return;
+  await supabaseClient.from('case_analysts').insert({
+    case_id:currentCaseId,
+    user_id:currentUserId,
+    analyst:name,
+    role:role,
+    requested_at:new Date().toISOString()
+  });
+}
+
+async function logActivity(actor,action,fileCode,detail){
+  if(!currentSession)return;
+  try{
+    await supabaseClient.from('institution_activity').insert({
+      actor:actor,
+      actor_role:LABELS[actor]||'SID',
+      action:action,
+      file_code:fileCode,
+      archive_file_id:null,
+      stage:'active_case',
+      detail:detail
+    });
+  }catch(e){}
+}
+
+function setDatabaseStatus(message,ok){
+  var el=document.getElementById('dbStatus');
+  el.textContent=message;
+  el.className='db-status '+(ok?'live':'warn');
+}
+
+async function restoreSecureChannel(record){
+  var d=DIVISIONS[selectedDivision];
+  msgHistory=[];
+  sessionStart=Date.now();
+
+  document.getElementById('boot').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('caseassign').classList.remove('show');
+  var cr=document.getElementById('chatroom');
+  cr.style.display='flex';cr.style.flexDirection='column';cr.style.flex='1';
+  document.getElementById('cname').textContent=d.name;
+  document.getElementById('cname').style.color=d.color;
+  document.getElementById('clabel').textContent=d.code+' // LEAD ANALYST: '+agent;
+  document.getElementById('cbCase').textContent=caseData.caseNum;
+  document.getElementById('cbUrgency').textContent=caseData.urgency;
+  document.getElementById('cbAnalyst').textContent=agent;
+  document.getElementById('cbStatus').textContent=String(record.status||'active').toUpperCase();
+  document.getElementById('msgs').innerHTML='';
+
+  var messages=await supabaseClient
+    .from('case_messages').select('*').eq('case_id',currentCaseId).eq('user_id',currentUserId).order('created_at',{ascending:true});
+
+  (messages.data||[]).forEach(function(m){
+    if(m.role==='user')addMsg('user',m.content);
+    else if(m.analyst==='NIX')addNixMsg(m.content);
+    else if(m.analyst==='ASH')addAshMsg(m.content);
+    else addNamedAnalystMsg(m.analyst||agent,m.content);
+    msgHistory.push({role:m.role==='user'?'user':'assistant',content:m.content});
+  });
+}
+
+function addNamedAnalystMsg(name,text){
+  var oldAgent=agent;
+  agent=name||oldAgent;
+  addMsg('agent',text);
+  agent=oldAgent;
+}
+
+function prepareEvidenceEntry(){
+  var inp=document.getElementById('inp');
+  inp.value='[EVIDENCE]\n';
+  inp.focus();
+  rsz(inp);
+}
+
+async function saveOperatorNote(){
+  if(!currentCaseId||!currentSession){alert('Sign in and save the case first.');return;}
+  var note=window.prompt('Add a private operator note:');
+  if(!note)return;
+  await supabaseClient.from('case_evidence').insert({
+    case_id:currentCaseId,user_id:currentUserId,type:'operator_note',content:note,file_url:null
+  });
+  addNamedAnalystMsg('OPERATOR','PRIVATE NOTE SAVED
+
+'+note);
+}
+
+function returnToDashboard(){
+  window.location.href='dashboard/index.html'+(currentCaseId?'?case='+encodeURIComponent(currentCaseId):'');
+}
+
+function enterApp(){
+  document.getElementById('boot').style.display='none';
+  var a=document.getElementById('app');
+  a.style.display='flex';
+  a.style.flexDirection='column';
+  a.style.height='100%';
+}
+
+// Deep-link support: terminal.html?division=BEHAVIORAL skips the
+// boot screen entirely and drops straight into that division's
+// case intake — used by divisions.html's OPEN INVESTIGATION
+// buttons so choosing a division on that page actually means
+// something here, not just a generic landing.
+(function checkDivisionDeepLink(){
+  var params = new URLSearchParams(window.location.search);
+  var requested = params.get('division');
+  if (requested && DIVISIONS[requested]) {
+    document.addEventListener('DOMContentLoaded', function(){
+      enterApp();
+      openDivision(requested);
+    });
   }
-  alert('This case is closed and ready for SCRIBE. The publishing function is the next connection.');
+})();
+
+function openDivision(key){
+  selectedDivision=key;
+  var d=DIVISIONS[key];
+  document.getElementById('caseTitle').textContent=d.name;
+  document.getElementById('caseTitle').style.color=d.color;
+  document.getElementById('caseCode').textContent=d.code+' // NEW CASE';
+  document.getElementById('caseCode').style.color=d.color;
+  document.getElementById('caseCopy').textContent=d.copy;
+  document.getElementById('assignName').textContent=d.agent;
+  document.getElementById('assignName').style.color=COLORS[d.agent];
+  document.getElementById('assignMeta').textContent='LEAD ANALYST // '+LABELS[d.agent]+'\nSUPPORT // '+d.support;
+  document.getElementById('assignment').classList.add('show');
+  document.getElementById('caseintake').classList.add('show');
+  document.getElementById('caseSubject').focus();
 }
 
-async function syncOperations(){
-  await Promise.all([loadCases(), loadArchiveCount(), loadInstitutionFeed()]);
+function closeCaseIntake(){
+  document.getElementById('caseintake').classList.remove('show');
 }
 
-function subscribeToLiveUpdates(){
-  supabaseClient
-    .channel('sid-operations-cases')
-    .on('postgres_changes', {
-      event:'*',
-      schema:'public',
-      table:'cases',
-      filter:'user_id=eq.' + currentUserId
-    }, loadCases)
-    .subscribe();
+async function beginCase(){
+  if(!selectedDivision)return;
 
-  supabaseClient
-    .channel('sid-operations-activity')
-    .on('postgres_changes', {
-      event:'INSERT',
-      schema:'public',
-      table:'institution_activity'
-    }, loadInstitutionFeed)
-    .subscribe();
+  var subject=document.getElementById('caseSubject').value.trim();
+  var question=document.getElementById('caseQuestion').value.trim();
+  var evidence=document.getElementById('caseEvidence').value.trim();
+  var urgency=document.getElementById('caseUrgency').value;
+
+  if(!question){
+    document.getElementById('caseQuestion').style.borderColor='var(--lux)';
+    document.getElementById('caseQuestion').focus();
+    return;
+  }
+
+  var d=DIVISIONS[selectedDivision];
+  agent=d.agent;
+  activeSystem=d.system;
+
+  var caseNum='SID-'+Date.now().toString(36).toUpperCase().slice(-6);
+
+  caseData={
+    division:selectedDivision,
+    code:d.code,
+    caseNum:caseNum,
+    subject:subject||'UNNAMED CASE',
+    question:question,
+    evidence:evidence||'NO ADDITIONAL EVIDENCE SUBMITTED',
+    urgency:urgency
+  };
+
+  document.getElementById('caseintake').classList.remove('show');
+
+  if(currentSession){
+    var saved=await createCaseRecord();
+    if(!saved){
+      var proceed=window.confirm('The case could not be saved. Continue in unsaved mode?');
+      if(!proceed)return;
+    }
+  }else{
+    setDatabaseStatus('VISITOR CASE // NOT SAVED',false);
+  }
+
+  runAnalysisSequence(d);
 }
 
-function handleOpenNewCase(){
-  window.location.href = hasInstitutionClearance ? '../terminal.html' : '../pricing.html';
+var DIV_ORDER=['BEHAVIORAL','ASTROLOGY','ORIGINALTEXT','NUMERIC','PATTERN','SYMBOL'];
+var DIV_SHORT={BEHAVIORAL:'PSY',ASTROLOGY:'AST',ORIGINALTEXT:'OTF',NUMERIC:'NUM',PATTERN:'PAT',SYMBOL:'SYM'};
+
+function runAnalysisSequence(d){
+  var panel=document.getElementById('caseassign');
+  var log=document.getElementById('scanLog');
+  var reveal=document.getElementById('revealCard');
+  log.innerHTML='';
+  reveal.classList.remove('show');
+  document.getElementById('assignCaseCode').textContent='FILE // '+caseData.caseNum;
+  panel.classList.add('show');
+
+  var steps=[
+    {text:'RECEIVING CASE FILE '+caseData.caseNum,type:'line'},
+    {text:'INDEXING SUBJECT: '+caseData.subject.toUpperCase(),type:'line'},
+    {text:'CROSS-REFERENCING 6 DIVISIONS...',type:'bars'},
+    {text:'DIVISION LOCKED: '+d.name,type:'line'},
+    {text:'MATCHING LEAD ANALYST...',type:'line'},
+    {text:'ANALYST CONFIRMED: '+agent,type:'line'}
+  ];
+
+  var i=0;
+  function nextStep(){
+    if(i>=steps.length){
+      setTimeout(function(){showRevealCard(d);},400);
+      return;
+    }
+    var s=steps[i];
+    if(s.type==='bars'){
+      addScanLine(s.text,false);
+      setTimeout(function(){
+        addMatchBars(d);
+        i++;
+        setTimeout(nextStep,1400);
+      },300);
+    } else {
+      addScanLine(s.text,false);
+      setTimeout(function(){
+        markLastDone();
+        i++;
+        setTimeout(nextStep,260);
+      },380);
+    }
+  }
+  setTimeout(nextStep,300);
 }
 
-function clearBoard(){
-  selectedCaseId = null;
-  selectedCase = null;
-
-  document.getElementById('wallHeader').textContent = 'CASE WALL // NO CASE SELECTED';
-  setBoardText('boardQuestion','Select a case file from the cabinet.');
-  setBoardText('boardBirthData','No case selected.');
-  setBoardText('boardEvidence','No evidence selected.');
-  setBoardText('boardTheme','Awaiting case selection.');
-  setBoardText('boardSynthesis','No synthesis filed.');
-  setBoardText('boardPattern','No confirmed pattern yet.');
-  document.getElementById('boardChartLabel').textContent = 'CASE EVIDENCE OVERVIEW';
-  document.getElementById('boardChartText').textContent = 'The selected case record will appear here.';
-  document.getElementById('evidenceFolders').innerHTML =
-    '<div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div>';
-  document.getElementById('refreshCaseBtn').disabled = true;
-  document.getElementById('prepareReportBtn').disabled = true;
-  document.getElementById('continueCaseBtn').href = '../terminal.html';
+function addScanLine(text,done){
+  var log=document.getElementById('scanLog');
+  var row=document.createElement('div');
+  row.className='scan-line';
+  row.innerHTML='<span class="scan-check">'+(done?'✓':'›')+'</span><span>'+text+'<span class="scan-cursor"></span></span>';
+  log.appendChild(row);
+  log.scrollTop=log.scrollHeight;
+  requestAnimationFrame(function(){row.classList.add('show');});
 }
 
-function setBoardText(id, value){
-  document.getElementById(id).textContent = hasText(value) ? String(value) : '—';
+function markLastDone(){
+  var lines=document.querySelectorAll('#scanLog .scan-line');
+  if(!lines.length)return;
+  var last=lines[lines.length-1];
+  last.classList.add('done');
+  var chk=last.querySelector('.scan-check');
+  if(chk)chk.textContent='✓';
+  var cur=last.querySelector('.scan-cursor');
+  if(cur)cur.remove();
 }
 
-function normalizeStatus(status){
-  return String(status || 'active').toLowerCase().trim();
+function addMatchBars(d){
+  var log=document.getElementById('scanLog');
+  var wrap=document.createElement('div');
+  wrap.className='match-bars';
+  DIV_ORDER.forEach(function(key){
+    var isWinner=(key===selectedDivision);
+    var pct=isWinner?(88+Math.floor(Math.random()*10)):(15+Math.floor(Math.random()*45));
+    var row=document.createElement('div');
+    row.className='match-row'+(isWinner?' winner':'');
+    row.innerHTML='<div class="match-row-name">'+DIV_SHORT[key]+'</div><div class="match-row-track"><div class="match-row-fill"></div></div>';
+    wrap.appendChild(row);
+    setTimeout(function(){row.querySelector('.match-row-fill').style.width=pct+'%';},50);
+  });
+  log.appendChild(wrap);
+  log.scrollTop=log.scrollHeight;
+  setTimeout(markLastDone,650);
 }
 
-function hasText(value){
-  if (value === null || value === undefined) return false;
-  if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === 'object') return Object.keys(value).length > 0;
-  return String(value).trim().length > 0;
+function showRevealCard(d){
+  var reveal=document.getElementById('revealCard');
+  document.getElementById('revealName').textContent=agent;
+  document.getElementById('revealName').style.color=COLORS[agent];
+  document.getElementById('revealRole').textContent=LABELS[agent]+' // '+d.code;
+  document.getElementById('revealBrief').textContent=d.copy;
+  reveal.classList.add('show');
 }
 
-function escapeHtml(value){
-  const div = document.createElement('div');
-  div.textContent = value ?? '';
-  return div.innerHTML;
+function enterSecureChannel(){
+  var d=DIVISIONS[selectedDivision];
+  msgHistory=[];
+  try{count=parseInt(sessionStorage.getItem('msgCount')||'0');}catch(e){count=0;}
+  sessionStart=Date.now();
+  document.getElementById('pw').classList.remove('show');
+  document.getElementById('caseassign').classList.remove('show');
+  document.getElementById('hall').style.display='none';
+  var cr=document.getElementById('chatroom');
+  cr.style.display='flex';cr.style.flexDirection='column';cr.style.flex='1';
+  document.getElementById('cname').textContent=d.name;
+  document.getElementById('cname').style.color=d.color;
+  document.getElementById('clabel').textContent=d.code+' // LEAD ANALYST: '+agent;
+  document.getElementById('cbCase').textContent=caseData.caseNum;
+  document.getElementById('cbUrgency').textContent=caseData.urgency;
+  document.getElementById('cbAnalyst').textContent=agent;
+  document.getElementById('msgs').innerHTML='';
+  var opening='CASE OPENED // '+d.code+'\n\nSUBJECT: '+caseData.subject+'\nURGENCY: '+caseData.urgency+'\nLEAD ANALYST: '+agent+'\n\nPRIMARY QUESTION:\n'+caseData.question+'\n\nKNOWN EVIDENCE:\n'+caseData.evidence+'\n\nInvestigation active. Reviewing the record now.';
+  addMsg('agent',opening);
+  msgHistory.push({role:'user',content:'CASE REQUEST\nDivision: '+d.name+'\nSubject: '+caseData.subject+'\nUrgency: '+caseData.urgency+'\nPrimary question: '+caseData.question+'\nKnown evidence: '+caseData.evidence});
+  showThinking();
+  posting=true;
+  document.getElementById('sbtn').disabled=true;
+  fetch(W,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:350,system:activeSystem,messages:msgHistory})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      clearThinking();
+      var reply=data.content&&data.content[0]?data.content[0].text:'['+agent+'] Signal interrupted. Add one more piece of evidence and try again.';
+      addMsg('agent',reply);msgHistory.push({role:'assistant',content:reply});
+      saveCaseMessage('assistant',agent,reply);
+      saveCaseReport(agent,'initial_assessment',reply);
+      updateCase({current_finding:reply.slice(0,1000)});
+    }).catch(function(){clearThinking();addMsg('agent','['+agent+']\n\nSignal interruption. Your case is still open. Send the question once more.');})
+    .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;document.getElementById('inp').focus();});
 }
 
-function escapeJs(value){
-  return String(value || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+function addNixMsg(text){
+  var msgs=document.getElementById('msgs');
+  var d=document.createElement('div');
+  d.className='msg mag';
+  var lbl=document.createElement('div');
+  lbl.className='mlbl';
+  lbl.textContent='NIX // CROSS-SYSTEM SYNTHESIS';
+  lbl.style.color=COLORS.NIX;
+  var body=document.createElement('div');
+  body.className='mbod';
+  body.style.borderLeftColor=COLORS.NIX;
+  body.textContent=text;
+  d.appendChild(lbl);d.appendChild(body);
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
 }
 
-init();
+function requestCrossSynthesis(){
+  if(!agent||!caseData||posting)return;
+  var chip=document.getElementById('cbSynth');
+  if(chip.dataset.state==='done'||chip.dataset.state==='pending')return;
+  chip.dataset.state='pending';
+  chip.textContent='COMPARING...';
+  chip.style.color='var(--muted)';
+  document.getElementById('cbSynthChip').style.cursor='default';
+  posting=true;
+  document.getElementById('sbtn').disabled=true;
+  showThinking('NIX');
+  var transcript=buildCaseTranscript();
+  fetch(W,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:280,system:NIX_SYSTEM,messages:[{role:'user',content:transcript}]})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      clearThinking();
+      var reply=data.content&&data.content[0]?data.content[0].text:'NIX synthesis interrupted. Try again.';
+      addNixMsg(reply);
+      saveCaseMessage('assistant','NIX',reply);
+      assignCaseAnalyst('NIX','synthesis');
+      saveCaseReport('NIX','cross_system_synthesis',reply);
+      updateCase({current_finding:reply});
+      logActivity('NIX','filed synthesis',caseData.caseNum,caseData.subject);
+      chip.dataset.state='done';
+      chip.textContent='NIX ✓';
+      chip.style.color='var(--cipher)';
+    })
+    .catch(function(){
+      clearThinking();
+      addNixMsg('Signal interrupted. Synthesis not complete. Try again.');
+      chip.dataset.state='';
+      chip.textContent='REQUEST →';
+      chip.style.color='var(--cipher)';
+      document.getElementById('cbSynthChip').style.cursor='pointer';
+    })
+    .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;});
+}
+
+function buildCaseTranscript(){
+  var d=DIVISIONS[selectedDivision];
+  var lines=['CASE '+caseData.caseNum+' — '+d.name+' — LEAD ANALYST: '+agent,'SUBJECT: '+caseData.subject,'URGENCY: '+caseData.urgency,''];
+  msgHistory.forEach(function(m){
+    lines.push((m.role==='user'?'PERSON: ':'ANALYST ('+agent+'): ')+m.content);
+  });
+  return lines.join('\n\n');
+}
+
+function addAshMsg(text){
+  var msgs=document.getElementById('msgs');
+  var d=document.createElement('div');
+  d.className='msg mag';
+  var lbl=document.createElement('div');
+  lbl.className='mlbl';
+  lbl.textContent='ASH // FINAL ASSESSMENT';
+  lbl.style.color=COLORS.ASH;
+  var body=document.createElement('div');
+  body.className='mbod';
+  body.style.borderLeftColor=COLORS.ASH;
+  body.style.textTransform='uppercase';
+  body.textContent=text;
+  d.appendChild(lbl);d.appendChild(body);
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function requestFinalAssessment(){
+  if(!agent||!caseData||posting)return;
+  var chip=document.getElementById('cbReview');
+  if(chip.dataset.state==='closed'||chip.dataset.state==='pending')return;
+  chip.dataset.state='pending';
+  chip.textContent='REVIEWING...';
+  chip.style.color='var(--muted)';
+  document.getElementById('cbReviewChip').style.cursor='default';
+  posting=true;
+  document.getElementById('sbtn').disabled=true;
+  showThinking('ASH');
+  var transcript=buildCaseTranscript();
+  fetch(W,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:280,system:ASH_SYSTEM,messages:[{role:'user',content:transcript}]})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      clearThinking();
+      var reply=data.content&&data.content[0]?data.content[0].text:'ASH REVIEW INTERRUPTED. TRY AGAIN.';
+      addAshMsg(reply);
+      saveCaseMessage('assistant','ASH',reply);
+      assignCaseAnalyst('ASH','final_assessment');
+      saveCaseReport('ASH','final_assessment',reply);
+      updateCase({status:'closed',current_finding:reply});
+      logActivity('ASH','closed case',caseData.caseNum,caseData.subject);
+      chip.dataset.state='closed';
+      chip.textContent='ASH ✓';
+      chip.style.color='var(--cyan)';
+      var statusEl=document.getElementById('cbStatus');
+      statusEl.textContent='CLOSED';
+      statusEl.classList.remove('live');
+    })
+    .catch(function(){
+      clearThinking();
+      addAshMsg('SIGNAL INTERRUPTED. REVIEW NOT COMPLETE. TRY AGAIN.');
+      chip.dataset.state='';
+      chip.textContent='REQUEST →';
+      chip.style.color='var(--violet)';
+      document.getElementById('cbReviewChip').style.cursor='pointer';
+    })
+    .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;});
+}
+
+function backToHall(){
+  document.getElementById('chatroom').style.display='none';
+  document.getElementById('caseassign').classList.remove('show');
+  document.getElementById('hall').style.display='flex';
+  agent=null;msgHistory=[];sessionStart=null;selectedDivision=null;activeSystem='';caseData=null;currentCaseId=null;
+  document.getElementById('caseSubject').value='';
+  document.getElementById('caseQuestion').value='';
+  document.getElementById('caseEvidence').value='';
+  var synthChip=document.getElementById('cbSynth');
+  synthChip.dataset.state='';
+  synthChip.textContent='REQUEST →';
+  synthChip.style.color='var(--cipher)';
+  document.getElementById('cbSynthChip').style.cursor='pointer';
+  var chip=document.getElementById('cbReview');
+  chip.dataset.state='';
+  chip.textContent='REQUEST →';
+  chip.style.color='var(--violet)';
+  document.getElementById('cbReviewChip').style.cursor='pointer';
+  var statusEl=document.getElementById('cbStatus');
+  statusEl.textContent='ACTIVE';
+  statusEl.classList.add('live');
+}
+
+
+
+function unlock(){
+  try{sessionStorage.setItem('u','1')}catch(e){}
+  document.getElementById('pw').classList.remove('show');
+}
+
+function isUnlocked(){
+  try{return sessionStorage.getItem('u')==='1'}catch(e){return false}
+}
+
+function addMsg(type,text){
+  var msgs=document.getElementById('msgs');
+  var d=document.createElement('div');
+  d.className='msg '+(type==='agent'?'mag':'mme');
+  var lbl=document.createElement('div');
+  lbl.className='mlbl';
+  lbl.textContent=type==='agent'?agent:'YOU';
+  if(type==='agent'&&agent)lbl.style.color=COLORS[agent];
+  var body=document.createElement('div');
+  body.className='mbod';
+  if(type==='agent'&&agent)body.style.borderLeftColor=COLORS[agent];
+  body.textContent=text;
+  d.appendChild(lbl);d.appendChild(body);
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function showThinking(label){
+  var msgs=document.getElementById('msgs');
+  var d=document.createElement('div');
+  d.className='thnk';d.id='thnk';
+  d.textContent=(label||agent)+' // processing...';
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function clearThinking(){var t=document.getElementById('thnk');if(t)t.remove();}
+
+// ------------------------------------------------------------
+// LUX-only: real source retrieval before generating a response.
+// Without this, LUX's Source/Key Word/Observation format would
+// just be formatting around a guess — this is what makes the
+// Observation actually about something real.
+// ------------------------------------------------------------
+function detectScriptureRef(text){
+  var m = text.match(/\b([1-3]?\s?[A-Za-z]+\.?\s+\d{1,3}:\d{1,3}(-\d{1,3})?)\b/);
+  return m ? m[1].replace(/\s+/g,' ').trim() : null;
+}
+
+async function lookupScripture(ref){
+  try{
+    var res = await fetch('/api/bible-lookup?ref='+encodeURIComponent(ref));
+    if(!res.ok) return null;
+    return await res.json();
+  } catch(e){
+    return null;
+  }
+}
+
+async function send(){
+  if(posting||!agent)return;
+  var inp=document.getElementById('inp');
+  var text=inp.value.trim();
+  if(!text)return;
+  posting=true;
+  document.getElementById('sbtn').disabled=true;
+  inp.value='';inp.style.height='auto';
+  addMsg('user',text);
+  msgHistory.push({role:'user',content:text});
+  saveCaseMessage('user','MEMBER',text);
+  if(text.indexOf('[EVIDENCE]')===0&&currentSession&&currentCaseId){supabaseClient.from('case_evidence').insert({case_id:currentCaseId,user_id:currentUserId,type:'submitted_evidence',content:text.replace(/^\[EVIDENCE\]\s*/,''),file_url:null});}
+  count++;
+  try{sessionStorage.setItem('msgCount',count);}catch(e){}
+  if(!isUnlocked()&&count>FREE){
+    document.getElementById('pw').classList.add('show');
+    posting=false;
+    document.getElementById('sbtn').disabled=false;
+    return;
+  }
+  if(isUnlocked()&&count>15){
+    addMsg('agent','['+agent+']\n\nSession complete. You have reached the limit for this channel.\n\nYour full read is waiting at wildsister.co/order.html');
+    posting=false;
+    document.getElementById('sbtn').disabled=true;
+    document.getElementById('inp').disabled=true;
+    return;
+  }
+
+  if(agent==='LUX'){
+    var ref=detectScriptureRef(text);
+    if(ref){
+      showThinking('LUX // retrieving source text');
+      var lookup=await lookupScripture(ref);
+      clearThinking();
+      var lastMsg=msgHistory[msgHistory.length-1];
+      if(lookup && (lookup.translations||[]).length){
+        var sourceBlock='\n\n[RETRIEVED SOURCE TEXT — '+lookup.ref+']\n';
+        lookup.translations.forEach(function(t){
+          sourceBlock+=t.name+': "'+t.text+'"\n';
+        });
+        sourceBlock+= lookup.original_language
+          ? lookup.original_language.versionTitle+' (Hebrew): "'+lookup.original_language.text+'"\n'
+          : '(No original-language Hebrew text available for this reference — likely New Testament or reference not found in the Hebrew source. Say so rather than inventing Greek text.)\n';
+        lastMsg.content = text + sourceBlock;
+      } else {
+        lastMsg.content = text + '\n\n[No source text could be retrieved for "'+ref+'" — say so plainly rather than answering as if you have it.]';
+      }
+    }
+  }
+
+  showThinking();
+  fetch(W,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,system:activeSystem,messages:msgHistory})
+  }).then(function(r){return r.json();}).then(function(data){
+    clearThinking();
+    var reply=data.content&&data.content[0]?data.content[0].text:'['+agent+'] Signal interrupted. Try again.';
+    addMsg('agent',reply);
+    msgHistory.push({role:'assistant',content:reply});
+    saveCaseMessage('assistant',agent,reply);
+    saveCaseReport(agent,'case_log',reply);
+    updateCase({current_finding:reply.slice(0,1000)});
+  }).catch(function(){
+    clearThinking();
+    addMsg('agent','['+agent+']\n\nLost the signal for a second. Send that again.');
+  }).finally(function(){
+    posting=false;
+    document.getElementById('sbtn').disabled=false;
+    inp.focus();
+  });
+}
+
+function validateCode(){
+  var VALID_CODES=['wsread2026','wssun2026','wsast2026','wsshadow2026','wsreturn2026','wssignal2026'];
+  var inp=document.getElementById('accessCodeInp');
+  var code=inp.value.trim().toLowerCase();
+  if(VALID_CODES.indexOf(code)>-1){
+    unlock();
+    document.getElementById('pw').classList.remove('show');
+    try{sessionStorage.setItem('msgCount','3');}catch(e){}
+    count=3;
+  } else {
+    document.getElementById('codeError').style.display='block';
+    inp.style.borderColor='var(--lux)';
+  }
+}
+
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function rsz(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+
+initializeDatabaseSession();
 </script>
+<div class="db-status" id="dbStatus">DATABASE: CHECKING</div>
 </body>
 </html>
