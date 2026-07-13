@@ -194,6 +194,20 @@ button,a{font:inherit}
   padding:12px 15px;margin-bottom:12px;font-size:10px;line-height:1.7
 }
 .warning.show{display:block}.warning a{color:var(--cyan)}
+
+.search-bar{display:none;gap:8px;margin-bottom:12px}
+.search-bar.show{display:flex}
+.search-bar input{flex:1;background:#0b0b0b;border:1px solid var(--border);color:var(--white);padding:10px}
+.search-bar button{background:#0b0b0b;border:1px solid var(--border);color:var(--text);padding:10px 12px;cursor:pointer}
+.case-file-card.selected{border-color:var(--cyan)}
+.chart-sheet{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.chart-sheet strong{font-family:'Special Elite',serif;color:#5b2818;font-size:12px;margin-top:10px}
+.chart-sheet span{font-family:'Special Elite',serif;font-size:12px;line-height:1.5;margin-top:8px;white-space:pre-wrap}
+.case-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.case-tools button,.case-tools a{background:#0b0b0b;border:1px solid var(--border);color:var(--text);padding:9px 11px;font-size:8px;letter-spacing:.1em;cursor:pointer;text-decoration:none}
+.case-tools button:disabled{opacity:.3;cursor:not-allowed}
+.note p{white-space:pre-wrap}
+
 </style>
 </head>
 <body>
@@ -236,10 +250,15 @@ button,a{font:inherit}
     </div>
 
     <div class="actions">
-      <button class="action primary" id="btnNewCase" onclick="handleOpenNewCase()">START NEW BOARD</button>
-      <button class="action" onclick="alert('File search will connect to your saved case index.')">SEARCH MY FILES</button>
-      <button class="action" onclick="alert('Archive search will connect to public SID files.')">SEARCH SID ARCHIVE</button>
-      <button class="action" onclick="location.reload()">REFRESH ROOM</button>
+      <button class="action primary" id="btnNewCase" onclick="handleOpenNewCase()">OPEN NEW INVESTIGATION</button>
+      <button class="action" onclick="toggleCaseSearch()">MY INVESTIGATIONS</button>
+      <button class="action" onclick="window.location.href='../sid.html'">SEARCH SID ARCHIVE</button>
+      <button class="action" onclick="syncOperations()">SYNC OPERATIONS</button>
+    </div>
+
+    <div class="search-bar" id="caseSearchBar">
+      <input id="caseSearchInput" placeholder="Search case number, subject, division, or analyst" oninput="filterCases()">
+      <button onclick="clearCaseSearch()">CLEAR</button>
     </div>
 
     <div class="operations-grid">
@@ -260,51 +279,56 @@ button,a{font:inherit}
 
       <main class="center-column">
         <section class="wall">
-          <div class="wall-header">CASE WALL // MASTER INVESTIGATION BOARD // STATUS: ACTIVE</div>
+          <div class="wall-header" id="wallHeader">CASE WALL // NO CASE SELECTED</div>
           <div class="thread t1"></div><div class="thread t2"></div><div class="thread t3"></div>
 
           <div class="board-grid">
             <article class="note">
               <h3>SUBMITTED QUESTION</h3>
-              <p>What keeps repeating — and what evidence have I ignored?</p>
+              <p id="boardQuestion">Select a case file from the cabinet.</p>
             </article>
 
             <article class="note file">
               <h3>BIRTH DATA</h3>
-              <p>Identity record<br>Chart source<br>Timing data</p>
+              <p id="boardBirthData">No case selected.</p>
             </article>
 
-            <article class="chart-sheet" aria-label="Chart evidence placeholder"></article>
+            <article class="chart-sheet" aria-label="Selected case evidence overview">
+                <strong id="boardChartLabel">CASE EVIDENCE OVERVIEW</strong>
+                <span id="boardChartText">The selected case record will appear here.</span>
+              </article>
 
             <article class="note">
               <h3>EARLY EVIDENCE</h3>
-              <p>Family roles<br>Repeated language<br>Old survival strategy</p>
+              <p id="boardEvidence">No evidence selected.</p>
             </article>
 
             <article class="note yellow">
               <h3>CURRENT THEME</h3>
-              <p>The pattern you keep naming differently.</p>
+              <p id="boardTheme">Awaiting case selection.</p>
             </article>
 
             <article class="note">
               <h3>ANALYST SYNTHESIS</h3>
-              <p>Core pattern:<br>{{CASE_PATTERN}}<br><br>Status: In progress</p>
+              <p id="boardSynthesis">No synthesis filed.</p>
             </article>
 
             <article class="note pink">
               <h3>KEY PATTERN</h3>
-              <p>You protect what you fear you will lose.</p>
+              <p id="boardPattern">No confirmed pattern yet.</p>
             </article>
 
-            <div class="evidence-folders">
-              <div class="folder"><small>EVIDENCE FILE</small>Birth Chart</div>
-              <div class="folder"><small>EVIDENCE FILE</small>Timeline</div>
-              <div class="folder"><small>EVIDENCE FILE</small>Childhood Notes</div>
-              <div class="folder"><small>EVIDENCE FILE</small>Relationships</div>
-              <div class="folder"><small>EVIDENCE FILE</small>Journal</div>
+            <div class="evidence-folders" id="evidenceFolders">
+              <div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div>
             </div>
           </div>
         </section>
+
+        <div class="case-tools">
+          <a id="continueCaseBtn" href="../terminal.html">CONTINUE IN TERMINAL</a>
+          <button id="refreshCaseBtn" onclick="refreshSelectedCase()" disabled>REFRESH SELECTED CASE</button>
+          <button id="prepareReportBtn" onclick="prepareReport()" disabled>PREPARE REPORT</button>
+        </div>
 
         <div class="bottom-grid">
           <section class="desk-pad">
@@ -323,10 +347,10 @@ button,a{font:inherit}
           <section class="desk-pad">
             <div class="panel-head">RESEARCH ROOMS<small>LIVE COMMUNITY SPACES</small></div>
             <div class="rooms">
-              <a class="room-door" href="../community.html"><strong>PATTERN LAB</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html"><strong>ORIGINAL TEXT LIBRARY</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html"><strong>SYMBOL ARCHIVE</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html"><strong>BEHAVIORAL LAB</strong><small>COMMUNITY ROOM</small></a>
+              <a class="room-door" href="../community.html?room=pattern-lab"><strong>PATTERN LAB</strong><small>COMMUNITY ROOM</small></a>
+              <a class="room-door" href="../community.html?room=original-text-library"><strong>ORIGINAL TEXT LIBRARY</strong><small>COMMUNITY ROOM</small></a>
+              <a class="room-door" href="../community.html?room=rabbit-hole"><strong>RABBIT HOLE</strong><small>COMMUNITY ROOM</small></a>
+              <a class="room-door" href="../community.html?room=birth-wound"><strong>THE BIRTH WOUND</strong><small>COMMUNITY ROOM</small></a>
             </div>
           </section>
 
@@ -351,11 +375,8 @@ button,a{font:inherit}
 
         <section class="panel">
           <div class="panel-head">INSTITUTION FEED<small>RECENT ACTIVITY</small></div>
-          <div class="feed">
-            <div class="feed-item"><strong>CENTRA</strong><span>Published AST-041 · The Fourth House</span></div>
-            <div class="feed-item"><strong>RELIC</strong><span>Added SYM-023 · The Door</span></div>
-            <div class="feed-item"><strong>CIPHER</strong><span>Generated NUM-044 · Sequence Study</span></div>
-            <div class="feed-item"><strong>LUNA</strong><span>Updated PAT-022 · Recurrence Study</span></div>
+          <div class="feed" id="institutionFeed">
+            <div class="feed-item"><span>// LOADING LIVE ACTIVITY...</span></div>
           </div>
         </section>
       </aside>
@@ -371,48 +392,73 @@ document.getElementById('currentDate').textContent = new Date().toLocaleDateStri
 <script src="../assets/js/supabase-client.js"></script>
 <script>
 var currentUserId = null;
+var currentSession = null;
+var allCases = [];
+var selectedCaseId = null;
+var selectedCase = null;
+var hasInstitutionClearance = false;
 
 async function init(){
   const session = await requireAuth();
-  if (!session) return; // requireAuth already redirected to login.html
+  if (!session) return;
+
+  currentSession = session;
   currentUserId = session.user.id;
 
+  const displayName =
+    session.user.user_metadata?.display_name ||
+    session.user.user_metadata?.full_name ||
+    session.user.email?.split('@')[0] ||
+    'MEMBER';
+
+  document.getElementById('operatorName').textContent = displayName.toUpperCase();
   document.getElementById('loadingGate').style.display = 'none';
   document.getElementById('dashboardContent').style.display = 'block';
 
-  await loadClearance();
+  await Promise.all([
+    loadClearance(),
+    loadArchiveCount(),
+    loadInstitutionFeed()
+  ]);
+
   await loadCases();
-  await loadArchiveCount();
+  subscribeToLiveUpdates();
 }
 
 async function loadClearance(){
+  const navBadge = document.getElementById('navClearance');
+  const warning = document.getElementById('subWarning');
+  const newCaseBtn = document.getElementById('btnNewCase');
+
   const { data, error } = await supabaseClient
     .from('subscriptions')
     .select('clearance, status')
     .eq('user_id', currentUserId)
     .maybeSingle();
 
-  const badge = document.getElementById('clearanceBadge');
-  const navBadge = document.getElementById('navClearance');
-  const warning = document.getElementById('subWarning');
-  const newCaseBtn = document.getElementById('btnNewCase');
-
   if (error) {
-    badge.textContent = 'CLEARANCE CHECK FAILED';
+    navBadge.textContent = 'CHECK FAILED';
+    warning.classList.add('show');
+    hasInstitutionClearance = false;
     return;
   }
 
-  const active = data && data.clearance === 'institution' && data.status === 'active';
+  hasInstitutionClearance = Boolean(
+    data &&
+    data.clearance === 'institution' &&
+    data.status === 'active'
+  );
 
-  if (active) {
-    badge.textContent = 'CLEARANCE: INSTITUTION-WIDE';
-    badge.classList.remove('none');
-    navBadge.textContent = 'CLEARANCE: INSTITUTION-WIDE';
+  if (hasInstitutionClearance) {
+    navBadge.textContent = 'INSTITUTION-WIDE';
     warning.classList.remove('show');
+    newCaseBtn.classList.remove('disabled');
+    newCaseBtn.onclick = function(){ window.location.href = '../terminal.html'; };
   } else {
-    badge.textContent = data ? ('CLEARANCE: ' + data.clearance.toUpperCase() + ' (' + data.status.toUpperCase() + ')') : 'NO SUBSCRIPTION ON FILE';
-    badge.classList.add('none');
-    navBadge.textContent = 'CLEARANCE: NONE ON FILE';
+    navBadge.textContent = data
+      ? String(data.clearance || 'NONE').toUpperCase() + ' / ' + String(data.status || 'UNKNOWN').toUpperCase()
+      : 'NONE ON FILE';
+
     warning.classList.add('show');
     newCaseBtn.classList.add('disabled');
     newCaseBtn.onclick = function(){ window.location.href = '../pricing.html'; };
@@ -420,66 +466,350 @@ async function loadClearance(){
 }
 
 async function loadCases(){
+  const grid = document.getElementById('caseGrid');
+  const errorNote = document.getElementById('errorNote');
+
+  grid.innerHTML = '<div class="empty-board"><p>// LOADING CASE FILES...</p></div>';
+  errorNote.innerHTML = '';
+
   const { data, error } = await supabaseClient
     .from('cases')
     .select('*')
     .eq('user_id', currentUserId)
     .order('updated_at', { ascending: false });
 
-  const grid = document.getElementById('caseGrid');
-  const errorNote = document.getElementById('errorNote');
-
   if (error) {
-    errorNote.innerHTML = '<div class="error-note">Could not load cases: ' + error.message + '</div>';
+    allCases = [];
+    grid.innerHTML = '';
+    errorNote.innerHTML =
+      '<div class="error-note">Could not load cases: ' +
+      escapeHtml(error.message) +
+      '</div>';
+
     document.getElementById('statActive').textContent = '—';
     document.getElementById('statClosed').textContent = '—';
+    clearBoard();
     return;
   }
 
-  errorNote.innerHTML = '';
-  const active = data.filter(function(c){ return c.status !== 'closed'; });
-  const closed = data.filter(function(c){ return c.status === 'closed'; });
+  allCases = Array.isArray(data) ? data : [];
+  updateCaseStats(allCases);
+  renderCaseCabinet(allCases);
+
+  if (!allCases.length) {
+    clearBoard();
+    return;
+  }
+
+  if (selectedCaseId && allCases.some(function(c){ return c.id === selectedCaseId; })) {
+    selectCase(selectedCaseId, false);
+  } else {
+    selectCase(allCases[0].id, false);
+  }
+}
+
+function updateCaseStats(cases){
+  const active = cases.filter(function(c){ return normalizeStatus(c.status) !== 'closed'; });
+  const closed = cases.filter(function(c){ return normalizeStatus(c.status) === 'closed'; });
 
   document.getElementById('statActive').textContent = String(active.length).padStart(2,'0');
   document.getElementById('statClosed').textContent = String(closed.length).padStart(2,'0');
+}
 
-  if (data.length === 0) {
-    grid.innerHTML = '<div class="empty-board"><div class="empty-board-title">NO CASE FILES PINNED</div><p>Your private investigation wall is ready. Activate clearance, then open your first case.</p><a href="../pricing.html">ACTIVATE CLEARANCE →</a></div>';
+function renderCaseCabinet(cases){
+  const grid = document.getElementById('caseGrid');
+
+  if (!cases.length) {
+    grid.innerHTML =
+      '<div class="empty-board">' +
+        '<div class="empty-board-title">NO CASE FILES PINNED</div>' +
+        '<p>Your private investigation wall is ready.</p>' +
+        '<a href="' + (hasInstitutionClearance ? '../terminal.html' : '../pricing.html') + '">' +
+          (hasInstitutionClearance ? 'OPEN FIRST INVESTIGATION →' : 'ACTIVATE CLEARANCE →') +
+        '</a>' +
+      '</div>';
     return;
   }
 
-  grid.innerHTML = data.map(function(c){
-    return '<button class="case-file-card' + (c.status==='closed' ? ' closed' : '') + '" onclick="openCaseBoard(\'' + c.id + '\')">'
-      + '<span class="case-pin"></span>'
-      + '<span class="case-code">' + escapeHtml(c.case_number || 'SID CASE') + '</span>'
-      + '<strong>' + escapeHtml(c.subject || 'Untitled Investigation') + '</strong>'
-      + '<span class="case-detail">' + escapeHtml(c.lead_division || 'Division pending') + '</span>'
-      + '<span class="case-detail">' + new Date(c.updated_at).toLocaleDateString() + '</span>'
-      + '<span class="case-status ' + (c.status==='closed'?'closed':'active') + '">' + (c.status==='closed' ? 'CLOSED' : 'ACTIVE') + '</span>'
-      + '</button>';
+  grid.innerHTML = cases.map(function(c){
+    const status = normalizeStatus(c.status);
+    const subject = c.subject || c.title || 'Untitled Investigation';
+    const division = c.lead_division || c.division || c.division_code || 'Division pending';
+    const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString() : 'No date';
+
+    return '<button class="case-file-card ' +
+      (selectedCaseId === c.id ? 'selected ' : '') +
+      (status === 'closed' ? 'closed' : '') +
+      '" onclick="selectCase(\'' + escapeJs(c.id) + '\')">' +
+        '<span class="case-pin"></span>' +
+        '<span class="case-code">' + escapeHtml(c.case_number || c.file_code || 'SID CASE') + '</span>' +
+        '<strong>' + escapeHtml(subject) + '</strong>' +
+        '<span class="case-detail">' + escapeHtml(division) + '</span>' +
+        '<span class="case-detail">Lead: ' + escapeHtml(c.lead_analyst || 'Pending') + '</span>' +
+        '<span class="case-detail">' + escapeHtml(updated) + '</span>' +
+        '<span class="case-status ' + (status === 'closed' ? 'closed' : 'active') + '">' +
+          status.toUpperCase().replaceAll('_',' ') +
+        '</span>' +
+      '</button>';
+  }).join('');
+}
+
+function selectCase(caseId, scrollToBoard){
+  if (scrollToBoard === undefined) scrollToBoard = true;
+
+  const c = allCases.find(function(item){ return item.id === caseId; });
+  if (!c) return;
+
+  selectedCaseId = caseId;
+  selectedCase = c;
+
+  renderCaseCabinet(allCases);
+  populateBoard(c);
+
+  document.getElementById('refreshCaseBtn').disabled = false;
+  document.getElementById('prepareReportBtn').disabled = normalizeStatus(c.status) !== 'closed';
+  document.getElementById('continueCaseBtn').href = '../terminal.html?case=' + encodeURIComponent(c.id);
+
+  if (scrollToBoard) {
+    document.querySelector('.wall').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function populateBoard(c){
+  const status = normalizeStatus(c.status);
+  const caseNumber = c.case_number || c.file_code || 'SID CASE';
+  const subject = c.subject || c.title || 'Untitled Investigation';
+  const division = c.lead_division || c.division || c.division_code || 'Division pending';
+  const lead = c.lead_analyst || 'Pending assignment';
+
+  document.getElementById('wallHeader').textContent =
+    'CASE WALL // ' + caseNumber + ' // ' + subject.toUpperCase() +
+    ' // STATUS: ' + status.toUpperCase().replaceAll('_',' ');
+
+  setBoardText('boardQuestion', c.question || c.investigation_question || 'No question submitted.');
+  setBoardText('boardBirthData', c.birth_data || c.identity_record || 'No birth or identity data submitted.');
+  setBoardText('boardEvidence', c.known_evidence || c.evidence || c.early_evidence || 'No evidence has been added yet.');
+  setBoardText('boardTheme', c.current_theme || c.theme || 'Awaiting analyst review.');
+  setBoardText('boardSynthesis', c.analyst_synthesis || c.nix_synthesis || c.integration || 'No synthesis has been filed.');
+  setBoardText('boardPattern', c.key_pattern || c.case_pattern || c.final_finding || 'No confirmed pattern yet.');
+
+  document.getElementById('boardChartLabel').textContent = division.toUpperCase() + ' // ' + lead.toUpperCase();
+  document.getElementById('boardChartText').textContent = buildCaseOverview(c);
+
+  renderEvidenceFolders(c);
+}
+
+function buildCaseOverview(c){
+  const lines = [];
+  if (c.urgency) lines.push('Priority: ' + c.urgency);
+  if (c.lead_analyst) lines.push('Lead Analyst: ' + c.lead_analyst);
+  if (c.division || c.lead_division) lines.push('Division: ' + (c.lead_division || c.division));
+  if (c.created_at) lines.push('Opened: ' + new Date(c.created_at).toLocaleDateString());
+  if (c.updated_at) lines.push('Last Activity: ' + new Date(c.updated_at).toLocaleDateString());
+  return lines.length ? lines.join('\n') : 'Case metadata is still being assembled.';
+}
+
+function renderEvidenceFolders(c){
+  const folders = [];
+  if (hasText(c.birth_data)) folders.push('Birth Data');
+  if (hasText(c.known_evidence || c.evidence)) folders.push('Known Evidence');
+  if (hasText(c.timeline)) folders.push('Timeline');
+  if (hasText(c.sources)) folders.push('Sources');
+  if (hasText(c.analyst_synthesis || c.nix_synthesis)) folders.push('Synthesis');
+  if (hasText(c.key_pattern || c.final_finding)) folders.push('Final Finding');
+  if (!folders.length) folders.push('No evidence files yet');
+
+  document.getElementById('evidenceFolders').innerHTML = folders.map(function(name){
+    return '<div class="folder"><small>EVIDENCE FILE</small>' + escapeHtml(name) + '</div>';
   }).join('');
 }
 
 async function loadArchiveCount(){
   const { count, error } = await supabaseClient
     .from('archive_files')
-    .select('*', { count: 'exact', head: true });
-  document.getElementById('statArchive').textContent = error ? '—' : String(count).padStart(2,'0');
+    .select('*', { count:'exact', head:true });
+
+  document.getElementById('statArchive').textContent =
+    error ? '—' : String(count || 0).padStart(2,'0');
+}
+
+async function loadInstitutionFeed(){
+  const feed = document.getElementById('institutionFeed');
+
+  const { data, error } = await supabaseClient
+    .from('institution_activity')
+    .select('*')
+    .order('created_at', { ascending:false })
+    .limit(20);
+
+  if (error || !data || !data.length) {
+    feed.innerHTML = '<div class="feed-item"><span>No live institutional activity has been recorded yet.</span></div>';
+    return;
+  }
+
+  feed.innerHTML = data.map(function(item){
+    const actor = item.actor || 'SID';
+    const action = item.action || 'updated a record';
+    const detail = item.detail || item.file_code || item.stage || '';
+    const date = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+
+    return '<div class="feed-item">' +
+      '<strong>' + escapeHtml(actor) + ' // ' + escapeHtml(action) + '</strong>' +
+      '<span>' + escapeHtml(detail) + (date ? '<br>' + escapeHtml(date) : '') + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+function toggleCaseSearch(){
+  const bar = document.getElementById('caseSearchBar');
+  bar.classList.toggle('show');
+  if (bar.classList.contains('show')) document.getElementById('caseSearchInput').focus();
+}
+
+function filterCases(){
+  const query = document.getElementById('caseSearchInput').value.trim().toLowerCase();
+  if (!query) {
+    renderCaseCabinet(allCases);
+    return;
+  }
+
+  const filtered = allCases.filter(function(c){
+    const haystack = [
+      c.case_number,c.file_code,c.subject,c.title,c.lead_division,
+      c.division,c.division_code,c.lead_analyst,c.status
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    return haystack.includes(query);
+  });
+
+  renderCaseCabinet(filtered);
+}
+
+function clearCaseSearch(){
+  document.getElementById('caseSearchInput').value = '';
+  renderCaseCabinet(allCases);
+}
+
+async function refreshSelectedCase(){
+  if (!selectedCaseId) return;
+
+  const { data, error } = await supabaseClient
+    .from('cases')
+    .select('*')
+    .eq('id', selectedCaseId)
+    .eq('user_id', currentUserId)
+    .single();
+
+  if (error) {
+    alert('Could not refresh selected case: ' + error.message);
+    return;
+  }
+
+  allCases = allCases.map(function(c){ return c.id === data.id ? data : c; });
+  selectCase(data.id, false);
+}
+
+async function prepareReport(){
+  if (!selectedCase) return;
+
+  if (normalizeStatus(selectedCase.status) !== 'closed') {
+    alert('The case must be closed before a final report can be prepared.');
+    return;
+  }
+
+  const confirmed = window.confirm('Prepare this closed case for SCRIBE review?');
+  if (!confirmed) return;
+
+  const { error } = await supabaseClient
+    .from('cases')
+    .update({
+      report_status:'ready_for_scribe',
+      updated_at:new Date().toISOString()
+    })
+    .eq('id', selectedCase.id)
+    .eq('user_id', currentUserId);
+
+  if (error) {
+    alert('Could not prepare report: ' + error.message);
+    return;
+  }
+
+  alert('Case marked READY FOR SCRIBE.');
+  await refreshSelectedCase();
+}
+
+async function syncOperations(){
+  await Promise.all([loadCases(), loadArchiveCount(), loadInstitutionFeed()]);
+}
+
+function subscribeToLiveUpdates(){
+  supabaseClient
+    .channel('sid-operations-cases')
+    .on('postgres_changes', {
+      event:'*',
+      schema:'public',
+      table:'cases',
+      filter:'user_id=eq.' + currentUserId
+    }, loadCases)
+    .subscribe();
+
+  supabaseClient
+    .channel('sid-operations-activity')
+    .on('postgres_changes', {
+      event:'INSERT',
+      schema:'public',
+      table:'institution_activity'
+    }, loadInstitutionFeed)
+    .subscribe();
 }
 
 function handleOpenNewCase(){
-  alert('The case intake form is the next endpoint to connect. The Operations Center is ready to receive it.');
+  window.location.href = hasInstitutionClearance ? '../terminal.html' : '../pricing.html';
 }
 
-function openCaseBoard(caseId){
-  if (!caseId) return;
-  window.location.href = 'case.html?id=' + encodeURIComponent(caseId);
+function clearBoard(){
+  selectedCaseId = null;
+  selectedCase = null;
+
+  document.getElementById('wallHeader').textContent = 'CASE WALL // NO CASE SELECTED';
+  setBoardText('boardQuestion','Select a case file from the cabinet.');
+  setBoardText('boardBirthData','No case selected.');
+  setBoardText('boardEvidence','No evidence selected.');
+  setBoardText('boardTheme','Awaiting case selection.');
+  setBoardText('boardSynthesis','No synthesis filed.');
+  setBoardText('boardPattern','No confirmed pattern yet.');
+  document.getElementById('boardChartLabel').textContent = 'CASE EVIDENCE OVERVIEW';
+  document.getElementById('boardChartText').textContent = 'The selected case record will appear here.';
+  document.getElementById('evidenceFolders').innerHTML =
+    '<div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div>';
+  document.getElementById('refreshCaseBtn').disabled = true;
+  document.getElementById('prepareReportBtn').disabled = true;
+  document.getElementById('continueCaseBtn').href = '../terminal.html';
 }
 
-function escapeHtml(s){
-  var d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
+function setBoardText(id, value){
+  document.getElementById(id).textContent = hasText(value) ? String(value) : '—';
+}
+
+function normalizeStatus(status){
+  return String(status || 'active').toLowerCase().trim();
+}
+
+function hasText(value){
+  if (value === null || value === undefined) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') return Object.keys(value).length > 0;
+  return String(value).trim().length > 0;
+}
+
+function escapeHtml(value){
+  const div = document.createElement('div');
+  div.textContent = value ?? '';
+  return div.innerHTML;
+}
+
+function escapeJs(value){
+  return String(value || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 }
 
 init();
