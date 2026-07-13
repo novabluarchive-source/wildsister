@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>SID Terminal — Wild Sister</title>
+<title>SID Operations Terminal — Wild Sister</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --black:#030303;--panel:#0a0a0a;--card:#0f0f0f;--border:#181818;--dim:#252525;
@@ -183,25 +184,51 @@ textarea::placeholder{color:var(--muted)}
 .casebar-val{font-size:10px;letter-spacing:.08em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .casebar-val.live{color:var(--cyan)}
 .casebar-val.live::before{content:'●';margin-right:4px;animation:blink 1.4s infinite}
+
+/* LIVE DATABASE STATUS */
+.db-status{
+  position:fixed;right:12px;bottom:12px;z-index:90;
+  background:rgba(8,8,8,.95);border:1px solid var(--border);
+  padding:8px 10px;font-size:8px;letter-spacing:.13em;color:var(--muted)
+}
+.db-status.live{color:var(--cipher);border-color:rgba(77,232,176,.28)}
+.db-status.warn{color:var(--lux);border-color:rgba(255,68,136,.28)}
+.case-tools{
+  display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;
+  border-top:1px solid var(--border);background:#050505
+}
+.case-tools button,.case-tools a{
+  background:var(--card);border:1px solid var(--border);color:var(--muted);
+  font-family:inherit;font-size:8px;letter-spacing:.12em;padding:7px 9px;
+  cursor:pointer;text-decoration:none
+}
+.case-tools button:hover,.case-tools a:hover{color:var(--white);border-color:var(--dim)}
+.case-tools button:disabled{opacity:.3;cursor:not-allowed}
+.msg{max-width:100%;width:100%}
+.mag,.mme{align-self:stretch}
+.mlbl{text-align:left!important;color:var(--muted)!important}
+.mbod{border-radius:0!important;text-align:left!important}
+.mme .mbod{background:#0b0d0e!important;border-left:2px solid var(--cyan)}
+
 </style>
 </head>
 <body>
 
 <div id="boot">
-  <div><span class="bl1">SID</span><span class="bl2">TERMINAL</span></div>
+  <div><span class="bl1">SID</span><span class="bl2">OPERATIONS</span></div>
   <div class="bsub">WILD SISTER // SYMBOL INTELLIGENCE DIVISION</div>
   <div class="bbar"><div class="bfill"></div></div>
-  <button class="bbtn" onclick="enterApp()">ENTER THE ARCHIVE</button>
+  <button class="bbtn" onclick="enterApp()">ENTER OPERATIONS TERMINAL</button>
 </div>
 
 <div id="app">
   <div id="hall">
-    <div class="htag">// RECOVERED SYMBOLIC INTELLIGENCE ARCHIVE</div>
+    <div class="htag">// SID CASE INTAKE</div>
     <div class="htitle">SYMBOL INTELLIGENCE DIVISION</div>
-    <div class="hsub">SELECT DIVISION</div>
+    <div class="hsub">SELECT THE DIVISION BEST SUITED TO THE CASE</div>
     <div class="hstatus">
       <span class="hchip">ARCHIVE: ACTIVE</span>
-      <span class="hchip">ACCESS: PUBLIC</span>
+      <span class="hchip" id="authChip">SESSION: CHECKING</span>
       <span class="hchip">ANALYSTS: ONLINE</span>
     </div>
     <div class="agrid">
@@ -273,7 +300,7 @@ textarea::placeholder{color:var(--muted)}
     <div class="case-shell">
       <div class="case-top">
         <div>
-          <div class="case-kicker">// NEW CASE REQUEST</div>
+          <div class="case-kicker">// CASE INTAKE</div>
           <div class="case-title" id="caseTitle">DIVISION</div>
         </div>
         <div class="case-code" id="caseCode">FILE // NEW</div>
@@ -307,8 +334,8 @@ textarea::placeholder{color:var(--muted)}
         <div class="assign-meta" id="assignMeta"></div>
       </div>
       <div class="case-actions">
-        <button class="case-btn" onclick="closeCaseIntake()">← RETURN TO DIVISIONS</button>
-        <button class="case-btn primary" onclick="beginCase()">BEGIN INVESTIGATION</button>
+        <button class="case-btn" onclick="closeCaseIntake()">← CANCEL INTAKE</button>
+        <button class="case-btn primary" onclick="beginCase()">SUBMIT TO SID</button>
       </div>
     </div>
   </div>
@@ -316,51 +343,40 @@ textarea::placeholder{color:var(--muted)}
   <div id="caseassign">
     <div class="assign-shell">
       <div class="assign-hdr">
-        <div class="assign-hdr-tag">// SID PROCESSING</div>
+        <div class="assign-hdr-tag">// SID ASSIGNMENT ENGINE</div>
         <div class="assign-hdr-case" id="assignCaseCode">FILE //</div>
       </div>
       <div class="scan-log" id="scanLog"></div>
       <div class="reveal-card" id="revealCard">
-        <div class="reveal-tag">// ANALYST ASSIGNMENT CONFIRMED</div>
+        <div class="reveal-tag">// CASE ASSIGNMENT CONFIRMED</div>
         <div class="reveal-stamp">ASSIGNED</div>
         <div class="reveal-name" id="revealName"></div>
         <div class="reveal-role" id="revealRole"></div>
         <div class="reveal-brief" id="revealBrief"></div>
-        <button class="reveal-btn" onclick="enterSecureChannel()">ENTER SECURE CHANNEL →</button>
+        <button class="reveal-btn" onclick="enterSecureChannel()">OPEN CASE LOG →</button>
       </div>
     </div>
   </div>
 
   <div id="chatroom">
     <div id="pw">
-      <div class="pwtag">// SESSION LIMIT REACHED</div>
-      <div class="pwtitle">THE SIGNAL CONTINUES.</div>
-      <div class="pwbody">You had 3 questions. The agent went deeper than most people let it go. Drop your email — get $10 off your first full read.</div>
-
-      <div class="email-gate">
-        <div class="email-label">// YOUR EMAIL</div>
-        <div class="email-row">
-          <input class="email-inp" id="emailInp" type="email" placeholder="your@email.com" />
-          <button class="email-sub" onclick="submitEmail()">SEND IT</button>
-        </div>
-        <div class="email-note">No spam. One email with your discount code.</div>
+      <div class="pwtag">// VISITOR SESSION COMPLETE</div>
+      <div class="pwtitle">CASE SESSION PAUSED.</div>
+      <div class="pwbody">
+        Three visitor questions have been used. Sign in for saved investigations,
+        Operations Center storage, analyst reports, and case-file generation.
       </div>
-
-      <div class="email-success" id="emailSuccess">// CODE SENT — CHECK YOUR INBOX</div>
-
-      <div class="pwdivider">— OR GO STRAIGHT TO A FULL READ —</div>
-
-      <div class="pwprice">$18<span style="font-size:2rem">+</span></div>
-      <div class="pwnote">// THE SIGNAL — ONE QUESTION. YOUR CHART. 24HR DELIVERY.</div>
-      <a href="https://wildsister.co/order.html" target="_blank" class="pwcta">VIEW ALL READINGS</a>
-      <div class="code-gate" style="margin-top:1rem;width:100%;max-width:340px;">
-  <div class="email-label" style="margin-bottom:8px;">// HAVE AN ACCESS CODE?</div>
-  <div class="email-row">
-    <input class="email-inp" id="accessCodeInp" placeholder="enter code..." style="letter-spacing:0.1em;text-transform:uppercase;" />
-    <button class="email-sub" onclick="validateCode()">UNLOCK</button>
-  </div>
-  <div style="font-size:9px;color:#ff4488;margin-top:6px;display:none;" id="codeError">Invalid code. Check your purchase confirmation.</div>
-</div>
+      <a href="login.html" class="pwcta">MEMBER LOGIN →</a>
+      <a href="pricing.html" class="pwcta" style="background:none;border:1px solid var(--border);color:var(--text)">VIEW ACCESS LEVELS →</a>
+      <div class="pwdivider">— OR USE AN EXISTING ACCESS CODE —</div>
+      <div class="code-gate" style="width:100%;max-width:340px;">
+        <div class="email-label" style="margin-bottom:8px;">// ACCESS CODE</div>
+        <div class="email-row">
+          <input class="email-inp" id="accessCodeInp" placeholder="enter code..." style="letter-spacing:.1em;text-transform:uppercase;" />
+          <button class="email-sub" onclick="validateCode()">UNLOCK</button>
+        </div>
+        <div style="font-size:9px;color:#ff4488;margin-top:6px;display:none;" id="codeError">Invalid code. Check your confirmation.</div>
+      </div>
     </div>
 
     <div class="ctop">
@@ -368,7 +384,7 @@ textarea::placeholder{color:var(--muted)}
         <div class="cname" id="cname"></div>
         <div class="clabel" id="clabel"></div>
       </div>
-      <button class="cbk" onclick="backToHall()">← ROOMS</button>
+      <button class="cbk" onclick="backToHall()">← TERMINAL</button>
     </div>
     <div class="casebar" id="casebar">
       <div class="casebar-chip"><div class="casebar-label">CASE</div><div class="casebar-val" id="cbCase">—</div></div>
@@ -379,18 +395,24 @@ textarea::placeholder{color:var(--muted)}
       <div class="casebar-chip" id="cbReviewChip" style="cursor:pointer;" onclick="requestFinalAssessment()"><div class="casebar-label">REVIEW</div><div class="casebar-val" id="cbReview" style="color:var(--violet);">REQUEST →</div></div>
     </div>
     <div class="msgs" id="msgs"></div>
+    <div class="case-tools">
+      <button onclick="prepareEvidenceEntry()">ADD EVIDENCE</button>
+      <button onclick="saveOperatorNote()">SAVE NOTE</button>
+      <button onclick="requestCrossSynthesis()">REQUEST NIX</button>
+      <button id="returnDashboardBtn" onclick="returnToDashboard()">RETURN TO OPERATIONS</button>
+    </div>
     <div class="cfooter">
       <div class="irow">
-        <textarea id="inp" placeholder="speak now..." rows="1" onkeydown="onKey(event)" oninput="rsz(this)"></textarea>
+        <textarea id="inp" placeholder="add statement, evidence, source, or question..." rows="1" onkeydown="onKey(event)" oninput="rsz(this)"></textarea>
         <button class="sbtn" id="sbtn" onclick="send()">SEND</button>
       </div>
     </div>
   </div>
 </div>
 
+<script src="assets/js/supabase-client.js"></script>
 <script>
 var W='https://oracle-api.capcancerian3.workers.dev';
-var RESEND_CAPTURE='https://novablus--4390816e3c0d11f192b142b51c65c3df.web.val.run';
 var FREE=3;
 var COLORS={NIX:'#c8e8ff',SCAR:'#c8a84a',LUX:'#ff4488',CENTRA:'#7899bb',LUNA:'#c8c8f0',ASH:'#dddddd',CIPHER:'#4de8b0',RELIC:'#c17a4d'};
 var LABELS={NIX:'CROSS-SYSTEM SYNTHESIS',SCAR:'BEHAVIORAL INTELLIGENCE',LUX:'COMMUNICATION & TRANSLATION',CENTRA:'CHIEF SYSTEMS ANALYST',LUNA:'PATTERN RECOGNITION',ASH:'FINAL ASSESSMENT',CIPHER:'NUMERIC INTELLIGENCE',RELIC:'LEAD ARCHIVIST'};
@@ -406,7 +428,249 @@ var ASH_SYSTEM='You are ASH, Final Assessment — the senior reviewer of the Sym
 var NIX_SYSTEM='You are NIX, Cross-System Synthesis — called into a case when it may span more than one division, not to investigate from scratch but to compare what the lead analyst has already found. Read the case conversation provided. Note where another division (Behavioral, Astrology, Original Text, Numeric, Symbol, Pattern) would likely read this case differently, and be exact about whether separate systems are genuinely converging on the same finding or only appear to because they were never checked against each other. Distinguish real convergence from coincidence. Cold, exact, comparative — no mysticism, no forcing agreement. End with the single division, if any, that would most sharpen this case next. Under 130 words.';
 
 
-var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,emailCaptured=false,selectedDivision=null,activeSystem='',caseData=null;
+var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,selectedDivision=null,activeSystem='',caseData=null,currentSession=null,currentUserId=null,currentCaseId=null;
+
+
+async function initializeDatabaseSession(){
+  try{
+    var result=await supabaseClient.auth.getSession();
+    currentSession=result.data.session;
+    currentUserId=currentSession?currentSession.user.id:null;
+
+    var chip=document.getElementById('authChip');
+    var status=document.getElementById('dbStatus');
+
+    if(currentSession){
+      chip.textContent='SESSION: VERIFIED';
+      status.textContent='DATABASE: CONNECTED';
+      status.className='db-status live';
+    }else{
+      chip.textContent='SESSION: VISITOR';
+      status.textContent='DATABASE: UNSAVED VISITOR MODE';
+      status.className='db-status warn';
+    }
+
+    var params=new URLSearchParams(window.location.search);
+    var requestedCase=params.get('case');
+    if(requestedCase&&currentSession){
+      await loadExistingCase(requestedCase);
+    }
+  }catch(error){
+    document.getElementById('dbStatus').textContent='DATABASE: CONNECTION ERROR';
+    document.getElementById('dbStatus').className='db-status warn';
+  }
+}
+
+async function loadExistingCase(caseId){
+  var result=await supabaseClient
+    .from('cases')
+    .select('*')
+    .eq('id',caseId)
+    .eq('user_id',currentUserId)
+    .single();
+
+  if(result.error||!result.data)return;
+
+  var c=result.data;
+  var key=divisionKeyFromRecord(c);
+  if(!DIVISIONS[key])return;
+
+  selectedDivision=key;
+  agent=c.lead_analyst||DIVISIONS[key].agent;
+  activeSystem=DIVISIONS[key].system;
+  currentCaseId=c.id;
+
+  caseData={
+    id:c.id,
+    division:key,
+    code:c.division_code||DIVISIONS[key].code,
+    caseNum:c.case_number,
+    subject:c.subject||c.title||'UNNAMED CASE',
+    question:c.question||c.investigation_question||'',
+    evidence:c.known_evidence||c.evidence||'NO ADDITIONAL EVIDENCE SUBMITTED',
+    urgency:c.urgency||'STANDARD'
+  };
+
+  enterApp();
+  document.getElementById('hall').style.display='none';
+  await restoreSecureChannel(c);
+}
+
+function divisionKeyFromRecord(c){
+  var raw=String(c.division||c.lead_division||c.division_code||'').toUpperCase();
+  if(raw.includes('BEHAVIOR')||raw.includes('PSY'))return'BEHAVIORAL';
+  if(raw.includes('ASTRO')||raw.includes('AST'))return'ASTROLOGY';
+  if(raw.includes('ORIGINAL')||raw.includes('OTF'))return'ORIGINALTEXT';
+  if(raw.includes('NUMERIC')||raw.includes('NUM'))return'NUMERIC';
+  if(raw.includes('PATTERN')||raw.includes('PAT'))return'PATTERN';
+  if(raw.includes('SYMBOL')||raw.includes('SYM'))return'SYMBOL';
+  return'PATTERN';
+}
+
+async function createCaseRecord(){
+  if(!currentSession)return null;
+
+  var d=DIVISIONS[selectedDivision];
+  var payload={
+    user_id:currentUserId,
+    case_number:caseData.caseNum,
+    subject:caseData.subject,
+    question:caseData.question,
+    known_evidence:caseData.evidence,
+    urgency:caseData.urgency,
+    division:selectedDivision,
+    division_code:d.code,
+    lead_division:d.name,
+    lead_analyst:agent,
+    status:'active',
+    current_theme:'Awaiting analyst review.',
+    analyst_synthesis:null,
+    key_pattern:null,
+    updated_at:new Date().toISOString()
+  };
+
+  var result=await supabaseClient
+    .from('cases')
+    .insert(payload)
+    .select()
+    .single();
+
+  if(result.error){
+    setDatabaseStatus('CASE SAVE FAILED: '+result.error.message,false);
+    return null;
+  }
+
+  currentCaseId=result.data.id;
+  caseData.id=result.data.id;
+  setDatabaseStatus('CASE SAVED // '+caseData.caseNum,true);
+  await logActivity(agent,'opened case',caseData.caseNum,caseData.subject);
+  return result.data;
+}
+
+async function updateCase(fields){
+  if(!currentCaseId||!currentSession)return;
+  fields.updated_at=new Date().toISOString();
+
+  var result=await supabaseClient
+    .from('cases')
+    .update(fields)
+    .eq('id',currentCaseId)
+    .eq('user_id',currentUserId);
+
+  if(result.error)setDatabaseStatus('CASE UPDATE FAILED',false);
+}
+
+async function saveCaseReport(analyst,reportType,body){
+  if(!currentCaseId||!currentSession||!body)return;
+
+  var result=await supabaseClient.from('case_reports').insert({
+    case_id:currentCaseId,
+    user_id:currentUserId,
+    analyst:analyst,
+    report_type:reportType,
+    body:body
+  });
+
+  if(result.error){
+    setDatabaseStatus('REPORT SAVE FAILED: '+result.error.message,false);
+  }else{
+    setDatabaseStatus('REPORT FILED // '+analyst,true);
+  }
+}
+
+async function logActivity(actor,action,fileCode,detail){
+  if(!currentSession)return;
+  try{
+    await supabaseClient.from('institution_activity').insert({
+      actor:actor,
+      actor_role:LABELS[actor]||'SID',
+      action:action,
+      file_code:fileCode,
+      archive_file_id:null,
+      stage:'active_case',
+      detail:detail
+    });
+  }catch(e){}
+}
+
+function setDatabaseStatus(message,ok){
+  var el=document.getElementById('dbStatus');
+  el.textContent=message;
+  el.className='db-status '+(ok?'live':'warn');
+}
+
+async function restoreSecureChannel(record){
+  var d=DIVISIONS[selectedDivision];
+  msgHistory=[];
+  sessionStart=Date.now();
+
+  document.getElementById('boot').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('caseassign').classList.remove('show');
+
+  var cr=document.getElementById('chatroom');
+  cr.style.display='flex';
+  cr.style.flexDirection='column';
+  cr.style.flex='1';
+
+  document.getElementById('cname').textContent=d.name;
+  document.getElementById('cname').style.color=d.color;
+  document.getElementById('clabel').textContent=d.code+' // LEAD ANALYST: '+agent;
+  document.getElementById('cbCase').textContent=caseData.caseNum;
+  document.getElementById('cbUrgency').textContent=caseData.urgency;
+  document.getElementById('cbAnalyst').textContent=agent;
+  document.getElementById('cbStatus').textContent=String(record.status||'active').toUpperCase();
+
+  var reports=await supabaseClient
+    .from('case_reports')
+    .select('*')
+    .eq('case_id',currentCaseId)
+    .eq('user_id',currentUserId)
+    .order('created_at',{ascending:true});
+
+  var msgs=document.getElementById('msgs');
+  msgs.innerHTML='';
+
+  addMsg('agent','CASE REOPENED // '+caseData.caseNum+'\n\nSUBJECT: '+caseData.subject+'\n\nPRIMARY QUESTION:\n'+caseData.question+'\n\nKNOWN EVIDENCE:\n'+caseData.evidence);
+
+  if(!reports.error){
+    (reports.data||[]).forEach(function(r){
+      if(r.analyst==='NIX')addNixMsg(r.body);
+      else if(r.analyst==='ASH')addAshMsg(r.body);
+      else addNamedAnalystMsg(r.analyst||agent,r.body);
+      msgHistory.push({role:'assistant',content:r.body});
+    });
+  }
+}
+
+function addNamedAnalystMsg(name,text){
+  var oldAgent=agent;
+  agent=name||oldAgent;
+  addMsg('agent',text);
+  agent=oldAgent;
+}
+
+function prepareEvidenceEntry(){
+  var inp=document.getElementById('inp');
+  inp.value='[EVIDENCE]\n';
+  inp.focus();
+  rsz(inp);
+}
+
+async function saveOperatorNote(){
+  if(!currentCaseId||!currentSession){
+    alert('Sign in and save the case before adding an operator note.');
+    return;
+  }
+  var note=window.prompt('Add a private operator note:');
+  if(!note)return;
+  await saveCaseReport('OPERATOR','private_note',note);
+  addNamedAnalystMsg('OPERATOR','PRIVATE NOTE SAVED\n\n'+note);
+}
+
+function returnToDashboard(){
+  window.location.href='dashboard/index.html'+(currentCaseId?'?case='+encodeURIComponent(currentCaseId):'');
+}
 
 function enterApp(){
   document.getElementById('boot').style.display='none';
@@ -416,7 +680,7 @@ function enterApp(){
   a.style.height='100%';
 }
 
-// Deep-link support: chat.html?division=BEHAVIORAL skips the
+// Deep-link support: terminal.html?division=BEHAVIORAL skips the
 // boot screen entirely and drops straight into that division's
 // case intake — used by divisions.html's OPEN INVESTIGATION
 // buttons so choosing a division on that page actually means
@@ -452,23 +716,48 @@ function closeCaseIntake(){
   document.getElementById('caseintake').classList.remove('show');
 }
 
-function beginCase(){
+async function beginCase(){
   if(!selectedDivision)return;
+
   var subject=document.getElementById('caseSubject').value.trim();
   var question=document.getElementById('caseQuestion').value.trim();
   var evidence=document.getElementById('caseEvidence').value.trim();
   var urgency=document.getElementById('caseUrgency').value;
+
   if(!question){
     document.getElementById('caseQuestion').style.borderColor='var(--lux)';
     document.getElementById('caseQuestion').focus();
     return;
   }
+
   var d=DIVISIONS[selectedDivision];
   agent=d.agent;
   activeSystem=d.system;
+
   var caseNum='SID-'+Date.now().toString(36).toUpperCase().slice(-6);
-  caseData={division:selectedDivision,code:d.code,caseNum:caseNum,subject:subject||'UNNAMED CASE',question:question,evidence:evidence||'NO ADDITIONAL EVIDENCE SUBMITTED',urgency:urgency};
+
+  caseData={
+    division:selectedDivision,
+    code:d.code,
+    caseNum:caseNum,
+    subject:subject||'UNNAMED CASE',
+    question:question,
+    evidence:evidence||'NO ADDITIONAL EVIDENCE SUBMITTED',
+    urgency:urgency
+  };
+
   document.getElementById('caseintake').classList.remove('show');
+
+  if(currentSession){
+    var saved=await createCaseRecord();
+    if(!saved){
+      var proceed=window.confirm('The case could not be saved. Continue in unsaved mode?');
+      if(!proceed)return;
+    }
+  }else{
+    setDatabaseStatus('VISITOR CASE // NOT SAVED',false);
+  }
+
   runAnalysisSequence(d);
 }
 
@@ -596,6 +885,8 @@ function enterSecureChannel(){
       clearThinking();
       var reply=data.content&&data.content[0]?data.content[0].text:'['+agent+'] Signal interrupted. Add one more piece of evidence and try again.';
       addMsg('agent',reply);msgHistory.push({role:'assistant',content:reply});
+      saveCaseReport(agent,'initial_assessment',reply);
+      updateCase({current_theme:reply.slice(0,500)});
     }).catch(function(){clearThinking();addMsg('agent','['+agent+']\n\nSignal interruption. Your case is still open. Send the question once more.');})
     .finally(function(){posting=false;document.getElementById('sbtn').disabled=false;document.getElementById('inp').focus();});
 }
@@ -635,6 +926,9 @@ function requestCrossSynthesis(){
       clearThinking();
       var reply=data.content&&data.content[0]?data.content[0].text:'NIX synthesis interrupted. Try again.';
       addNixMsg(reply);
+      saveCaseReport('NIX','cross_system_synthesis',reply);
+      updateCase({analyst_synthesis:reply});
+      logActivity('NIX','filed synthesis',caseData.caseNum,caseData.subject);
       chip.dataset.state='done';
       chip.textContent='NIX ✓';
       chip.style.color='var(--cipher)';
@@ -695,6 +989,9 @@ function requestFinalAssessment(){
       clearThinking();
       var reply=data.content&&data.content[0]?data.content[0].text:'ASH REVIEW INTERRUPTED. TRY AGAIN.';
       addAshMsg(reply);
+      saveCaseReport('ASH','final_assessment',reply);
+      updateCase({status:'closed',key_pattern:reply,report_status:'ready_for_scribe'});
+      logActivity('ASH','closed case',caseData.caseNum,caseData.subject);
       chip.dataset.state='closed';
       chip.textContent='ASH ✓';
       chip.style.color='var(--cyan)';
@@ -717,7 +1014,7 @@ function backToHall(){
   document.getElementById('chatroom').style.display='none';
   document.getElementById('caseassign').classList.remove('show');
   document.getElementById('hall').style.display='flex';
-  agent=null;msgHistory=[];sessionStart=null;selectedDivision=null;activeSystem='';caseData=null;
+  agent=null;msgHistory=[];sessionStart=null;selectedDivision=null;activeSystem='';caseData=null;currentCaseId=null;
   document.getElementById('caseSubject').value='';
   document.getElementById('caseQuestion').value='';
   document.getElementById('caseEvidence').value='';
@@ -745,30 +1042,6 @@ function unlock(){
 
 function isUnlocked(){
   try{return sessionStorage.getItem('u')==='1'}catch(e){return false}
-}
-
-async function submitEmail(){
-  var inp=document.getElementById('emailInp');
-  var email=inp.value.trim();
-  if(!email||!email.includes('@')){inp.style.borderColor='var(--lux)';return;}
-  inp.disabled=true;
-  document.querySelector('.email-sub').disabled=true;
-  document.querySelector('.email-sub').textContent='...';
-
-  try {
-    await fetch('https://novablus--18cd505c48b911f1998d42b51c65c3df.web.val.run',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:email})
-    });
-  } catch(e) {}
-
-  emailCaptured=true;
-  document.getElementById('emailSuccess').style.display='block';
-  document.querySelector('.email-gate').style.opacity='0.4';
-  document.querySelector('.email-sub').textContent='SENT';
-  document.querySelector('.email-sub').disabled=true;
-  document.getElementById('emailInp').disabled=true;
 }
 
 function addMsg(type,text){
@@ -878,6 +1151,8 @@ async function send(){
     var reply=data.content&&data.content[0]?data.content[0].text:'['+agent+'] Signal interrupted. Try again.';
     addMsg('agent',reply);
     msgHistory.push({role:'assistant',content:reply});
+    saveCaseReport(agent,'case_log',reply);
+    updateCase({current_theme:reply.slice(0,500)});
   }).catch(function(){
     clearThinking();
     addMsg('agent','['+agent+']\n\nLost the signal for a second. Send that again.');
@@ -905,6 +1180,9 @@ function validateCode(){
 
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function rsz(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+
+initializeDatabaseSession();
 </script>
+<div class="db-status" id="dbStatus">DATABASE: CHECKING</div>
 </body>
 </html>
