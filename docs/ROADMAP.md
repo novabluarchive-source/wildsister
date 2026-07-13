@@ -1,123 +1,196 @@
-# WILD SISTER
+# WILD SISTER ROADMAP
 
-## Symbol Intelligence Division (SID)
-
-Wild Sister is an institutional investigation platform that combines
-forensic astrology, behavioral analysis, numerology, original text
-research, pattern recognition, and symbolic intelligence into one
-operating system.
+Version: 2.0
+Status: Active Development
+Platform: Live
 
 ---
 
-# Current Status
+# MISSION
+
+Build Wild Sister into a modular Symbol Intelligence platform where
+every investigation flows through a shared operating system.
+
+The goal is not simply to deliver AI responses, but to create an
+institutional workflow for research, investigation, publication, and
+community intelligence.
+
+---
+
+# CURRENT STATUS
 
 ## Live
 
-- Website
-- Terminal
-- Dashboard
-- Community
-- SID Archive
-- Investigations
-- Login
-- Stripe
-- Supabase
-- Claude AI
+- [x] Landing Page
+- [x] About
+- [x] Divisions
+- [x] Community
+- [x] Terminal
+- [x] Dashboard
+- [x] SID Archive
+- [x] Login
+- [x] Pricing
+- [x] Stripe
+- [x] Supabase
+- [x] Claude Integration
 
 ---
 
-# Platform Structure
+# SPRINT 1 — PLATFORM FOUNDATION
 
-```
-Landing
-↓
+Goal:
+Create a stable foundation before adding new features.
 
-Authentication
+## Authentication
 
-↓
-
-Terminal
-
-↓
-
-Investigation Engine
-
-↓
-
-Analyst Engine
-
-↓
-
-SCRIBE
-
-↓
-
-SID Archive
-
-↓
-
-Community
-
-↓
-
-Dashboard
-```
+- [ ] auth.js
+- [ ] Shared session management
+- [ ] Founder mode
+- [ ] Member mode
+- [ ] Visitor mode
+- [ ] Subscription verification
 
 ---
 
-# Current Analysts
+## Investigation Engine
 
-SCAR
-Behavioral Intelligence
-
-CENTRA
-Forensic Astrology
-
-LUNA
-Pattern Investigation
-
-LUX
-Original Text
-
-CIPHER
-Numeric Intelligence
-
-RELIC
-Symbol Archive
-
-NIX
-Cross-System Synthesis
-
-ASH
-Final Findings
+- [ ] investigation-engine.js
+- [ ] Create Case
+- [ ] Load Case
+- [ ] Save Evidence
+- [ ] Save Notes
+- [ ] Save Reports
+- [ ] Close Case
+- [ ] Dashboard synchronization
 
 ---
 
-# Database
+# SPRINT 2 — ANALYST ENGINE
 
-Current tables
+Goal:
+Centralize every SID analyst.
 
-- cases
-- case_messages
-- case_reports
-- case_evidence
-- case_analysts
-- archive_files
-- profiles
-- subscriptions
+Modules
 
----
+- [ ] analyst-engine.js
 
-# Current Goal
+Analysts
 
-Move from a website into a fully modular investigation platform.
-
-No duplicated logic.
-
-Shared engines across the entire application.
+- [ ] SCAR
+- [ ] CENTRA
+- [ ] LUNA
+- [ ] LUX
+- [ ] CIPHER
+- [ ] RELIC
+- [ ] NIX
+- [ ] ASH
 
 ---
 
-Version
+# SPRINT 3 — DASHBOARD
 
-Wild Sister v2
+Goal:
+Turn the dashboard into an Operations Center.
+
+Features
+
+- [ ] Active Investigations
+- [ ] Closed Investigations
+- [ ] Progress Tracking
+- [ ] Analyst Queue
+- [ ] Reports
+- [ ] Archive Links
+- [ ] Notifications
+
+---
+
+# SPRINT 4 — SCRIBE
+
+Goal:
+Automate publishing.
+
+SCRIBE will
+
+- [ ] Generate HTML
+- [ ] Generate Archive Files
+- [ ] Publish SID Files
+- [ ] Update Dashboard
+- [ ] Notify Members
+
+---
+
+# SPRINT 5 — COMMUNITY
+
+Goal:
+Community becomes research.
+
+Research Rooms
+
+- [ ] Birth Wound
+- [ ] Fire Room
+- [ ] Rabbit Hole
+- [ ] Strategy Room
+- [ ] Body Map
+
+Community Intelligence
+
+- [ ] Pattern Detection
+- [ ] Suggested Investigations
+- [ ] Evidence Collection
+- [ ] Research Threads
+
+---
+
+# SPRINT 6 — AUTOMATION
+
+Goal:
+Reduce manual work.
+
+Automation
+
+- [ ] Scheduled Reports
+- [ ] Archive Updates
+- [ ] Daily Dashboard Refresh
+- [ ] Member Notifications
+
+---
+
+# LONG TERM
+
+Future
+
+- [ ] Mobile App
+- [ ] Public API
+- [ ] Enterprise Dashboard
+- [ ] Investigator Portal
+- [ ] Analytics
+- [ ] Team Accounts
+
+---
+
+# DEVELOPMENT PRINCIPLES
+
+Every new feature must:
+
+- Improve the investigation pipeline.
+- Avoid duplicate logic.
+- Reuse shared modules.
+- Keep the site deployable.
+- Preserve backwards compatibility.
+
+---
+
+# CURRENT PRIORITY
+
+1. Shared Authentication
+2. Investigation Engine
+3. Analyst Engine
+4. Dashboard Synchronization
+5. SCRIBE
+6. Community Intelligence
+
+---
+
+Last Updated
+
+July 2026
