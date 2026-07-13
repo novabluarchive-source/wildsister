@@ -483,9 +483,7 @@ async function loadExistingCase(caseId){
     caseNum:c.case_number,
     subject:c.subject||'UNNAMED CASE',
     question:c.primary_question||'',
-    evidence:(evidenceResult.data||[]).map(function(e){return e.content;}).join('
-
-')||'NO ADDITIONAL EVIDENCE SUBMITTED',
+    evidence:(evidenceResult.data||[]).map(function(e){return e.content;}).join('\n\n')||'NO ADDITIONAL EVIDENCE SUBMITTED',
     urgency:c.urgency||'STANDARD'
   };
 
@@ -545,10 +543,10 @@ async function createCaseRecord(){
     requested_at:new Date().toISOString()
   });
 
-  await saveCaseMessage('user','MEMBER','CASE REQUEST
-SUBJECT: '+caseData.subject+'
-QUESTION: '+caseData.question+'
-EVIDENCE: '+caseData.evidence);
+  await saveCaseMessage('user','MEMBER',`CASE REQUEST
+SUBJECT: ${caseData.subject}
+QUESTION: ${caseData.question}
+EVIDENCE: ${caseData.evidence}`);
 
   setDatabaseStatus('CASE SAVED // '+caseData.caseNum,true);
   return result.data;
@@ -676,9 +674,7 @@ async function saveOperatorNote(){
   await supabaseClient.from('case_evidence').insert({
     case_id:currentCaseId,user_id:currentUserId,type:'operator_note',content:note,file_url:null
   });
-  addNamedAnalystMsg('OPERATOR','PRIVATE NOTE SAVED
-
-'+note);
+  addNamedAnalystMsg('OPERATOR','PRIVATE NOTE SAVED\n\n'+note);
 }
 
 function returnToDashboard(){
