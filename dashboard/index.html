@@ -586,9 +586,7 @@ function populateBoard(c,evidence,reports,analysts){
   document.getElementById('systemStatus').textContent=status==='closed'?'CASE CLOSED':'ACTIVE';
   setBoardText('boardQuestion',c.primary_question||'No question submitted.');
   setBoardText('boardBirthData','Identity data is stored as evidence when submitted.');
-  setBoardText('boardEvidence',evidence.length?evidence.map(function(e){return e.content;}).join('
-
-'):'No evidence has been added yet.');
+  setBoardText('boardEvidence',evidence.length?evidence.map(function(e){return e.content;}).join('\n\n'):'No evidence has been added yet.');
   setBoardText('boardTheme',c.current_finding||'Awaiting analyst review.');
 
   var synthesis=reports.filter(function(r){return r.report_type==='cross_system_synthesis';}).slice(-1)[0];
@@ -608,8 +606,7 @@ function buildCaseOverview(c,analysts){
   if(analysts&&analysts.length)lines.push('Analysts: '+analysts.map(function(a){return a.analyst+' ('+a.role+')';}).join(', '));
   if(c.created_at)lines.push('Opened: '+new Date(c.created_at).toLocaleDateString());
   if(c.updated_at)lines.push('Last Activity: '+new Date(c.updated_at).toLocaleDateString());
-  return lines.length?lines.join('
-'):'Case metadata is still being assembled.';
+  return lines.length?lines.join('\n'):'Case metadata is still being assembled.';
 }
 
 function renderEvidenceFolders(evidence,reports,analysts){
