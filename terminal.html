@@ -411,6 +411,7 @@ textarea::placeholder{color:var(--muted)}
 </div>
 
 <script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/auth.js"></script>
 <script>
 var W='https://oracle-api.capcancerian3.workers.dev';
 var FREE=3;
@@ -432,18 +433,36 @@ var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,selectedDiv
 
 
 async function initializeDatabaseSession(){
+  var chip=document.getElementById('authChip');
+  var status=document.getElementById('dbStatus');
+
   try{
-    var result=await supabaseClient.auth.getSession();
-    currentSession=result.data.session;
-    currentUserId=currentSession?currentSession.user.id:null;
+    if(!window.WildSisterAuth){
+      throw new Error('AUTH MODULE NOT LOADED');
+    }
 
-    var chip=document.getElementById('authChip');
-    var status=document.getElementById('dbStatus');
+    var access=await WildSisterAuth.getAccessState();
 
-    if(currentSession){
-      chip.textContent='SESSION: VERIFIED';
-      status.textContent='DATABASE: CONNECTED';
+    currentSession=access.signedIn
+      ? await WildSisterAuth.getSession()
+      : null;
+
+    currentUserId=access.user ? access.user.id : null;
+
+    if(access.signedIn){
+      chip.textContent=access.canUsePremium
+        ? 'SESSION: MEMBER'
+        : 'SESSION: VERIFIED';
+
+      status.textContent=access.canUsePremium
+        ? 'DATABASE: CONNECTED // MEMBER'
+        : 'DATABASE: CONNECTED';
+
       status.className='db-status live';
+
+      // Signed-in users can save cases even without an active paid plan.
+      // Paid access controls premium actions, not basic case storage.
+      try{sessionStorage.setItem('u','1');}catch(e){}
     }else{
       chip.textContent='SESSION: VISITOR';
       status.textContent='DATABASE: UNSAVED VISITOR MODE';
@@ -452,12 +471,19 @@ async function initializeDatabaseSession(){
 
     var params=new URLSearchParams(window.location.search);
     var requestedCase=params.get('case');
-    if(requestedCase&&currentSession){
+
+    if(requestedCase&&access.signedIn){
       await loadExistingCase(requestedCase);
     }
   }catch(error){
-    document.getElementById('dbStatus').textContent='DATABASE: CONNECTION ERROR';
-    document.getElementById('dbStatus').className='db-status warn';
+    console.error('Terminal authentication error:',error);
+
+    currentSession=null;
+    currentUserId=null;
+
+    chip.textContent='SESSION: CHECK FAILED';
+    status.textContent='DATABASE: AUTH CONNECTION ERROR';
+    status.className='db-status warn';
   }
 }
 
@@ -618,6 +644,7 @@ async function logActivity(actor,action,fileCode,detail){
 
 function setDatabaseStatus(message,ok){
   var el=document.getElementById('dbStatus');
+  if(!el)return;
   el.textContent=message;
   el.className='db-status '+(ok?'live':'warn');
 }
@@ -678,7 +705,7 @@ async function saveOperatorNote(){
 }
 
 function returnToDashboard(){
-  window.window.location.href='dashboard/index.html'+(currentCaseId?'?case='+encodeURIComponent(currentCaseId):'');
+  window.location.href='dashboard/index.html'+(currentCaseId?'?case='+encodeURIComponent(currentCaseId):'');
 }
 
 function enterApp(){
@@ -1121,13 +1148,13 @@ async function send(){
   if(text.indexOf('[EVIDENCE]')===0&&currentSession&&currentCaseId){supabaseClient.from('case_evidence').insert({case_id:currentCaseId,user_id:currentUserId,type:'submitted_evidence',content:text.replace(/^\[EVIDENCE\]\s*/,''),file_url:null});}
   count++;
   try{sessionStorage.setItem('msgCount',count);}catch(e){}
-  if(!isUnlocked()&&count>FREE){
+  if(!currentSession&&!isUnlocked()&&count>FREE){
     document.getElementById('pw').classList.add('show');
     posting=false;
     document.getElementById('sbtn').disabled=false;
     return;
   }
-  if(isUnlocked()&&count>15){
+  if(!currentSession&&isUnlocked()&&count>15){
     addMsg('agent','['+agent+']\n\nSession complete. You have reached the limit for this channel.\n\nYour full read is waiting at wildsister.co/order.html');
     posting=false;
     document.getElementById('sbtn').disabled=true;
