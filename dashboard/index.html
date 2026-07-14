@@ -222,19 +222,19 @@ button,a{font:inherit}
       </div>
       <div class="top-meta"><span>OPERATOR</span><strong id="operatorName">MEMBER</strong></div>
       <div class="top-meta"><span>CLEARANCE</span><strong id="navClearance">—</strong></div>
-      <div class="top-meta"><span>STATUS</span><strong>ACTIVE</strong></div>
+      <div class="top-meta"><span>STATUS</span><strong id="systemStatus">ACTIVE</strong></div>
       <div class="top-meta"><span>DATE</span><strong id="currentDate">—</strong></div>
       <div class="top-meta"><span>SESSION</span><strong>VERIFIED</strong></div>
     </header>
 
     <nav class="tabs">
       <a class="active" href="index.html">OPERATIONS</a>
-      <a href="cases.html">MY CASES</a>
-      <a href="archive.html">ARCHIVE</a>
+      <a href="#caseCabinet">MY CASES</a>
+      <a href="../sid.html">ARCHIVE</a>
       <a href="../divisions.html">DIVISIONS</a>
       <a href="../community.html">COMMUNITY</a>
       <a href="../about.html">MANUAL</a>
-      <a href="#" onclick="signOut();return false">SIGN OUT</a>
+      <a href="#" onclick="WildSisterAuth.signOut('../index.html');return false">SIGN OUT</a>
     </nav>
 
     <div class="warning" id="subWarning">
@@ -367,7 +367,7 @@ button,a{font:inherit}
       </main>
 
       <aside class="right-rail">
-        <section class="panel" style="margin-bottom:12px">
+        <section class="panel" id="caseCabinet" style="margin-bottom:12px">
           <div class="panel-head">CASE FILE CABINET<small>ACTIVE & CLOSED</small></div>
           <div class="case-files" id="caseGrid"></div>
           <div id="errorNote"></div>
@@ -390,100 +390,122 @@ document.getElementById('currentDate').textContent = new Date().toLocaleDateStri
 });
 </script>
 <script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/auth.js"></script>
 <script>
 var currentUserId = null;
 var currentSession = null;
+var accessState = null;
 var allCases = [];
 var selectedCaseId = null;
 var selectedCase = null;
-var hasInstitutionClearance = false;
+var hasPremiumAccess = false;
 
 async function init(){
-  const session = await requireAuth();
-  if (!session) return;
+  try{
+    if(!window.WildSisterAuth){
+      throw new Error('AUTH MODULE NOT LOADED');
+    }
 
-  currentSession = session;
-  currentUserId = session.user.id;
+    accessState = await WildSisterAuth.getAccessState();
 
-  const displayName =
-    session.user.user_metadata?.display_name ||
-    session.user.user_metadata?.full_name ||
-    session.user.email?.split('@')[0] ||
-    'MEMBER';
+    if(!accessState.signedIn){
+      window.location.href = '../login.html?redirect=' +
+        encodeURIComponent('dashboard/index.html');
+      return;
+    }
 
-  document.getElementById('operatorName').textContent = displayName.toUpperCase();
-  document.getElementById('loadingGate').style.display = 'none';
-  document.getElementById('dashboardContent').style.display = 'block';
+    currentSession = await WildSisterAuth.getSession();
+    currentUserId = accessState.user.id;
+    hasPremiumAccess = Boolean(accessState.canUsePremium);
 
-  await Promise.all([
-    loadClearance(),
-    loadArchiveCount(),
-    loadInstitutionFeed()
-  ]);
+    var displayName =
+      accessState.user.user_metadata?.display_name ||
+      accessState.user.user_metadata?.full_name ||
+      accessState.user.email?.split('@')[0] ||
+      'MEMBER';
 
-  await loadCases();
-  subscribeToLiveUpdates();
+    document.getElementById('operatorName').textContent =
+      displayName.toUpperCase();
+
+    document.getElementById('loadingGate').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+
+    renderAccessState();
+
+    await Promise.all([
+      loadArchiveCount(),
+      loadInstitutionFeed()
+    ]);
+
+    await loadCases();
+
+    var params = new URLSearchParams(window.location.search);
+    var requestedCase = params.get('case');
+
+    if(requestedCase && allCases.some(function(c){ return c.id === requestedCase; })){
+      await selectCase(requestedCase, false);
+    }else if(allCases.length && !selectedCaseId){
+      await selectCase(allCases[0].id, false);
+    }
+
+    subscribeToLiveUpdates();
+  }catch(error){
+    console.error('Dashboard initialization error:', error);
+    document.getElementById('loadingGate').textContent =
+      '// OPERATIONS CENTER ERROR: ' + (error.message || 'UNKNOWN ERROR');
+  }
 }
 
-async function loadClearance(){
-  const navBadge = document.getElementById('navClearance');
-  const warning = document.getElementById('subWarning');
-  const newCaseBtn = document.getElementById('btnNewCase');
+function renderAccessState(){
+  var navBadge = document.getElementById('navClearance');
+  var warning = document.getElementById('subWarning');
+  var newCaseBtn = document.getElementById('btnNewCase');
 
-  const { data, error } = await supabaseClient
-    .from('subscriptions')
-    .select('clearance, status')
-    .eq('user_id', currentUserId)
-    .maybeSingle();
+  if(hasPremiumAccess){
+    navBadge.textContent = String(
+      accessState.subscription?.clearance || 'MEMBER'
+    ).toUpperCase();
 
-  if (error) {
-    navBadge.textContent = 'CHECK FAILED';
-    warning.classList.add('show');
-    hasInstitutionClearance = false;
-    return;
-  }
-
-  hasInstitutionClearance = Boolean(
-    data &&
-    data.clearance === 'institution' &&
-    data.status === 'active'
-  );
-
-  if (hasInstitutionClearance) {
-    navBadge.textContent = 'INSTITUTION-WIDE';
     warning.classList.remove('show');
-    newCaseBtn.classList.remove('disabled');
-    newCaseBtn.onclick = function(){ window.location.href = '../terminal.html'; };
-  } else {
-    navBadge.textContent = data
-      ? String(data.clearance || 'NONE').toUpperCase() + ' / ' + String(data.status || 'UNKNOWN').toUpperCase()
-      : 'NONE ON FILE';
+  }else{
+    navBadge.textContent = 'SIGNED-IN ACCESS';
+
+    warning.innerHTML =
+      'Your account can save and reopen investigations. ' +
+      'NIX, ASH, SCRIBE, and other premium actions may require active paid clearance. ' +
+      '<a href="../pricing.html">Review access levels →</a>';
 
     warning.classList.add('show');
-    newCaseBtn.classList.add('disabled');
-    newCaseBtn.onclick = function(){ window.location.href = '../pricing.html'; };
   }
+
+  // Authentication controls case storage.
+  // Paid clearance controls premium workflow actions.
+  newCaseBtn.classList.remove('disabled');
+  newCaseBtn.onclick = function(){
+    window.location.href = '../terminal.html';
+  };
 }
 
 async function loadCases(){
-  const grid = document.getElementById('caseGrid');
-  const errorNote = document.getElementById('errorNote');
+  var grid = document.getElementById('caseGrid');
+  var errorNote = document.getElementById('errorNote');
 
-  grid.innerHTML = '<div class="empty-board"><p>// LOADING CASE FILES...</p></div>';
+  grid.innerHTML =
+    '<div class="empty-board"><p>// LOADING CASE FILES...</p></div>';
   errorNote.innerHTML = '';
 
-  const { data, error } = await supabaseClient
+  var result = await supabaseClient
     .from('cases')
     .select('*')
     .eq('user_id', currentUserId)
-    .order('updated_at', { ascending: false });
+    .order('updated_at', { ascending:false });
 
-  if (error) {
+  if(result.error){
     allCases = [];
     grid.innerHTML = '';
     errorNote.innerHTML =
       '<div class="error-note">Could not load cases: ' +
-      escapeHtml(error.message) +
+      escapeHtml(result.error.message) +
       '</div>';
 
     document.getElementById('statActive').textContent = '—';
@@ -492,185 +514,392 @@ async function loadCases(){
     return;
   }
 
-  allCases = Array.isArray(data) ? data : [];
+  allCases = Array.isArray(result.data) ? result.data : [];
   updateCaseStats(allCases);
   renderCaseCabinet(allCases);
 
-  if (!allCases.length) {
+  if(!allCases.length){
     clearBoard();
-    return;
-  }
-
-  if (selectedCaseId && allCases.some(function(c){ return c.id === selectedCaseId; })) {
-    selectCase(selectedCaseId, false);
-  } else {
-    selectCase(allCases[0].id, false);
   }
 }
 
 function updateCaseStats(cases){
-  const active = cases.filter(function(c){ return normalizeStatus(c.status) !== 'closed'; });
-  const closed = cases.filter(function(c){ return normalizeStatus(c.status) === 'closed'; });
+  var active = cases.filter(function(c){
+    return normalizeStatus(c.status) !== 'closed';
+  });
 
-  document.getElementById('statActive').textContent = String(active.length).padStart(2,'0');
-  document.getElementById('statClosed').textContent = String(closed.length).padStart(2,'0');
+  var closed = cases.filter(function(c){
+    return normalizeStatus(c.status) === 'closed';
+  });
+
+  document.getElementById('statActive').textContent =
+    String(active.length).padStart(2,'0');
+
+  document.getElementById('statClosed').textContent =
+    String(closed.length).padStart(2,'0');
 }
 
 function renderCaseCabinet(cases){
-  const grid = document.getElementById('caseGrid');
+  var grid = document.getElementById('caseGrid');
 
-  if (!cases.length) {
+  if(!cases.length){
     grid.innerHTML =
       '<div class="empty-board">' +
         '<div class="empty-board-title">NO CASE FILES PINNED</div>' +
         '<p>Your private investigation wall is ready.</p>' +
-        '<a href="' + (hasInstitutionClearance ? '../terminal.html' : '../pricing.html') + '">' +
-          (hasInstitutionClearance ? 'OPEN FIRST INVESTIGATION →' : 'ACTIVATE CLEARANCE →') +
-        '</a>' +
+        '<a href="../terminal.html">OPEN FIRST INVESTIGATION →</a>' +
       '</div>';
     return;
   }
 
   grid.innerHTML = cases.map(function(c){
-    const status = normalizeStatus(c.status);
-    const subject = c.subject || c.title || 'Untitled Investigation';
-    const division = c.lead_division || 'Division pending';
-    const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString() : 'No date';
+    var status = normalizeStatus(c.status);
+    var subject = c.subject || 'Untitled Investigation';
+    var division = c.lead_division || 'Division pending';
+    var updated = c.updated_at
+      ? new Date(c.updated_at).toLocaleDateString()
+      : 'No date';
 
     return '<button class="case-file-card ' +
       (selectedCaseId === c.id ? 'selected ' : '') +
       (status === 'closed' ? 'closed' : '') +
       '" onclick="selectCase(\'' + escapeJs(c.id) + '\')">' +
         '<span class="case-pin"></span>' +
-        '<span class="case-code">' + escapeHtml(c.case_number || c.file_code || 'SID CASE') + '</span>' +
+        '<span class="case-code">' +
+          escapeHtml(c.case_number || 'SID CASE') +
+        '</span>' +
         '<strong>' + escapeHtml(subject) + '</strong>' +
         '<span class="case-detail">' + escapeHtml(division) + '</span>' +
-        '<span class="case-detail">Lead: ' + escapeHtml(c.lead_analyst || 'Pending') + '</span>' +
         '<span class="case-detail">' + escapeHtml(updated) + '</span>' +
-        '<span class="case-status ' + (status === 'closed' ? 'closed' : 'active') + '">' +
+        '<span class="case-status ' +
+          (status === 'closed' ? 'closed' : 'active') +
+        '">' +
           status.toUpperCase().replaceAll('_',' ') +
         '</span>' +
       '</button>';
   }).join('');
 }
 
-function selectCase(caseId, scrollToBoard){
-  if (scrollToBoard === undefined) scrollToBoard = true;
+async function selectCase(caseId, scrollToBoard){
+  if(scrollToBoard === undefined) scrollToBoard = true;
 
-  const c = allCases.find(function(item){ return item.id === caseId; });
-  if (!c) return;
+  var c = allCases.find(function(item){ return item.id === caseId; });
+  if(!c) return;
 
   selectedCaseId = caseId;
   selectedCase = c;
-
   renderCaseCabinet(allCases);
-  populateBoard(c);
+
+  document.getElementById('systemStatus').textContent = 'LOADING CASE';
+
+  var results = await Promise.all([
+    supabaseClient
+      .from('case_evidence')
+      .select('*')
+      .eq('case_id', caseId)
+      .eq('user_id', currentUserId)
+      .order('created_at', { ascending:true }),
+
+    supabaseClient
+      .from('case_reports')
+      .select('*')
+      .eq('case_id', caseId)
+      .eq('user_id', currentUserId)
+      .order('created_at', { ascending:true }),
+
+    supabaseClient
+      .from('case_analysts')
+      .select('*')
+      .eq('case_id', caseId)
+      .eq('user_id', currentUserId)
+      .order('requested_at', { ascending:true })
+  ]);
+
+  var evidenceResult = results[0];
+  var reportsResult = results[1];
+  var analystsResult = results[2];
+
+  var error =
+    evidenceResult.error ||
+    reportsResult.error ||
+    analystsResult.error;
+
+  if(error){
+    document.getElementById('errorNote').innerHTML =
+      '<div class="error-note">Could not load the complete case: ' +
+      escapeHtml(error.message) +
+      '</div>';
+
+    document.getElementById('systemStatus').textContent = 'LOAD ERROR';
+    return;
+  }
+
+  var evidence = evidenceResult.data || [];
+  var reports = reportsResult.data || [];
+  var analysts = analystsResult.data || [];
+
+  populateBoard(c, evidence, reports, analysts);
 
   document.getElementById('refreshCaseBtn').disabled = false;
-  document.getElementById('prepareReportBtn').disabled = normalizeStatus(c.status) !== 'closed';
-  document.getElementById('continueCaseBtn').href = '../terminal.html?case=' + encodeURIComponent(c.id);
+  document.getElementById('prepareReportBtn').disabled =
+    normalizeStatus(c.status) !== 'closed';
 
-  if (scrollToBoard) {
-    document.querySelector('.wall').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('continueCaseBtn').href =
+    '../terminal.html?case=' + encodeURIComponent(c.id);
+
+  if(scrollToBoard){
+    document.querySelector('.wall').scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
   }
 }
 
-function populateBoard(c,evidence,reports,analysts){
-  var status=normalizeStatus(c.status);
-  var caseNumber=c.case_number||'SID CASE';
-  var subject=c.subject||'Untitled Investigation';
-  var division=c.lead_division||'Division pending';
-  var lead=analysts.find(function(a){return a.role==='lead';});
+function populateBoard(c, evidence, reports, analysts){
+  var status = normalizeStatus(c.status);
+  var caseNumber = c.case_number || 'SID CASE';
+  var subject = c.subject || 'Untitled Investigation';
+  var division = c.lead_division || 'Division pending';
 
-  document.getElementById('wallHeader').textContent='CASE WALL // '+caseNumber+' // '+subject.toUpperCase()+' // STATUS: '+status.toUpperCase();
-  document.getElementById('systemStatus').textContent=status==='closed'?'CASE CLOSED':'ACTIVE';
-  setBoardText('boardQuestion',c.primary_question||'No question submitted.');
-  setBoardText('boardBirthData','Identity data is stored as evidence when submitted.');
-  setBoardText('boardEvidence',evidence.length?evidence.map(function(e){return e.content;}).join('\n\n'):'No evidence has been added yet.');
-  setBoardText('boardTheme',c.current_finding||'Awaiting analyst review.');
+  var lead = analysts.find(function(a){
+    return a.role === 'lead';
+  });
 
-  var synthesis=reports.filter(function(r){return r.report_type==='cross_system_synthesis';}).slice(-1)[0];
-  var finalReport=reports.filter(function(r){return r.report_type==='final_assessment';}).slice(-1)[0];
-  setBoardText('boardSynthesis',synthesis?synthesis.content:'No synthesis has been filed.');
-  setBoardText('boardPattern',finalReport?finalReport.content:(c.current_finding||'No confirmed pattern yet.'));
+  document.getElementById('wallHeader').textContent =
+    'CASE WALL // ' +
+    caseNumber +
+    ' // ' +
+    subject.toUpperCase() +
+    ' // STATUS: ' +
+    status.toUpperCase();
 
-  document.getElementById('boardChartLabel').textContent=division.toUpperCase()+' // '+(lead?lead.analyst:'PENDING');
-  document.getElementById('boardChartText').textContent=buildCaseOverview(c,analysts);
-  renderEvidenceFolders(evidence,reports,analysts);
+  document.getElementById('systemStatus').textContent =
+    status === 'closed' ? 'CASE CLOSED' : 'ACTIVE';
+
+  setBoardText(
+    'boardQuestion',
+    c.primary_question || 'No question submitted.'
+  );
+
+  var birthData = evidence
+    .filter(function(e){
+      return e.type === 'birth_data' || e.type === 'identity_record';
+    })
+    .map(function(e){ return e.content; })
+    .join('\n\n');
+
+  setBoardText(
+    'boardBirthData',
+    birthData || 'No birth or identity data submitted.'
+  );
+
+  setBoardText(
+    'boardEvidence',
+    evidence.length
+      ? evidence.map(function(e){ return e.content; }).join('\n\n')
+      : 'No evidence has been added yet.'
+  );
+
+  var initialReport = reports
+    .filter(function(r){
+      return r.report_type === 'initial_assessment' ||
+             r.report_type === 'case_log';
+    })
+    .slice(-1)[0];
+
+  var synthesis = reports
+    .filter(function(r){
+      return r.report_type === 'cross_system_synthesis';
+    })
+    .slice(-1)[0];
+
+  var finalReport = reports
+    .filter(function(r){
+      return r.report_type === 'final_assessment';
+    })
+    .slice(-1)[0];
+
+  setBoardText(
+    'boardTheme',
+    initialReport
+      ? initialReport.content
+      : (c.current_finding || 'Awaiting analyst review.')
+  );
+
+  setBoardText(
+    'boardSynthesis',
+    synthesis
+      ? synthesis.content
+      : 'No synthesis has been filed.'
+  );
+
+  setBoardText(
+    'boardPattern',
+    finalReport
+      ? finalReport.content
+      : (c.current_finding || 'No confirmed pattern yet.')
+  );
+
+  document.getElementById('boardChartLabel').textContent =
+    division.toUpperCase() +
+    ' // ' +
+    (lead ? lead.analyst : 'PENDING');
+
+  document.getElementById('boardChartText').textContent =
+    buildCaseOverview(c, analysts, reports);
+
+  renderEvidenceFolders(evidence, reports, analysts);
 }
 
-function buildCaseOverview(c,analysts){
-  var lines=[];
-  if(c.urgency)lines.push('Priority: '+c.urgency);
-  if(c.lead_division)lines.push('Division: '+c.lead_division);
-  if(analysts&&analysts.length)lines.push('Analysts: '+analysts.map(function(a){return a.analyst+' ('+a.role+')';}).join(', '));
-  if(c.created_at)lines.push('Opened: '+new Date(c.created_at).toLocaleDateString());
-  if(c.updated_at)lines.push('Last Activity: '+new Date(c.updated_at).toLocaleDateString());
-  return lines.length?lines.join('\n'):'Case metadata is still being assembled.';
+function buildCaseOverview(c, analysts, reports){
+  var lines = [];
+
+  if(c.urgency) lines.push('Priority: ' + c.urgency);
+  if(c.lead_division) lines.push('Division: ' + c.lead_division);
+
+  if(analysts && analysts.length){
+    lines.push(
+      'Analysts: ' +
+      analysts.map(function(a){
+        return a.analyst + ' (' + a.role + ')';
+      }).join(', ')
+    );
+  }
+
+  lines.push('Reports: ' + reports.length);
+
+  if(c.created_at){
+    lines.push('Opened: ' + new Date(c.created_at).toLocaleDateString());
+  }
+
+  if(c.updated_at){
+    lines.push(
+      'Last Activity: ' +
+      new Date(c.updated_at).toLocaleDateString()
+    );
+  }
+
+  return lines.join('\n');
 }
 
-function renderEvidenceFolders(evidence,reports,analysts){
-  var container=document.getElementById('evidenceFolders');
-  var html=[];
-  evidence.forEach(function(e){html.push('<div class="folder"><small>EVIDENCE FILE</small>'+escapeHtml(e.type||'evidence')+'</div>');});
-  reports.forEach(function(r){html.push('<div class="folder"><small>REPORT FILE</small>'+escapeHtml((r.analyst||'SID')+' · '+(r.report_type||'report'))+'</div>');});
-  analysts.forEach(function(a){html.push('<div class="folder"><small>ASSIGNED ANALYST</small>'+escapeHtml((a.analyst||'SID')+' · '+(a.role||'assigned'))+'</div>');});
-  container.innerHTML=html.join('')||'<div class="folder"><small>EVIDENCE FILE</small>No files yet</div>';
+function renderEvidenceFolders(evidence, reports, analysts){
+  var container = document.getElementById('evidenceFolders');
+  var html = [];
+
+  evidence.forEach(function(e){
+    html.push(
+      '<div class="folder"><small>EVIDENCE FILE</small>' +
+      escapeHtml(e.type || 'evidence') +
+      '</div>'
+    );
+  });
+
+  reports.forEach(function(r){
+    html.push(
+      '<div class="folder"><small>REPORT FILE</small>' +
+      escapeHtml(
+        (r.analyst || 'SID') +
+        ' · ' +
+        (r.report_type || 'report')
+      ) +
+      '</div>'
+    );
+  });
+
+  analysts.forEach(function(a){
+    html.push(
+      '<div class="folder"><small>ASSIGNED ANALYST</small>' +
+      escapeHtml(
+        (a.analyst || 'SID') +
+        ' · ' +
+        (a.role || 'assigned')
+      ) +
+      '</div>'
+    );
+  });
+
+  container.innerHTML =
+    html.join('') ||
+    '<div class="folder"><small>EVIDENCE FILE</small>No files yet</div>';
 }
 
 async function loadArchiveCount(){
-  const { count, error } = await supabaseClient
+  var result = await supabaseClient
     .from('archive_files')
     .select('*', { count:'exact', head:true });
 
   document.getElementById('statArchive').textContent =
-    error ? '—' : String(count || 0).padStart(2,'0');
+    result.error
+      ? '—'
+      : String(result.count || 0).padStart(2,'0');
 }
 
 async function loadInstitutionFeed(){
-  const feed = document.getElementById('institutionFeed');
+  var feed = document.getElementById('institutionFeed');
 
-  const { data, error } = await supabaseClient
+  var result = await supabaseClient
     .from('institution_activity')
     .select('*')
     .order('created_at', { ascending:false })
     .limit(20);
 
-  if (error || !data || !data.length) {
-    feed.innerHTML = '<div class="feed-item"><span>No live institutional activity has been recorded yet.</span></div>';
+  if(result.error || !result.data || !result.data.length){
+    feed.innerHTML =
+      '<div class="feed-item"><span>' +
+      'No live institutional activity has been recorded yet.' +
+      '</span></div>';
     return;
   }
 
-  feed.innerHTML = data.map(function(item){
-    const actor = item.actor || 'SID';
-    const action = item.action || 'updated a record';
-    const detail = item.detail || item.file_code || item.stage || '';
-    const date = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+  feed.innerHTML = result.data.map(function(item){
+    var actor = item.actor || 'SID';
+    var action = item.action || 'updated a record';
+    var detail = item.detail || item.file_code || item.stage || '';
+    var date = item.created_at
+      ? new Date(item.created_at).toLocaleString()
+      : '';
 
     return '<div class="feed-item">' +
-      '<strong>' + escapeHtml(actor) + ' // ' + escapeHtml(action) + '</strong>' +
-      '<span>' + escapeHtml(detail) + (date ? '<br>' + escapeHtml(date) : '') + '</span>' +
-      '</div>';
+      '<strong>' +
+        escapeHtml(actor) +
+        ' // ' +
+        escapeHtml(action) +
+      '</strong>' +
+      '<span>' +
+        escapeHtml(detail) +
+        (date ? '<br>' + escapeHtml(date) : '') +
+      '</span>' +
+    '</div>';
   }).join('');
 }
 
 function toggleCaseSearch(){
-  const bar = document.getElementById('caseSearchBar');
+  var bar = document.getElementById('caseSearchBar');
   bar.classList.toggle('show');
-  if (bar.classList.contains('show')) document.getElementById('caseSearchInput').focus();
+
+  if(bar.classList.contains('show')){
+    document.getElementById('caseSearchInput').focus();
+  }
 }
 
 function filterCases(){
-  const query = document.getElementById('caseSearchInput').value.trim().toLowerCase();
-  if (!query) {
+  var query = document
+    .getElementById('caseSearchInput')
+    .value
+    .trim()
+    .toLowerCase();
+
+  if(!query){
     renderCaseCabinet(allCases);
     return;
   }
 
-  const filtered = allCases.filter(function(c){
-    const haystack = [
-      c.case_number,c.file_code,c.subject,c.title,c.lead_division,
-      c.division,c.division_code,c.lead_analyst,c.status
+  var filtered = allCases.filter(function(c){
+    var haystack = [
+      c.case_number,
+      c.subject,
+      c.lead_division,
+      c.status
     ].filter(Boolean).join(' ').toLowerCase();
 
     return haystack.includes(query);
@@ -685,21 +914,51 @@ function clearCaseSearch(){
 }
 
 async function refreshSelectedCase(){
-  if(!selectedCaseId)return;
+  if(!selectedCaseId) return;
+
+  var caseId = selectedCaseId;
   await loadCases();
-  await selectCase(selectedCaseId,false);
+
+  if(allCases.some(function(c){ return c.id === caseId; })){
+    await selectCase(caseId, false);
+  }else{
+    clearBoard();
+  }
 }
 
 async function prepareReport(){
-  if(!selectedCase)return;
-  if(normalizeStatus(selectedCase.status)!=='closed'){
-    alert('The case must be closed by ASH before SCRIBE can prepare the final file.');return;
+  if(!selectedCase) return;
+
+  if(normalizeStatus(selectedCase.status) !== 'closed'){
+    alert(
+      'The case must be closed by ASH before SCRIBE can prepare the final file.'
+    );
+    return;
   }
-  alert('This case is closed and ready for SCRIBE. The publishing function is the next connection.');
+
+  if(!hasPremiumAccess){
+    window.location.href = '../pricing.html';
+    return;
+  }
+
+  alert(
+    'This case is closed and ready for SCRIBE. ' +
+    'The publishing function is the next connection.'
+  );
 }
 
 async function syncOperations(){
-  await Promise.all([loadCases(), loadArchiveCount(), loadInstitutionFeed()]);
+  var caseId = selectedCaseId;
+
+  await Promise.all([
+    loadCases(),
+    loadArchiveCount(),
+    loadInstitutionFeed()
+  ]);
+
+  if(caseId && allCases.some(function(c){ return c.id === caseId; })){
+    await selectCase(caseId, false);
+  }
 }
 
 function subscribeToLiveUpdates(){
@@ -710,7 +969,33 @@ function subscribeToLiveUpdates(){
       schema:'public',
       table:'cases',
       filter:'user_id=eq.' + currentUserId
-    }, loadCases)
+    }, function(){
+      loadCases();
+    })
+    .subscribe();
+
+  supabaseClient
+    .channel('sid-operations-reports')
+    .on('postgres_changes', {
+      event:'*',
+      schema:'public',
+      table:'case_reports',
+      filter:'user_id=eq.' + currentUserId
+    }, function(){
+      if(selectedCaseId) selectCase(selectedCaseId, false);
+    })
+    .subscribe();
+
+  supabaseClient
+    .channel('sid-operations-evidence')
+    .on('postgres_changes', {
+      event:'*',
+      schema:'public',
+      table:'case_evidence',
+      filter:'user_id=eq.' + currentUserId
+    }, function(){
+      if(selectedCaseId) selectCase(selectedCaseId, false);
+    })
     .subscribe();
 
   supabaseClient
@@ -719,36 +1004,55 @@ function subscribeToLiveUpdates(){
       event:'INSERT',
       schema:'public',
       table:'institution_activity'
-    }, loadInstitutionFeed)
+    }, function(){
+      loadInstitutionFeed();
+    })
     .subscribe();
 }
 
 function handleOpenNewCase(){
-  window.location.href = hasInstitutionClearance ? '../terminal.html' : '../pricing.html';
+  window.location.href = '../terminal.html';
 }
 
 function clearBoard(){
   selectedCaseId = null;
   selectedCase = null;
 
-  document.getElementById('wallHeader').textContent = 'CASE WALL // NO CASE SELECTED';
-  setBoardText('boardQuestion','Select a case file from the cabinet.');
-  setBoardText('boardBirthData','No case selected.');
-  setBoardText('boardEvidence','No evidence selected.');
-  setBoardText('boardTheme','Awaiting case selection.');
-  setBoardText('boardSynthesis','No synthesis filed.');
-  setBoardText('boardPattern','No confirmed pattern yet.');
-  document.getElementById('boardChartLabel').textContent = 'CASE EVIDENCE OVERVIEW';
-  document.getElementById('boardChartText').textContent = 'The selected case record will appear here.';
+  document.getElementById('wallHeader').textContent =
+    'CASE WALL // NO CASE SELECTED';
+
+  document.getElementById('systemStatus').textContent = 'ACTIVE';
+
+  setBoardText(
+    'boardQuestion',
+    'Select a case file from the cabinet.'
+  );
+
+  setBoardText('boardBirthData', 'No case selected.');
+  setBoardText('boardEvidence', 'No evidence selected.');
+  setBoardText('boardTheme', 'Awaiting case selection.');
+  setBoardText('boardSynthesis', 'No synthesis filed.');
+  setBoardText('boardPattern', 'No confirmed pattern yet.');
+
+  document.getElementById('boardChartLabel').textContent =
+    'CASE EVIDENCE OVERVIEW';
+
+  document.getElementById('boardChartText').textContent =
+    'The selected case record will appear here.';
+
   document.getElementById('evidenceFolders').innerHTML =
-    '<div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div>';
+    '<div class="folder"><small>EVIDENCE FILE</small>' +
+    'Awaiting case selection</div>';
+
   document.getElementById('refreshCaseBtn').disabled = true;
   document.getElementById('prepareReportBtn').disabled = true;
-  document.getElementById('continueCaseBtn').href = '../terminal.html';
+  document.getElementById('continueCaseBtn').href =
+    '../terminal.html';
 }
 
 function setBoardText(id, value){
-  document.getElementById(id).textContent = hasText(value) ? String(value) : '—';
+  document.getElementById(id).textContent =
+    hasText(value) ? String(value) : '—';
 }
 
 function normalizeStatus(status){
@@ -756,20 +1060,24 @@ function normalizeStatus(status){
 }
 
 function hasText(value){
-  if (value === null || value === undefined) return false;
-  if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === 'object') return Object.keys(value).length > 0;
+  if(value === null || value === undefined) return false;
+  if(Array.isArray(value)) return value.length > 0;
+  if(typeof value === 'object'){
+    return Object.keys(value).length > 0;
+  }
   return String(value).trim().length > 0;
 }
 
 function escapeHtml(value){
-  const div = document.createElement('div');
+  var div = document.createElement('div');
   div.textContent = value ?? '';
   return div.innerHTML;
 }
 
 function escapeJs(value){
-  return String(value || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return String(value || '')
+    .replace(/\\/g,'\\\\')
+    .replace(/'/g,"\\'");
 }
 
 init();
