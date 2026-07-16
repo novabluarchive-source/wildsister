@@ -7,6 +7,7 @@
 
 
 
+var FREE=3;
 var agent=null,msgHistory=[],count=0,posting=false,sessionStart=null,selectedDivision=null,activeSystem='',caseData=null,currentSession=null,currentUserId=null,currentCaseId=null;
 
 
@@ -19,32 +20,40 @@ async function initializeDatabaseSession(){
       throw new Error('AUTH MODULE NOT LOADED');
     }
 
-    var access=await WildSisterAuth.getAccessState();
+    var access=await window.WildSisterAuth.getAccessState();
 
     currentSession=access.signedIn
-      ? await WildSisterAuth.getSession()
+      ? await window.WildSisterAuth.getSession()
       : null;
 
     currentUserId=access.user ? access.user.id : null;
 
     if(access.signedIn){
-      chip.textContent=access.canUsePremium
-        ? 'SESSION: MEMBER'
-        : 'SESSION: VERIFIED';
+      if(chip){
+        chip.textContent=access.canUsePremium
+          ? 'SESSION: MEMBER'
+          : 'SESSION: VERIFIED';
+      }
 
-      status.textContent=access.canUsePremium
-        ? 'DATABASE: CONNECTED // MEMBER'
-        : 'DATABASE: CONNECTED';
+      if(status){
+        status.textContent=access.canUsePremium
+          ? 'DATABASE: CONNECTED // MEMBER'
+          : 'DATABASE: CONNECTED';
+        status.className='db-status live';
+      }
 
-      status.className='db-status live';
-
-      // Signed-in users can save cases even without an active paid plan.
-      // Paid access controls premium actions, not basic case storage.
-      try{sessionStorage.setItem('u','1');}catch(e){}
+      try{
+        sessionStorage.setItem('u','1');
+      }catch(error){}
     }else{
-      chip.textContent='SESSION: VISITOR';
-      status.textContent='DATABASE: UNSAVED VISITOR MODE';
-      status.className='db-status warn';
+      if(chip){
+        chip.textContent='SESSION: VISITOR';
+      }
+
+      if(status){
+        status.textContent='DATABASE: UNSAVED VISITOR MODE';
+        status.className='db-status warn';
+      }
     }
 
     var params=new URLSearchParams(window.location.search);
@@ -59,9 +68,14 @@ async function initializeDatabaseSession(){
     currentSession=null;
     currentUserId=null;
 
-    chip.textContent='SESSION: CHECK FAILED';
-    status.textContent='DATABASE: AUTH CONNECTION ERROR';
-    status.className='db-status warn';
+    if(chip){
+      chip.textContent='SESSION: CHECK FAILED';
+    }
+
+    if(status){
+      status.textContent='DATABASE: AUTH CONNECTION ERROR';
+      status.className='db-status warn';
+    }
   }
 }
 
@@ -793,10 +807,19 @@ function validateCode(){
   }
 }
 
-function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
-function rsz(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+function onKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){
+    e.preventDefault();
+    send();
+  }
+}
 
-// Expose Terminal functions used by HTML onclick attributes.
+function rsz(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,80)+'px';
+}
+
+// Expose every function used by terminal.html onclick attributes.
 global.enterApp=enterApp;
 global.openDivision=openDivision;
 global.closeCaseIntake=closeCaseIntake;
@@ -813,6 +836,14 @@ global.send=send;
 global.onKey=onKey;
 global.rsz=rsz;
 
-initializeDatabaseSession();
+function startTerminalEngine(){
+  initializeDatabaseSession();
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',startTerminalEngine,{once:true});
+}else{
+  startTerminalEngine();
+}
 
 })(window);
