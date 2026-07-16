@@ -796,6 +796,23 @@ function validateCode(){
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function rsz(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
 
+// Expose Terminal functions used by HTML onclick attributes.
+global.enterApp=enterApp;
+global.openDivision=openDivision;
+global.closeCaseIntake=closeCaseIntake;
+global.beginCase=beginCase;
+global.enterSecureChannel=enterSecureChannel;
+global.backToHall=backToHall;
+global.prepareEvidenceEntry=prepareEvidenceEntry;
+global.saveOperatorNote=saveOperatorNote;
+global.requestCrossSynthesis=requestCrossSynthesis;
+global.requestFinalAssessment=requestFinalAssessment;
+global.returnToDashboard=returnToDashboard;
+global.validateCode=validateCode;
+global.send=send;
+global.onKey=onKey;
+global.rsz=rsz;
+
 initializeDatabaseSession();
 
 })(window);
