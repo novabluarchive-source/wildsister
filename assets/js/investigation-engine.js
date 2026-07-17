@@ -1,8 +1,8 @@
-// ==========================================================
+// ============================================================
 // WILD SISTER // SID
 // INVESTIGATION ENGINE
 // Shared Supabase case-management layer
-// ==========================================================
+// ============================================================
 
 (function (global) {
   "use strict";
@@ -29,6 +29,25 @@
     if (!value || typeof value !== "object") {
       throw new Error((label || "DATA") + " IS REQUIRED");
     }
+  }
+
+  async function getAuthenticatedUser() {
+    const client = getClient();
+
+    const {
+      data: { user },
+      error
+    } = await client.auth.getUser();
+
+    if (error) {
+      throw new Error("AUTHENTICATION CHECK FAILED: " + error.message);
+    }
+
+    if (!user) {
+      throw new Error("YOU MUST BE SIGNED IN TO SAVE A CASE");
+    }
+
+    return user;
   }
 
   // ----------------------------------------------------------
@@ -78,8 +97,10 @@
       requireObject(caseData, "CASE DATA");
 
       const client = getClient();
+      const user = await getAuthenticatedUser();
 
       const payload = {
+        user_id: user.id,
         case_number: caseData.case_number,
         subject: caseData.subject || "UNNAMED CASE",
         primary_question: caseData.primary_question || "",
@@ -96,7 +117,7 @@
         .single();
 
       if (error) {
-        throw error;
+        throw new Error("CASE CREATION FAILED: " + error.message);
       }
 
       return data;
@@ -112,6 +133,10 @@
         updated_at: new Date().toISOString()
       });
 
+      // Prevent ownership from being changed accidentally.
+      delete payload.user_id;
+      delete payload.id;
+
       const { data, error } = await client
         .from("cases")
         .update(payload)
@@ -120,7 +145,7 @@
         .single();
 
       if (error) {
-        throw error;
+        throw new Error("CASE UPDATE FAILED: " + error.message);
       }
 
       return data;
@@ -149,7 +174,7 @@
         .single();
 
       if (error) {
-        throw error;
+        throw new Error("EVIDENCE SAVE FAILED: " + error.message);
       }
 
       return data;
@@ -201,7 +226,7 @@
         .single();
 
       if (error) {
-        throw error;
+        throw new Error("MESSAGE SAVE FAILED: " + error.message);
       }
 
       return data;
@@ -256,7 +281,7 @@
         .single();
 
       if (error) {
-        throw error;
+        throw new Error("REPORT SAVE FAILED: " + error.message);
       }
 
       return data;
@@ -311,7 +336,7 @@
         .single();
 
       if (error) {
-        throw error;
+        throw new Error("ANALYST ASSIGNMENT FAILED: " + error.message);
       }
 
       return data;
@@ -364,7 +389,6 @@
         messages: messages
       };
     }
-
   };
 
   global.InvestigationEngine = InvestigationEngine;
