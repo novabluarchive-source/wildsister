@@ -1,345 +1,907 @@
 (() => {
-  "use strict";
+"use strict";
 
-  let currentUser = null;
-  let currentCases = [];
-  let selectedCaseId = null;
+let currentUser = null;
+let currentCases = [];
+let selectedCaseId = null;
 
-  const byId = (id) => document.getElementById(id);
+const byId = (id) => document.getElementById(id);
 
-  function showDashboard() {
-    const loadingGate = byId("loadingGate");
-    const dashboardContent = byId("dashboardContent");
-
-    if (loadingGate) loadingGate.style.display = "none";
-    if (dashboardContent) dashboardContent.style.display = "block";
-  }
-
-  function showDashboardError(message) {
-    const loadingGate = byId("loadingGate");
-    const errorNote = byId("errorNote");
-
-    if (loadingGate) {
-      loadingGate.textContent = `// DASHBOARD ERROR: ${message}`;
-    }
-
-    if (errorNote) {
-      errorNote.innerHTML = `
-        <div class="empty-board">
-          <div class="empty-board-title">SYSTEM ERROR</div>
-          <p>${escapeHtml(message)}</p>
-        </div>
-      `;
-    }
-  }
-
-  function escapeHtml(value) {
+function escapeHtml(value){
     return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
 
-  function formatCaseCode(caseItem) {
-    return (
-      caseItem.case_number ||
-      caseItem.case_code ||
-      caseItem.code ||
-      `CASE-${String(caseItem.id || "").slice(0, 8).toUpperCase()}`
-    );
-  }
+function showDashboard(){
+    const loading = byId("loadingGate");
+    const dashboard = byId("dashboardContent");
 
-  function formatDate(value) {
-    if (!value) return "UNKNOWN DATE";
+    if(loading) loading.style.display="none";
+    if(dashboard) dashboard.style.display="block";
+}
 
-    const date = new Date(value);
+function showDashboardError(message){
 
-    if (Number.isNaN(date.getTime())) return String(value);
+    console.error(message);
 
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit"
+    showDashboard();
+
+    const error = byId("errorNote");
+
+    if(error){
+        error.innerHTML=`
+        <div class="empty-board">
+            <div class="empty-board-title">
+                SYSTEM ERROR
+            </div>
+
+            <p>${escapeHtml(message)}</p>
+
+        </div>`;
+    }
+
+}
+
+function formatDate(date){
+
+    if(!date) return "UNKNOWN";
+
+    const d=new Date(date);
+
+    if(isNaN(d)) return date;
+
+    return d.toLocaleDateString("en-US",{
+        year:"numeric",
+        month:"short",
+        day:"2-digit"
     });
-  }
 
-  function getCaseStatus(caseItem) {
-    return String(caseItem.status || "active").toLowerCase();
-  }
+}
 
-  function updateHeader() {
-    const dateNode = byId("currentDate");
-    const operatorNode = byId("operatorName");
-    const clearanceNode = byId("navClearance");
+function formatCaseCode(c){
 
-    if (dateNode) {
-      dateNode.textContent = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit"
-      });
+    return (
+        c.case_number ||
+        c.case_code ||
+        c.code ||
+        `CASE-${String(c.id).slice(0,8).toUpperCase()}`
+    );
+
+}
+
+function caseStatus(c){
+    return String(c.status || "active").toLowerCase();
+}
+  function updateHeader(){
+
+    const date=byId("currentDate");
+    const operator=byId("operatorName");
+    const clearance=byId("navClearance");
+
+    if(date){
+
+        date.textContent=new Date().toLocaleDateString("en-US",{
+
+            year:"numeric",
+            month:"short",
+            day:"2-digit"
+
+        });
+
     }
 
-    if (operatorNode) {
-      const name =
-        currentUser?.user_metadata?.full_name ||
-        currentUser?.user_metadata?.name ||
-        currentUser?.email ||
-        "MEMBER";
+    if(operator){
 
-      operatorNode.textContent = String(name).toUpperCase();
+        operator.textContent=(
+            currentUser?.user_metadata?.full_name ||
+            currentUser?.email ||
+            "MEMBER"
+        ).toUpperCase();
+
     }
 
-    if (clearanceNode) {
-      clearanceNode.textContent = currentUser ? "VERIFIED" : "VISITOR";
-    }
-  }
+    if(clearance){
 
-  function updateStats() {
-    const active = currentCases.filter(
-      (item) => getCaseStatus(item) === "active"
+        clearance.textContent=currentUser
+            ? "VERIFIED"
+            : "VISITOR";
+
+    }
+
+}
+
+function updateStats(){
+
+    const active=currentCases.filter(
+        x=>caseStatus(x)==="active"
     ).length;
 
-    const closed = currentCases.filter(
-      (item) => getCaseStatus(item) === "closed"
+    const closed=currentCases.filter(
+        x=>caseStatus(x)==="closed"
     ).length;
 
-    if (byId("statActive")) {
-      byId("statActive").textContent = String(active).padStart(2, "0");
-    }
+    if(byId("statActive"))
+        byId("statActive").textContent=String(active).padStart(2,"0");
 
-    if (byId("statClosed")) {
-      byId("statClosed").textContent = String(closed).padStart(2, "0");
-    }
+    if(byId("statClosed"))
+        byId("statClosed").textContent=String(closed).padStart(2,"0");
 
-    if (byId("statArchive")) {
-      byId("statArchive").textContent = String(currentCases.length).padStart(
-        2,
-        "0"
-      );
-    }
-  }
+    if(byId("statArchive"))
+        byId("statArchive").textContent=String(currentCases.length).padStart(2,"0");
 
+}
   function renderCases(cases = currentCases) {
+
     const grid = byId("caseGrid");
 
     if (!grid) return;
 
     if (!cases.length) {
-      grid.innerHTML = `
+
+        grid.innerHTML = `
         <div class="empty-board">
-          <div class="empty-board-title">NO CASE FILES FOUND</div>
-          <p>Open a new investigation to create the first file.</p>
-          <a href="../terminal.html">OPEN TERMINAL →</a>
+
+            <div class="empty-board-title">
+                NO CASE FILES FOUND
+            </div>
+
+            <p>Open a new investigation to create your first case.</p>
+
+            <a href="../terminal.html">
+                OPEN TERMINAL →
+            </a>
+
         </div>
-      `;
-      return;
+        `;
+
+        return;
+
     }
 
-    grid.innerHTML = cases
-      .map((caseItem) => {
+    grid.innerHTML = cases.map(caseItem => {
+
         const id = escapeHtml(caseItem.id);
+
         const code = escapeHtml(formatCaseCode(caseItem));
+
         const title = escapeHtml(
-          caseItem.title ||
-          caseItem.subject ||
-          caseItem.question ||
-          "Untitled Investigation"
+
+            caseItem.title ||
+
+            caseItem.subject ||
+
+            caseItem.question ||
+
+            "Untitled Investigation"
+
         );
+
         const division = escapeHtml(
-          caseItem.division ||
-          caseItem.assigned_division ||
-          "UNASSIGNED DIVISION"
+
+            caseItem.division ||
+
+            caseItem.assigned_division ||
+
+            "UNASSIGNED"
+
         );
-        const status = getCaseStatus(caseItem);
-        const created = escapeHtml(
-          formatDate(caseItem.created_at || caseItem.updated_at)
+
+        const status = caseStatus(caseItem);
+
+        const created = formatDate(
+
+            caseItem.created_at ||
+
+            caseItem.updated_at
+
         );
 
         return `
-          <button
-            type="button"
-            class="case-file-card ${
-              String(selectedCaseId) === String(caseItem.id) ? "selected" : ""
-            }"
-            onclick="selectDashboardCase('${id}')"
-          >
-            <span class="case-pin"></span>
-            <span class="case-code">${code}</span>
-            <strong>${title}</strong>
-            <span class="case-detail">${division}</span>
-            <span class="case-detail">OPENED ${created}</span>
-            <span class="case-status ${status === "closed" ? "closed" : "active"}">
-              ${escapeHtml(status.toUpperCase())}
-            </span>
-          </button>
-        `;
-      })
-      .join("");
-  }
 
-  async function selectDashboardCase(caseId) {
+        <button
+
+            class="case-file-card ${selectedCaseId==caseItem.id?"selected":""}"
+
+            data-id="${id}"
+
+        >
+
+            <span class="case-pin"></span>
+
+            <span class="case-code">${code}</span>
+
+            <strong>${title}</strong>
+
+            <span class="case-detail">${division}</span>
+
+            <span class="case-detail">
+
+                OPENED ${created}
+
+            </span>
+
+            <span class="case-status ${status}">
+
+                ${status.toUpperCase()}
+
+            </span>
+
+        </button>
+
+        `;
+
+    }).join("");
+
+
+
+    grid.querySelectorAll(".case-file-card")
+
+    .forEach(card=>{
+
+        card.onclick=()=>{
+
+            selectDashboardCase(
+
+                card.dataset.id
+
+            );
+
+        };
+
+    });
+
+}
+
+
+
+function filterCases(){
+
+    const search=(
+
+        byId("caseSearchInput")?.value ||
+
+        ""
+
+    ).toLowerCase();
+
+
+
+    if(!search){
+
+        renderCases(currentCases);
+
+        return;
+
+    }
+
+
+
+    const filtered=currentCases.filter(c=>{
+
+        return (
+
+            formatCaseCode(c)+
+
+            " "+
+
+            (c.title||"")+
+
+            " "+
+
+            (c.subject||"")+
+
+            " "+
+
+            (c.question||"")
+
+        )
+
+        .toLowerCase()
+
+        .includes(search);
+
+    });
+
+
+
+    renderCases(filtered);
+
+}
+
+
+
+function clearCaseSearch(){
+
+    const input=byId("caseSearchInput");
+
+    if(input)
+
+        input.value="";
+
+
+
+    renderCases(currentCases);
+
+}
+
+
+
+function toggleCaseSearch(){
+
+    byId("caseSearchBar")
+
+        ?.classList.toggle("show");
+
+
+
+    byId("caseSearchInput")
+
+        ?.focus();
+
+}
+  async function selectDashboardCase(caseId){
+
     selectedCaseId = caseId;
 
     renderCases();
 
     const selected = currentCases.find(
-      (item) => String(item.id) === String(caseId)
+        c => String(c.id) === String(caseId)
     );
 
-    if (!selected) return;
+    if(!selected) return;
 
-    const continueButton = byId("continueCaseBtn");
-    const refreshButton = byId("refreshCaseBtn");
-    const reportButton = byId("prepareReportBtn");
+    const continueBtn = byId("continueCaseBtn");
+    const refreshBtn = byId("refreshCaseBtn");
+    const reportBtn = byId("prepareReportBtn");
 
-    if (continueButton) {
-      continueButton.href =
-        "../terminal.html?case=" + encodeURIComponent(caseId);
+    if(continueBtn){
+        continueBtn.href =
+            "../terminal.html?case=" +
+            encodeURIComponent(caseId);
     }
 
-    if (refreshButton) refreshButton.disabled = false;
-    if (reportButton) reportButton.disabled = false;
+    if(refreshBtn) refreshBtn.disabled = false;
+    if(reportBtn) reportBtn.disabled = false;
 
-    try {
-      const bundle = await InvestigationEngine.loadCaseBundle(caseId);
+    try{
 
-      renderCaseWall(selected, bundle);
-      renderFeed(bundle);
-    } catch (error) {
-      console.error("Unable to load selected case:", error);
-      renderCaseWall(selected, null);
+        let bundle = {
+            evidence:[],
+            reports:[],
+            analysts:[],
+            messages:[]
+        };
+
+        if(window.InvestigationEngine &&
+           typeof InvestigationEngine.loadCaseBundle==="function"){
+
+            bundle =
+                await InvestigationEngine.loadCaseBundle(caseId);
+
+        }
+
+        renderCaseWall(selected,bundle);
+
+        renderFeed(bundle);
+
+    }catch(err){
+
+        console.error(err);
+
+        renderCaseWall(selected,{
+            evidence:[],
+            reports:[],
+            analysts:[],
+            messages:[]
+        });
+
+        renderFeed({});
+
     }
-  }
 
-  function renderCaseWall(caseItem, bundle) {
-    const evidence = bundle?.evidence || [];
-    const reports = bundle?.reports || [];
-    const analysts = bundle?.analysts || [];
+}
+
+
+
+function renderCaseWall(caseItem,bundle){
+
+    bundle = bundle || {};
+
+    const evidence = bundle.evidence || [];
+
+    const reports = bundle.reports || [];
+
+    const analysts = bundle.analysts || [];
 
     const latestEvidence = evidence[0] || {};
+
     const latestReport = reports[0] || {};
 
-    if (byId("wallHeader")) {
-      byId("wallHeader").textContent =
-        `CASE WALL // ${formatCaseCode(caseItem)}`;
-    }
 
-    if (byId("boardQuestion")) {
-      byId("boardQuestion").textContent =
-        caseItem.question ||
-        caseItem.subject ||
-        caseItem.title ||
-        "No submitted question.";
-    }
 
-    if (byId("boardBirthData")) {
-      byId("boardBirthData").textContent =
-        caseItem.birth_data ||
-        caseItem.birth_details ||
-        caseItem.client_birth_data ||
-        "No birth data stored.";
-    }
+    if(byId("wallHeader"))
 
-    if (byId("boardEvidence")) {
-      byId("boardEvidence").textContent =
-        latestEvidence.content ||
-        latestEvidence.evidence ||
-        latestEvidence.summary ||
-        "No evidence filed.";
-    }
+        byId("wallHeader").textContent =
+            "CASE WALL // " +
+            formatCaseCode(caseItem);
 
-    if (byId("boardTheme")) {
-      byId("boardTheme").textContent =
-        caseItem.theme ||
-        caseItem.current_theme ||
-        latestReport.theme ||
-        "Theme not yet confirmed.";
-    }
 
-    if (byId("boardSynthesis")) {
-      byId("boardSynthesis").textContent =
-        latestReport.content ||
-        latestReport.report ||
-        latestReport.summary ||
-        "No synthesis filed.";
-    }
 
-    if (byId("boardPattern")) {
-      byId("boardPattern").textContent =
-        caseItem.key_pattern ||
-        latestReport.key_pattern ||
-        "No confirmed pattern yet.";
-    }
+    if(byId("boardQuestion"))
 
-    if (byId("boardChartText")) {
-      const analystNames = analysts
-        .map((item) => item.analyst_name || item.analyst || item.name)
-        .filter(Boolean);
+        byId("boardQuestion").textContent =
+            caseItem.question ||
+            caseItem.subject ||
+            caseItem.title ||
+            "No question submitted.";
 
-      byId("boardChartText").textContent =
-        `${evidence.length} evidence item(s)\n` +
-        `${reports.length} report(s)\n` +
-        `${analystNames.length ? analystNames.join(", ") : "No analysts assigned"}`;
+
+
+    if(byId("boardBirthData"))
+
+        byId("boardBirthData").textContent =
+            caseItem.birth_data ||
+            caseItem.birth_details ||
+            "No birth data.";
+
+
+
+    if(byId("boardEvidence"))
+
+        byId("boardEvidence").textContent =
+            latestEvidence.content ||
+            latestEvidence.summary ||
+            latestEvidence.evidence ||
+            "No evidence filed.";
+
+
+
+    if(byId("boardTheme"))
+
+        byId("boardTheme").textContent =
+            latestReport.theme ||
+            caseItem.theme ||
+            "Theme pending.";
+
+
+
+    if(byId("boardSynthesis"))
+
+        byId("boardSynthesis").textContent =
+            latestReport.content ||
+            latestReport.summary ||
+            "No synthesis yet.";
+
+
+
+    if(byId("boardPattern"))
+
+        byId("boardPattern").textContent =
+            latestReport.key_pattern ||
+            caseItem.key_pattern ||
+            "No confirmed pattern.";
+
+
+
+    if(byId("boardChartText")){
+
+        const analystNames = analysts
+
+            .map(a =>
+                a.analyst_name ||
+                a.analyst ||
+                a.name
+            )
+
+            .filter(Boolean);
+
+        byId("boardChartText").textContent =
+
+            evidence.length +
+            " evidence item(s)\n" +
+
+            reports.length +
+            " report(s)\n" +
+
+            (
+                analystNames.length
+                ? analystNames.join(", ")
+                : "No analysts assigned."
+            );
+
     }
 
     renderEvidenceFolders(evidence);
-  }
 
-  function renderEvidenceFolders(evidence) {
-    const container = byId("evidenceFolders");
+}
 
-    if (!container) return;
 
-    if (!evidence.length) {
-      container.innerHTML = `
+
+function renderEvidenceFolders(evidence){
+
+    const holder = byId("evidenceFolders");
+
+    if(!holder) return;
+
+    if(!evidence.length){
+
+        holder.innerHTML=`
+
         <div class="folder">
-          <small>EVIDENCE FILE</small>
-          No evidence filed
+
+            <small>EVIDENCE FILE</small>
+
+            No evidence filed.
+
         </div>
-      `;
-      return;
+
+        `;
+
+        return;
+
     }
 
-    container.innerHTML = evidence
-      .slice(0, 6)
-      .map((item, index) => {
-        const label = escapeHtml(
-          item.title ||
-          item.evidence_type ||
-          item.type ||
-          `Evidence ${index + 1}`
-        );
 
-        return `
-          <div class="folder">
-            <small>EVIDENCE FILE ${String(index + 1).padStart(2, "0")}</small>
-            ${label}
-          </div>
-        `;
-      })
-      .join("");
-  }
 
-  function renderFeed(bundle) {
+    holder.innerHTML = evidence
+
+        .slice(0,6)
+
+        .map((item,index)=>`
+
+            <div class="folder">
+
+                <small>
+
+                    EVIDENCE FILE ${String(index+1).padStart(2,"0")}
+
+                </small>
+
+                ${escapeHtml(
+
+                    item.title ||
+
+                    item.evidence_type ||
+
+                    item.type ||
+
+                    "Evidence"
+
+                )}
+
+            </div>
+
+        `)
+
+        .join("");
+
+}
+
+
+
+function renderFeed(bundle){
+
     const feed = byId("institutionFeed");
 
-    if (!feed) return;
+    if(!feed) return;
 
-    const messages = bundle?.messages || [];
-    const reports = bundle?.reports || [];
-    const evidence = bundle?.evidence || [];
+    bundle = bundle || {};
 
     const activity = [
-      ...messages.map((item) => ({
-        label: "MESSAGE FILED",
-        text: item.content || item.message || item.body || "New message"
-      })),
-      ...reports.map((item) => ({
-        label: "REPORT FILED",
-        text: item.title || item.summary || "New report"
-      })),
-      ...evidence.map((item) => ({
-        label: "EVIDENCE
+
+        ...(bundle.messages||[]).map(m=>({
+
+            label:"MESSAGE FILED",
+
+            text:m.content||m.message||"New message"
+
+        })),
+
+
+
+        ...(bundle.reports||[]).map(r=>({
+
+            label:"REPORT FILED",
+
+            text:r.title||r.summary||"New report"
+
+        })),
+
+
+
+        ...(bundle.evidence||[]).map(e=>({
+
+            label:"EVIDENCE FILED",
+
+            text:e.title||e.summary||"New evidence"
+
+        }))
+
+    ];
+
+
+
+    if(!activity.length){
+
+        feed.innerHTML=`
+
+        <div class="feed-item">
+
+            <strong>NO ACTIVITY</strong>
+
+        </div>
+
+        `;
+
+        return;
+
+    }
+
+
+
+    feed.innerHTML = activity
+
+        .slice(0,10)
+
+        .map(item=>`
+
+        <div class="feed-item">
+
+            <strong>${escapeHtml(item.label)}</strong>
+
+            <div>${escapeHtml(item.text)}</div>
+
+        </div>
+
+        `)
+
+        .join("");
+
+}
+  async function resolveCurrentUser(){
+
+    try{
+
+        if(
+            window.WildSisterAuth &&
+            typeof window.WildSisterAuth.getCurrentUser === "function"
+        ){
+
+            currentUser =
+                await window.WildSisterAuth.getCurrentUser();
+
+            return;
+
+        }
+
+        const client =
+            window.supabaseClient ||
+            window.wildSisterSupabase;
+
+        if(
+            client &&
+            client.auth &&
+            typeof client.auth.getUser === "function"
+        ){
+
+            const result =
+                await client.auth.getUser();
+
+            currentUser =
+                result?.data?.user || null;
+
+        }
+
+    }catch(error){
+
+        console.warn(
+            "Unable to resolve current user:",
+            error
+        );
+
+        currentUser = null;
+
+    }
+
+}
+
+
+
+async function loadCases(){
+
+    try{
+
+        let result = [];
+
+        if(
+            window.InvestigationEngine &&
+            typeof InvestigationEngine.getCases === "function"
+        ){
+
+            result =
+                await InvestigationEngine.getCases();
+
+        }else if(
+            window.InvestigationEngine &&
+            typeof InvestigationEngine.loadCases === "function"
+        ){
+
+            result =
+                await InvestigationEngine.loadCases();
+
+        }
+
+        currentCases =
+            Array.isArray(result)
+                ? result
+                : [];
+
+    }catch(error){
+
+        console.error(
+            "Unable to load cases:",
+            error
+        );
+
+        currentCases = [];
+
+    }
+
+    updateStats();
+
+    renderCases();
+
+}
+
+
+
+function handleOpenNewCase(){
+
+    window.location.href =
+        "../terminal.html";
+
+}
+
+
+
+async function refreshSelectedCase(){
+
+    if(!selectedCaseId) return;
+
+    await selectDashboardCase(
+        selectedCaseId
+    );
+
+}
+
+
+
+function prepareReport(){
+
+    if(!selectedCaseId) return;
+
+    window.location.href =
+
+        "../terminal.html?case=" +
+
+        encodeURIComponent(selectedCaseId) +
+
+        "&action=report";
+
+}
+
+
+
+async function syncOperations(){
+
+    const status =
+        byId("systemStatus");
+
+    if(status)
+
+        status.textContent =
+            "SYNCING";
+
+
+
+    await loadCases();
+
+
+
+    if(selectedCaseId){
+
+        await selectDashboardCase(
+            selectedCaseId
+        );
+
+    }
+
+
+
+    if(status)
+
+        status.textContent =
+            "ACTIVE";
+
+}
+
+
+
+async function initializeDashboard(){
+
+    try{
+
+        await resolveCurrentUser();
+
+        updateHeader();
+
+        await loadCases();
+
+        renderFeed({});
+
+        showDashboard();
+
+    }catch(error){
+
+        showDashboardError(
+
+            error?.message ||
+
+            "Dashboard initialization failed."
+
+        );
+
+    }
+
+}
+
+
+
+window.handleOpenNewCase =
+    handleOpenNewCase;
+
+window.toggleCaseSearch =
+    toggleCaseSearch;
+
+window.filterCases =
+    filterCases;
+
+window.clearCaseSearch =
+    clearCaseSearch;
+
+window.selectDashboardCase =
+    selectDashboardCase;
+
+window.refreshSelectedCase =
+    refreshSelectedCase;
+
+window.prepareReport =
+    prepareReport;
+
+window.syncOperations =
+    syncOperations;
+
+
+
+if(document.readyState === "loading"){
+
+    document.addEventListener(
+
+        "DOMContentLoaded",
+
+        initializeDashboard
+
+    );
+
+}else{
+
+    initializeDashboard();
+
+}
+
+})();
