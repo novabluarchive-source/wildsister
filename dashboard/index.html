@@ -39,7 +39,7 @@ button,a{font:inherit}
 .brand-block p{font-size:9px;letter-spacing:.2em;color:var(--muted)}
 .top-meta{padding:13px;background:#0a0a0a}
 .top-meta span{display:block;font-size:8px;letter-spacing:.18em;color:var(--muted);margin-bottom:5px}
-.top-meta strong{font-size:11px;color:var(--cyan);font-weight:normal}.link-button{background:none;border:0;color:var(--cyan);cursor:pointer;font:inherit;padding:0}
+.top-meta strong{font-size:11px;color:var(--cyan);font-weight:normal}
 @media(max-width:950px){.topbar{grid-template-columns:1fr 1fr}.brand-block{grid-column:1/-1}}
 
 .tabs{
@@ -208,227 +208,87 @@ button,a{font:inherit}
 .case-tools button:disabled{opacity:.3;cursor:not-allowed}
 .note p{white-space:pre-wrap}
 
-
-/* ===== SID INTERACTIVE UPDATE ===== */
-.profile-card{padding:14px}.profile-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #191919;font-size:9px}.profile-line span{color:var(--muted)}.profile-line strong{color:var(--white);font-weight:normal;text-align:right}.progress-track{height:6px;background:#171717;margin-top:7px;overflow:hidden}.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--cyan));width:0}.quick-actions{padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick-actions button,.quick-actions a{padding:10px;background:#0b0b0b;border:1px solid var(--border);color:var(--text);font-size:8px;letter-spacing:.1em;text-decoration:none;cursor:pointer;text-align:center}.quick-actions .wide{grid-column:1/-1}.dossier{margin-top:12px}.dossier-tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--border)}.dossier-tab{background:#0a0a0a;border:0;border-right:1px solid var(--border);color:var(--muted);padding:11px 13px;font-size:8px;letter-spacing:.12em;cursor:pointer}.dossier-tab.active{color:var(--cyan);background:#111}.dossier-body{min-height:220px;padding:16px}.record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.record-card{border:1px solid var(--border);background:#0b0b0b;padding:12px}.record-card h4{font-size:9px;color:var(--gold);letter-spacing:.1em;margin-bottom:7px}.record-card p{font-size:10px;line-height:1.65;color:var(--text);white-space:pre-wrap}.record-meta{font-size:8px;color:var(--muted);margin-top:8px}.empty-state{border:1px dashed #2b261f;padding:24px;text-align:center;color:var(--muted);font-size:9px;line-height:1.7}.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}.modal-backdrop.show{display:flex}.modal{width:min(680px,100%);max-height:90vh;overflow:auto;background:#090909;border:1px solid #3a3127;box-shadow:0 25px 70px #000}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}.modal-head h2{font-size:12px;letter-spacing:.14em;color:var(--white)}.modal-close{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer}.modal-body{padding:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:8px;letter-spacing:.12em;color:var(--muted)}.field input,.field textarea,.field select{background:#0d0d0d;border:1px solid var(--border);color:var(--white);padding:11px;font:inherit}.field textarea{min-height:110px;resize:vertical}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.modal-actions button{padding:10px 14px;background:#0b0b0b;border:1px solid var(--border);color:var(--text);cursor:pointer}.modal-actions .primary{border-color:var(--cyan);color:var(--cyan)}.toast{position:fixed;right:18px;bottom:18px;z-index:80;background:#101010;border:1px solid var(--border);border-left:3px solid var(--cyan);padding:12px 14px;color:var(--white);font-size:9px;display:none;max-width:340px}.toast.show{display:block}.case-filter-row{display:flex;gap:6px;padding:10px;overflow:auto}.case-filter{background:#0b0b0b;border:1px solid var(--border);color:var(--muted);padding:7px 9px;font-size:7px;cursor:pointer}.case-filter.active{color:var(--cyan);border-color:var(--cyan)}.analyst{cursor:pointer;transition:.2s}.analyst:hover,.analyst.active{border-color:var(--cyan);transform:translateX(2px)}.analyst-status{display:inline-block;margin-top:5px;font-size:7px;color:var(--muted)}.analyst-status.active{color:#62d477}.board-grid .note,.chart-sheet,.folder{cursor:pointer}.board-grid .note:hover,.chart-sheet:hover,.folder:hover{outline:2px solid rgba(40,200,223,.5)}
-@media(max-width:700px){.record-grid,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.quick-actions{grid-template-columns:1fr}}
-
 </style>
-</head>
+<style>
+.command-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(220px,.6fr);gap:1px;background:#211a12;border:1px solid var(--border);margin-bottom:12px}
+.command-main,.command-side{background:linear-gradient(145deg,#0e0e0e,#080706);padding:20px}
+.command-kicker{font-size:8px;letter-spacing:.22em;color:var(--cyan);margin-bottom:9px}.command-main h2{font-family:'VT323';font-size:2.1rem;color:var(--white);font-weight:normal;line-height:1}.command-question{margin-top:10px;max-width:760px;color:var(--text);font-size:12px;line-height:1.65}.progress-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-top:18px}.progress-track{height:7px;background:#211d17;border:1px solid #312a20}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--cyan));transition:width .4s ease}.progress-value{font-family:'VT323';font-size:1.5rem;color:var(--white)}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.hero-actions a,.hero-actions button{padding:10px 12px;border:1px solid var(--border);background:#0b0b0b;color:var(--text);text-decoration:none;font-size:9px;letter-spacing:.1em;cursor:pointer}.hero-actions .primary{border-color:var(--cyan);color:var(--cyan)}
+.command-side{display:grid;gap:12px}.intel-block{border-left:2px solid var(--gold);padding-left:11px}.intel-block span{display:block;font-size:7px;letter-spacing:.17em;color:var(--muted);margin-bottom:5px}.intel-block strong{display:block;color:var(--white);font-size:10px;font-weight:normal;line-height:1.55}
+.analyst{cursor:pointer;transition:.2s}.analyst:hover{border-color:var(--gold);transform:translateX(2px)}.analyst-status{display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:7px;letter-spacing:.12em}.analyst-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#555}.analyst-status.active{color:#62d477}.analyst-status.active::before{background:#62d477;box-shadow:0 0 8px #62d477}.analyst-status.ready{color:var(--cyan)}.analyst-status.ready::before{background:var(--cyan)}.analyst-status.waiting{color:var(--gold)}.analyst-status.waiting::before{background:var(--gold)}
+.dossier{margin-top:12px}.dossier-tabs{display:flex;overflow:auto;border-bottom:1px solid var(--border)}.dossier-tab{border:0;border-right:1px solid var(--border);background:#0a0a0a;color:var(--muted);padding:11px 14px;font-size:8px;letter-spacing:.12em;cursor:pointer}.dossier-tab.active{color:var(--cyan);background:#111;border-bottom:2px solid var(--cyan)}.dossier-body{padding:16px;min-height:130px}.dossier-panel{display:none}.dossier-panel.active{display:block}.dossier-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.dossier-card{padding:12px;border:1px solid #211d17;background:#0b0b0b}.dossier-card span{display:block;font-size:7px;color:var(--muted);letter-spacing:.14em;margin-bottom:6px}.dossier-card strong{font-size:10px;color:var(--white);font-weight:normal;line-height:1.5}
+@media(max-width:800px){.command-hero{grid-template-columns:1fr}.dossier-summary{grid-template-columns:1fr}}
+</style>
 <body>
 <div class="shell">
   <div class="loading-gate" id="loadingGate">// VERIFYING SESSION AND CLEARANCE...</div>
-
   <div id="dashboardContent" style="display:none">
     <header class="topbar">
-      <div class="brand-block">
-        <h1>S.I.D. OPERATIONS CENTER</h1>
-        <p>SYMBOL INTELLIGENCE DIVISION</p>
-      </div>
+      <div class="brand-block"><h1>S.I.D. OPERATIONS CENTER</h1><p>SYMBOL INTELLIGENCE DIVISION</p></div>
       <div class="top-meta"><span>OPERATOR</span><strong id="operatorName">MEMBER</strong></div>
       <div class="top-meta"><span>CLEARANCE</span><strong id="navClearance">—</strong></div>
-      <div class="top-meta"><span>STATUS</span><strong id="systemStatus">ACTIVE</strong></div>
+      <div class="top-meta"><span>SYSTEM</span><strong id="systemStatus">ONLINE</strong></div>
       <div class="top-meta"><span>DATE</span><strong id="currentDate">—</strong></div>
-      <div class="top-meta"><span>PROFILE</span><strong><button class="link-button" onclick="openProfileModal()">OPEN RECORD</button></strong></div>
+      <div class="top-meta"><span>SESSION</span><strong>VERIFIED</strong></div>
     </header>
-
     <nav class="tabs">
-      <a class="active" href="index.html">OPERATIONS</a>
-      <a href="cases.html">MY CASES</a>
-      <a href="archive.html">ARCHIVE</a>
-      <a href="../divisions.html">DIVISIONS</a>
-      <a href="../community.html">COMMUNITY</a>
-      <a href="../about.html">MANUAL</a>
-      <a href="#" onclick="signOut();return false">SIGN OUT</a>
+      <a class="active" href="index.html">OPERATIONS</a><a href="cases.html">CASE FILES</a><a href="archive.html">ARCHIVE</a><a href="../divisions.html">DIVISIONS</a><a href="../community.html">ROOMS</a><a href="../profile.html">MEMBER RECORD</a><a href="#" onclick="WildSisterAuth.signOut();return false">SIGN OUT</a>
     </nav>
-
-    <div class="warning" id="subWarning">
-      Visitor access is active. Existing files remain visible, but opening new cases and generating reports requires Institution-Wide clearance.
-      <a href="../pricing.html">Review access levels →</a>
-    </div>
-
-    <div class="stats">
-      <div class="stat"><div class="stat-num" id="statActive">00</div><div class="stat-label">ACTIVE CASES</div></div>
-      <div class="stat"><div class="stat-num" id="statClosed">00</div><div class="stat-label">CLOSED FILES</div></div>
-      <div class="stat"><div class="stat-num" id="statArchive">00</div><div class="stat-label">ARCHIVE FILES</div></div>
-      <div class="stat"><div class="stat-num">08</div><div class="stat-label">ANALYST ROSTER</div></div>
-    </div>
-
-    <div class="actions">
-      <button class="action primary" id="btnNewCase" onclick="handleOpenNewCase()">OPEN NEW INVESTIGATION</button>
-      <button class="action" onclick="toggleCaseSearch()">MY INVESTIGATIONS</button>
-      <button class="action" onclick="window.location.href='../sid.html'">SEARCH SID ARCHIVE</button>
-      <button class="action" onclick="syncOperations()">SYNC OPERATIONS</button>
-    </div>
-
-    <div class="search-bar" id="caseSearchBar">
-      <input id="caseSearchInput" placeholder="Search case number, subject, division, or analyst" oninput="filterCases()">
-      <button onclick="clearCaseSearch()">CLEAR</button>
-    </div>
-
+    <div class="warning" id="subWarning"></div>
+    <section class="command-hero">
+      <div class="command-main">
+        <div class="command-kicker">CURRENT INVESTIGATION</div>
+        <h2 id="heroCaseNumber">NO ACTIVE CASE SELECTED</h2>
+        <div class="command-question" id="heroQuestion">Select a file from the cabinet to bring the investigation room online.</div>
+        <div class="progress-row"><span class="command-kicker">CASE PROGRESS</span><div class="progress-track"><div class="progress-fill" id="heroProgressFill"></div></div><span class="progress-value" id="heroProgressValue">00%</span></div>
+        <div class="hero-actions"><a class="primary" id="continueCaseBtn" href="../terminal.html">CONTINUE INVESTIGATION</a><button onclick="document.querySelector('.wall').scrollIntoView({behavior:'smooth'})">OPEN DOSSIER</button><button onclick="window.location.href='../terminal.html?mode=evidence'">ADD EVIDENCE</button></div>
+      </div>
+      <div class="command-side">
+        <div class="intel-block"><span>LATEST FINDING</span><strong id="heroFinding">No finding filed.</strong></div>
+        <div class="intel-block"><span>MISSING EVIDENCE</span><strong id="heroMissing">Case selection required.</strong></div>
+        <div class="intel-block"><span>NEXT WARRANT</span><strong id="heroNext">Open a case file.</strong></div>
+      </div>
+    </section>
+    <div class="stats"><div class="stat"><div class="stat-num" id="statActive">00</div><div class="stat-label">ACTIVE CASES</div></div><div class="stat"><div class="stat-num" id="statClosed">00</div><div class="stat-label">CLOSED FILES</div></div><div class="stat"><div class="stat-num" id="statArchive">00</div><div class="stat-label">ARCHIVE FILES</div></div><div class="stat"><div class="stat-num">08</div><div class="stat-label">ANALYST ROSTER</div></div></div>
+    <div class="actions"><button class="action primary" id="btnNewCase" onclick="handleOpenNewCase()">OPEN NEW INVESTIGATION</button><button class="action" onclick="toggleCaseSearch()">SEARCH CASES</button><button class="action" onclick="window.location.href='../sid.html'">SEARCH SID ARCHIVE</button><button class="action" onclick="syncOperations()">SYNC OPERATIONS</button></div>
+    <div class="search-bar" id="caseSearchBar"><input id="caseSearchInput" placeholder="Search case number, subject, division, or analyst" oninput="filterCases()"><button onclick="clearCaseSearch()">CLEAR</button></div>
     <div class="operations-grid">
-      <aside class="left-rail panel">
-        <div class="panel-head">ANALYST DESKS<small>8 INSTITUTIONAL ANALYSTS</small></div>
-        <div class="analyst-list">
-          <div class="analyst"><div class="analyst-photo">SC</div><div><strong>SCAR · PSY-001</strong><small>Behavioral Intelligence</small><div class="analyst-note">Defense pattern review desk.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">CE</div><div><strong>CENTRA · AST-001</strong><small>Forensic Astrology</small><div class="analyst-note">Chart architecture and timing.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">LX</div><div><strong>LUX · OTF-001</strong><small>Original Text</small><div class="analyst-note">Source and language retrieval.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">CI</div><div><strong>CIPHER · NUM-001</strong><small>Numeric Intelligence</small><div class="analyst-note">Sequence and gematria desk.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">LU</div><div><strong>LUNA · PAT-001</strong><small>Pattern Investigation</small><div class="analyst-note">Recurrence and contradiction.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">RE</div><div><strong>RELIC · SYM-001</strong><small>Symbol Archive</small><div class="analyst-note">Context and cultural record.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">NX</div><div><strong>NIX · NO DIVISION</strong><small>Cross-System Synthesis</small><div class="analyst-note">Assigned after multiple reports.</div></div></div>
-          <div class="analyst"><div class="analyst-photo">AS</div><div><strong>ASH · NO DIVISION</strong><small>Final Assessment</small><div class="analyst-note">Called in for case closure.</div></div></div>
-        </div>
-        <a class="directory-link" href="../about.html">VIEW ANALYST DIRECTORY</a>
-      </aside>
-
+      <aside class="left-rail panel"><div class="panel-head">DIVISION NETWORK<small>LIVE ANALYST STATUS</small></div><div class="analyst-list">
+        <div class="analyst"><div class="analyst-photo">SC</div><div><strong>SCAR · BEHAVIOR</strong><small>Defense patterns</small><div class="analyst-status active">ACTIVE</div></div></div>
+        <div class="analyst"><div class="analyst-photo">CE</div><div><strong>CENTRA · ASTROLOGY</strong><small>Chart architecture</small><div class="analyst-status ready">READY</div></div></div>
+        <div class="analyst"><div class="analyst-photo">LX</div><div><strong>LUX · ORIGINAL TEXT</strong><small>Source retrieval</small><div class="analyst-status ready">AVAILABLE</div></div></div>
+        <div class="analyst"><div class="analyst-photo">CI</div><div><strong>CIPHER · NUMERIC</strong><small>Sequence intelligence</small><div class="analyst-status waiting">WAITING</div></div></div>
+        <div class="analyst"><div class="analyst-photo">LU</div><div><strong>LUNA · PATTERN</strong><small>Recurrence analysis</small><div class="analyst-status ready">READY</div></div></div>
+        <div class="analyst"><div class="analyst-photo">RE</div><div><strong>RELIC · SYMBOL</strong><small>Cultural record</small><div class="analyst-status ready">AVAILABLE</div></div></div>
+        <div class="analyst"><div class="analyst-photo">NX</div><div><strong>NIX · SYNTHESIS</strong><small>Cross-system review</small><div class="analyst-status waiting">LOCKED</div></div></div>
+        <div class="analyst"><div class="analyst-photo">AS</div><div><strong>ASH · FINAL REVIEW</strong><small>Case closure</small><div class="analyst-status waiting">LOCKED</div></div></div>
+      </div><a class="directory-link" href="../about.html">OPEN ANALYST DIRECTORY</a></aside>
       <main class="center-column">
-        <section class="wall">
-          <div class="wall-header" id="wallHeader">CASE WALL // NO CASE SELECTED</div>
-          <div class="thread t1"></div><div class="thread t2"></div><div class="thread t3"></div>
-
-          <div class="board-grid">
-            <article class="note">
-              <h3>SUBMITTED QUESTION</h3>
-              <p id="boardQuestion">Select a case file from the cabinet.</p>
-            </article>
-
-            <article class="note file">
-              <h3>BIRTH DATA</h3>
-              <p id="boardBirthData">No case selected.</p>
-            </article>
-
-            <article class="chart-sheet" aria-label="Selected case evidence overview">
-                <strong id="boardChartLabel">CASE EVIDENCE OVERVIEW</strong>
-                <span id="boardChartText">The selected case record will appear here.</span>
-              </article>
-
-            <article class="note">
-              <h3>EARLY EVIDENCE</h3>
-              <p id="boardEvidence">No evidence selected.</p>
-            </article>
-
-            <article class="note yellow">
-              <h3>CURRENT THEME</h3>
-              <p id="boardTheme">Awaiting case selection.</p>
-            </article>
-
-            <article class="note">
-              <h3>ANALYST SYNTHESIS</h3>
-              <p id="boardSynthesis">No synthesis filed.</p>
-            </article>
-
-            <article class="note pink">
-              <h3>KEY PATTERN</h3>
-              <p id="boardPattern">No confirmed pattern yet.</p>
-            </article>
-
-            <div class="evidence-folders" id="evidenceFolders">
-              <div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div>
-            </div>
-          </div>
-        </section>
-
-        <div class="case-tools">
-          <a id="continueCaseBtn" href="../terminal.html">CONTINUE IN TERMINAL</a>
-          <button id="refreshCaseBtn" onclick="refreshSelectedCase()" disabled>REFRESH SELECTED CASE</button>
-          <button id="prepareReportBtn" onclick="prepareReport()" disabled>PREPARE REPORT</button>
-        </div>
-
-        <section class="panel dossier">
-          <div class="panel-head">ACTIVE DOSSIER<small>SELECT A TAB TO REVIEW THE FILE</small></div>
-          <div class="dossier-tabs">
-            <button class="dossier-tab active" data-tab="overview">OVERVIEW</button>
-            <button class="dossier-tab" data-tab="evidence">EVIDENCE</button>
-            <button class="dossier-tab" data-tab="reports">REPORTS</button>
-            <button class="dossier-tab" data-tab="messages">TIMELINE</button>
-            <button class="dossier-tab" data-tab="notes">NOTES</button>
-          </div>
-          <div class="dossier-body" id="dossierBody"><div class="empty-state">Select a case file to open its dossier.</div></div>
-        </section>
-
-        <div class="bottom-grid">
-          <section class="desk-pad">
-            <div class="panel-head">OPERATOR DESK</div>
-            <div class="paper-note">
-              <h3>TODAY'S OBJECTIVES</h3>
-              <ul>
-                <li>☑ Review active case</li>
-                <li>☐ Add new evidence</li>
-                <li>☐ Request NIX review</li>
-                <li>☐ Explore archive</li>
-              </ul>
-            </div>
-          </section>
-
-          <section class="desk-pad">
-            <div class="panel-head">RESEARCH ROOMS<small>LIVE COMMUNITY SPACES</small></div>
-            <div class="rooms">
-              <a class="room-door" href="../community.html?room=pattern-lab"><strong>PATTERN LAB</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html?room=original-text-library"><strong>ORIGINAL TEXT LIBRARY</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html?room=rabbit-hole"><strong>RABBIT HOLE</strong><small>COMMUNITY ROOM</small></a>
-              <a class="room-door" href="../community.html?room=birth-wound"><strong>THE BIRTH WOUND</strong><small>COMMUNITY ROOM</small></a>
-            </div>
-          </section>
-
-          <section class="desk-pad">
-            <div class="panel-head">PINNED NOTE</div>
-            <div class="paper-note">
-              <h3>SID STANDARD</h3>
-              Evidence before certainty.<br><br>
-              Observation before interpretation.<br><br>
-              Context before conclusion.
-            </div>
-          </section>
-        </div>
+        <section class="wall"><div class="wall-header" id="wallHeader">CASE WALL // NO CASE SELECTED</div><div class="thread t1"></div><div class="thread t2"></div><div class="thread t3"></div><div class="board-grid">
+          <article class="note"><h3>SUBMITTED QUESTION</h3><p id="boardQuestion">Select a case file from the cabinet.</p></article>
+          <article class="note file"><h3>BIRTH / IDENTITY RECORD</h3><p id="boardBirthData">No case selected.</p></article>
+          <article class="chart-sheet"><strong id="boardChartLabel">CASE EVIDENCE OVERVIEW</strong><span id="boardChartText">The selected case record will appear here.</span></article>
+          <article class="note"><h3>EARLY EVIDENCE</h3><p id="boardEvidence">No evidence selected.</p></article>
+          <article class="note yellow"><h3>CURRENT THEME</h3><p id="boardTheme">Awaiting case selection.</p></article>
+          <article class="note"><h3>ANALYST SYNTHESIS</h3><p id="boardSynthesis">No synthesis filed.</p></article>
+          <article class="note pink"><h3>KEY PATTERN</h3><p id="boardPattern">No confirmed pattern yet.</p></article>
+          <div class="evidence-folders" id="evidenceFolders"><div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div></div>
+        </div></section>
+        <div class="case-tools"><button id="refreshCaseBtn" onclick="refreshSelectedCase()" disabled>REFRESH CASE</button><button id="prepareReportBtn" onclick="prepareReport()" disabled>PREPARE REPORT</button></div>
+        <section class="panel dossier"><div class="panel-head">LIVE DOSSIER<small>SELECTED CASE INTELLIGENCE</small></div><div class="dossier-tabs"><button class="dossier-tab active" data-tab="overview">OVERVIEW</button><button class="dossier-tab" data-tab="evidence">EVIDENCE</button><button class="dossier-tab" data-tab="reports">REPORTS</button><button class="dossier-tab" data-tab="timeline">TIMELINE</button><button class="dossier-tab" data-tab="notes">NOTES</button></div><div class="dossier-body">
+          <div class="dossier-panel active" id="dossier-overview"><div class="dossier-summary"><div class="dossier-card"><span>CASE HEALTH</span><strong id="dossierHealth">Awaiting selection</strong></div><div class="dossier-card"><span>LEAD DIVISION</span><strong id="dossierDivision">—</strong></div><div class="dossier-card"><span>LAST ACTIVITY</span><strong id="dossierActivity">—</strong></div></div></div>
+          <div class="dossier-panel" id="dossier-evidence">Evidence files appear on the board above.</div><div class="dossier-panel" id="dossier-reports">Analyst reports populate after generation.</div><div class="dossier-panel" id="dossier-timeline">Case activity will appear here.</div><div class="dossier-panel" id="dossier-notes">Private operator notes will appear here.</div>
+        </div></section>
       </main>
-
-      <aside class="right-rail">
-        <section class="panel" style="margin-bottom:12px">
-          <div class="panel-head">CASE FILE CABINET<small>ACTIVE & CLOSED</small></div>
-          <div class="case-filter-row"><button class="case-filter active" data-filter="all">ALL</button><button class="case-filter" data-filter="active">ACTIVE</button><button class="case-filter" data-filter="closed">CLOSED</button></div>
-          <div class="case-files" id="caseGrid"></div>
-          <div id="errorNote"></div>
-        </section>
-
-        <section class="panel" style="margin-bottom:12px">
-          <div class="panel-head">MEMBER RECORD<small>PRIVATE PROFILE</small></div>
-          <div class="profile-card">
-            <div class="profile-line"><span>NAME</span><strong id="profileName">MEMBER</strong></div>
-            <div class="profile-line"><span>CLEARANCE</span><strong id="profileClearance">—</strong></div>
-            <div class="profile-line"><span>PROFILE</span><strong id="profilePercent">0%</strong></div>
-            <div class="progress-track"><div class="progress-fill" id="profileProgress"></div></div>
-          </div>
-          <div class="quick-actions">
-            <button onclick="openNewCaseModal()">+ OPEN CASE</button>
-            <button onclick="openEvidenceModal()">+ ADD EVIDENCE</button>
-            <button onclick="openNoteModal()">+ ADD NOTE</button>
-            <button onclick="openProfileModal()">EDIT PROFILE</button>
-            <a class="wide" id="quickContinue" href="../terminal.html">CONTINUE IN TERMINAL</a>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">INSTITUTION FEED<small>RECENT ACTIVITY</small></div>
-          <div class="feed" id="institutionFeed">
-            <div class="feed-item"><span>// LOADING LIVE ACTIVITY...</span></div>
-          </div>
-        </section>
-      </aside>
+      <aside class="right-rail"><section class="panel" style="margin-bottom:12px"><div class="panel-head">CASE FILE CABINET<small>CLICK TO LOAD</small></div><div class="case-files" id="caseGrid"></div><div id="errorNote"></div></section><section class="panel"><div class="panel-head">INSTITUTION FEED<small>RECENT ACTIVITY</small></div><div class="feed" id="institutionFeed"><div class="feed-item"><span>// LOADING LIVE ACTIVITY...</span></div></div></section></aside>
     </div>
   </div>
 </div>
-
-
-<div class="modal-backdrop" id="newCaseModal"><div class="modal"><div class="modal-head"><h2>OPEN NEW INVESTIGATION</h2><button class="modal-close" data-close="newCaseModal">×</button></div><form class="modal-body" id="newCaseForm"><div class="form-grid"><div class="field"><label>SUBJECT</label><input name="subject" required placeholder="What is this case about?"></div><div class="field"><label>LEAD DIVISION</label><select name="lead_division"><option value="">AUTO-ASSIGN</option><option>Behavioral Intelligence</option><option>Forensic Astrology</option><option>Pattern Investigation</option><option>Numeric Intelligence</option><option>Original Text</option><option>Symbol Archive</option></select></div><div class="field full"><label>PRIMARY QUESTION</label><textarea name="primary_question" required placeholder="What keeps happening, and what do you need the file to answer?"></textarea></div></div><div class="modal-actions"><button type="button" data-close="newCaseModal">CANCEL</button><button class="primary" type="submit">CREATE CASE</button></div></form></div></div>
-<div class="modal-backdrop" id="profileModal"><div class="modal"><div class="modal-head"><h2>MEMBER RECORD</h2><button class="modal-close" data-close="profileModal">×</button></div><form class="modal-body" id="profileForm"><div class="form-grid"><div class="field"><label>DISPLAY NAME</label><input name="display_name"></div><div class="field"><label>TIME ZONE</label><input name="timezone" placeholder="America/New_York"></div><div class="field"><label>BIRTH DATE</label><input type="date" name="birth_date"></div><div class="field"><label>BIRTH TIME</label><input type="time" name="birth_time"></div><div class="field full"><label>BIRTH LOCATION</label><input name="birth_location" placeholder="City, State, Country"></div></div><div class="modal-actions"><button type="button" data-close="profileModal">CANCEL</button><button class="primary" type="submit">SAVE RECORD</button></div></form></div></div>
-<div class="modal-backdrop" id="evidenceModal"><div class="modal"><div class="modal-head"><h2>ADD EVIDENCE</h2><button class="modal-close" data-close="evidenceModal">×</button></div><form class="modal-body" id="evidenceForm"><div class="form-grid"><div class="field"><label>TYPE</label><select name="type"><option>user_statement</option><option>behavior</option><option>timeline_event</option><option>birth_data</option><option>symbol</option><option>document</option><option>contradiction</option><option>receipt</option></select></div><div class="field"><label>TITLE</label><input name="title" required></div><div class="field full"><label>EVIDENCE</label><textarea name="content" required></textarea></div></div><div class="modal-actions"><button type="button" data-close="evidenceModal">CANCEL</button><button class="primary" type="submit">FILE EVIDENCE</button></div></form></div></div>
-<div class="modal-backdrop" id="noteModal"><div class="modal"><div class="modal-head"><h2>ADD PRIVATE NOTE</h2><button class="modal-close" data-close="noteModal">×</button></div><form class="modal-body" id="noteForm"><div class="form-grid"><div class="field full"><label>NOTE TITLE</label><input name="title" required></div><div class="field full"><label>NOTE</label><textarea name="content" required></textarea></div></div><div class="modal-actions"><button type="button" data-close="noteModal">CANCEL</button><button class="primary" type="submit">SAVE NOTE</button></div></form></div></div>
-<div class="toast" id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/investigation-engine.js"></script>
 <script src="../assets/js/dashboard-engine.js"></script>
-</body>
-</html>
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('.dossier-tab');if(!b)return;document.querySelectorAll('.dossier-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.dossier-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');var p=document.getElementById('dossier-'+b.dataset.tab);if(p)p.classList.add('active')});
+</script>
+</body></html>
