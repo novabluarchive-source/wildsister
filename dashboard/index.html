@@ -39,7 +39,7 @@ button,a{font:inherit}
 .brand-block p{font-size:9px;letter-spacing:.2em;color:var(--muted)}
 .top-meta{padding:13px;background:#0a0a0a}
 .top-meta span{display:block;font-size:8px;letter-spacing:.18em;color:var(--muted);margin-bottom:5px}
-.top-meta strong{font-size:11px;color:var(--cyan);font-weight:normal}
+.top-meta strong{font-size:11px;color:var(--cyan);font-weight:normal}.link-button{background:none;border:0;color:var(--cyan);cursor:pointer;font:inherit;padding:0}
 @media(max-width:950px){.topbar{grid-template-columns:1fr 1fr}.brand-block{grid-column:1/-1}}
 
 .tabs{
@@ -135,7 +135,7 @@ button,a{font:inherit}
 }
 .folder{
   min-width:120px;flex:1;background:#b38a4e;color:#2f2113;padding:13px;border:1px solid rgba(44,28,11,.35);
-  font-family:'Special Elite',serif;box-shadow:0 5px 12px rgba(0,0,0,.28);text-align:left;cursor:pointer
+  font-family:'Special Elite',serif;box-shadow:0 5px 12px rgba(0,0,0,.28)
 }
 .folder small{display:block;font-size:9px;color:#6a3d18;margin-bottom:5px}
 .bottom-grid{display:grid;grid-template-columns:1fr 1.5fr .75fr;gap:12px;margin-top:12px}
@@ -208,6 +208,11 @@ button,a{font:inherit}
 .case-tools button:disabled{opacity:.3;cursor:not-allowed}
 .note p{white-space:pre-wrap}
 
+
+/* ===== SID INTERACTIVE UPDATE ===== */
+.profile-card{padding:14px}.profile-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #191919;font-size:9px}.profile-line span{color:var(--muted)}.profile-line strong{color:var(--white);font-weight:normal;text-align:right}.progress-track{height:6px;background:#171717;margin-top:7px;overflow:hidden}.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--cyan));width:0}.quick-actions{padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick-actions button,.quick-actions a{padding:10px;background:#0b0b0b;border:1px solid var(--border);color:var(--text);font-size:8px;letter-spacing:.1em;text-decoration:none;cursor:pointer;text-align:center}.quick-actions .wide{grid-column:1/-1}.dossier{margin-top:12px}.dossier-tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--border)}.dossier-tab{background:#0a0a0a;border:0;border-right:1px solid var(--border);color:var(--muted);padding:11px 13px;font-size:8px;letter-spacing:.12em;cursor:pointer}.dossier-tab.active{color:var(--cyan);background:#111}.dossier-body{min-height:220px;padding:16px}.record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.record-card{border:1px solid var(--border);background:#0b0b0b;padding:12px}.record-card h4{font-size:9px;color:var(--gold);letter-spacing:.1em;margin-bottom:7px}.record-card p{font-size:10px;line-height:1.65;color:var(--text);white-space:pre-wrap}.record-meta{font-size:8px;color:var(--muted);margin-top:8px}.empty-state{border:1px dashed #2b261f;padding:24px;text-align:center;color:var(--muted);font-size:9px;line-height:1.7}.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}.modal-backdrop.show{display:flex}.modal{width:min(680px,100%);max-height:90vh;overflow:auto;background:#090909;border:1px solid #3a3127;box-shadow:0 25px 70px #000}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}.modal-head h2{font-size:12px;letter-spacing:.14em;color:var(--white)}.modal-close{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer}.modal-body{padding:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:8px;letter-spacing:.12em;color:var(--muted)}.field input,.field textarea,.field select{background:#0d0d0d;border:1px solid var(--border);color:var(--white);padding:11px;font:inherit}.field textarea{min-height:110px;resize:vertical}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.modal-actions button{padding:10px 14px;background:#0b0b0b;border:1px solid var(--border);color:var(--text);cursor:pointer}.modal-actions .primary{border-color:var(--cyan);color:var(--cyan)}.toast{position:fixed;right:18px;bottom:18px;z-index:80;background:#101010;border:1px solid var(--border);border-left:3px solid var(--cyan);padding:12px 14px;color:var(--white);font-size:9px;display:none;max-width:340px}.toast.show{display:block}.case-filter-row{display:flex;gap:6px;padding:10px;overflow:auto}.case-filter{background:#0b0b0b;border:1px solid var(--border);color:var(--muted);padding:7px 9px;font-size:7px;cursor:pointer}.case-filter.active{color:var(--cyan);border-color:var(--cyan)}.analyst{cursor:pointer;transition:.2s}.analyst:hover,.analyst.active{border-color:var(--cyan);transform:translateX(2px)}.analyst-status{display:inline-block;margin-top:5px;font-size:7px;color:var(--muted)}.analyst-status.active{color:#62d477}.board-grid .note,.chart-sheet,.folder{cursor:pointer}.board-grid .note:hover,.chart-sheet:hover,.folder:hover{outline:2px solid rgba(40,200,223,.5)}
+@media(max-width:700px){.record-grid,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.quick-actions{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -224,17 +229,17 @@ button,a{font:inherit}
       <div class="top-meta"><span>CLEARANCE</span><strong id="navClearance">—</strong></div>
       <div class="top-meta"><span>STATUS</span><strong id="systemStatus">ACTIVE</strong></div>
       <div class="top-meta"><span>DATE</span><strong id="currentDate">—</strong></div>
-      <div class="top-meta"><span>SESSION</span><strong>VERIFIED</strong></div>
+      <div class="top-meta"><span>PROFILE</span><strong><button class="link-button" onclick="openProfileModal()">OPEN RECORD</button></strong></div>
     </header>
 
     <nav class="tabs">
       <a class="active" href="index.html">OPERATIONS</a>
-      <a href="#caseCabinet">MY CASES</a>
-      <a href="../sid.html">ARCHIVE</a>
+      <a href="cases.html">MY CASES</a>
+      <a href="archive.html">ARCHIVE</a>
       <a href="../divisions.html">DIVISIONS</a>
       <a href="../community.html">COMMUNITY</a>
       <a href="../about.html">MANUAL</a>
-      <a href="#" onclick="WildSisterAuth.signOut('../index.html');return false">SIGN OUT</a>
+      <a href="#" onclick="signOut();return false">SIGN OUT</a>
     </nav>
 
     <div class="warning" id="subWarning">
@@ -330,6 +335,18 @@ button,a{font:inherit}
           <button id="prepareReportBtn" onclick="prepareReport()" disabled>PREPARE REPORT</button>
         </div>
 
+        <section class="panel dossier">
+          <div class="panel-head">ACTIVE DOSSIER<small>SELECT A TAB TO REVIEW THE FILE</small></div>
+          <div class="dossier-tabs">
+            <button class="dossier-tab active" data-tab="overview">OVERVIEW</button>
+            <button class="dossier-tab" data-tab="evidence">EVIDENCE</button>
+            <button class="dossier-tab" data-tab="reports">REPORTS</button>
+            <button class="dossier-tab" data-tab="messages">TIMELINE</button>
+            <button class="dossier-tab" data-tab="notes">NOTES</button>
+          </div>
+          <div class="dossier-body" id="dossierBody"><div class="empty-state">Select a case file to open its dossier.</div></div>
+        </section>
+
         <div class="bottom-grid">
           <section class="desk-pad">
             <div class="panel-head">OPERATOR DESK</div>
@@ -367,10 +384,28 @@ button,a{font:inherit}
       </main>
 
       <aside class="right-rail">
-        <section class="panel" id="caseCabinet" style="margin-bottom:12px">
+        <section class="panel" style="margin-bottom:12px">
           <div class="panel-head">CASE FILE CABINET<small>ACTIVE & CLOSED</small></div>
+          <div class="case-filter-row"><button class="case-filter active" data-filter="all">ALL</button><button class="case-filter" data-filter="active">ACTIVE</button><button class="case-filter" data-filter="closed">CLOSED</button></div>
           <div class="case-files" id="caseGrid"></div>
           <div id="errorNote"></div>
+        </section>
+
+        <section class="panel" style="margin-bottom:12px">
+          <div class="panel-head">MEMBER RECORD<small>PRIVATE PROFILE</small></div>
+          <div class="profile-card">
+            <div class="profile-line"><span>NAME</span><strong id="profileName">MEMBER</strong></div>
+            <div class="profile-line"><span>CLEARANCE</span><strong id="profileClearance">—</strong></div>
+            <div class="profile-line"><span>PROFILE</span><strong id="profilePercent">0%</strong></div>
+            <div class="progress-track"><div class="progress-fill" id="profileProgress"></div></div>
+          </div>
+          <div class="quick-actions">
+            <button onclick="openNewCaseModal()">+ OPEN CASE</button>
+            <button onclick="openEvidenceModal()">+ ADD EVIDENCE</button>
+            <button onclick="openNoteModal()">+ ADD NOTE</button>
+            <button onclick="openProfileModal()">EDIT PROFILE</button>
+            <a class="wide" id="quickContinue" href="../terminal.html">CONTINUE IN TERMINAL</a>
+          </div>
         </section>
 
         <section class="panel">
@@ -384,6 +419,13 @@ button,a{font:inherit}
   </div>
 </div>
 
+
+<div class="modal-backdrop" id="newCaseModal"><div class="modal"><div class="modal-head"><h2>OPEN NEW INVESTIGATION</h2><button class="modal-close" data-close="newCaseModal">×</button></div><form class="modal-body" id="newCaseForm"><div class="form-grid"><div class="field"><label>SUBJECT</label><input name="subject" required placeholder="What is this case about?"></div><div class="field"><label>LEAD DIVISION</label><select name="lead_division"><option value="">AUTO-ASSIGN</option><option>Behavioral Intelligence</option><option>Forensic Astrology</option><option>Pattern Investigation</option><option>Numeric Intelligence</option><option>Original Text</option><option>Symbol Archive</option></select></div><div class="field full"><label>PRIMARY QUESTION</label><textarea name="primary_question" required placeholder="What keeps happening, and what do you need the file to answer?"></textarea></div></div><div class="modal-actions"><button type="button" data-close="newCaseModal">CANCEL</button><button class="primary" type="submit">CREATE CASE</button></div></form></div></div>
+<div class="modal-backdrop" id="profileModal"><div class="modal"><div class="modal-head"><h2>MEMBER RECORD</h2><button class="modal-close" data-close="profileModal">×</button></div><form class="modal-body" id="profileForm"><div class="form-grid"><div class="field"><label>DISPLAY NAME</label><input name="display_name"></div><div class="field"><label>TIME ZONE</label><input name="timezone" placeholder="America/New_York"></div><div class="field"><label>BIRTH DATE</label><input type="date" name="birth_date"></div><div class="field"><label>BIRTH TIME</label><input type="time" name="birth_time"></div><div class="field full"><label>BIRTH LOCATION</label><input name="birth_location" placeholder="City, State, Country"></div></div><div class="modal-actions"><button type="button" data-close="profileModal">CANCEL</button><button class="primary" type="submit">SAVE RECORD</button></div></form></div></div>
+<div class="modal-backdrop" id="evidenceModal"><div class="modal"><div class="modal-head"><h2>ADD EVIDENCE</h2><button class="modal-close" data-close="evidenceModal">×</button></div><form class="modal-body" id="evidenceForm"><div class="form-grid"><div class="field"><label>TYPE</label><select name="type"><option>user_statement</option><option>behavior</option><option>timeline_event</option><option>birth_data</option><option>symbol</option><option>document</option><option>contradiction</option><option>receipt</option></select></div><div class="field"><label>TITLE</label><input name="title" required></div><div class="field full"><label>EVIDENCE</label><textarea name="content" required></textarea></div></div><div class="modal-actions"><button type="button" data-close="evidenceModal">CANCEL</button><button class="primary" type="submit">FILE EVIDENCE</button></div></form></div></div>
+<div class="modal-backdrop" id="noteModal"><div class="modal"><div class="modal-head"><h2>ADD PRIVATE NOTE</h2><button class="modal-close" data-close="noteModal">×</button></div><form class="modal-body" id="noteForm"><div class="form-grid"><div class="field full"><label>NOTE TITLE</label><input name="title" required></div><div class="field full"><label>NOTE</label><textarea name="content" required></textarea></div></div><div class="modal-actions"><button type="button" data-close="noteModal">CANCEL</button><button class="primary" type="submit">SAVE NOTE</button></div></form></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/investigation-engine.js"></script>
