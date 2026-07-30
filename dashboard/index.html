@@ -208,6 +208,19 @@ button,a{font:inherit}
 .case-tools button:disabled{opacity:.3;cursor:not-allowed}
 .note p{white-space:pre-wrap}
 
+.research-route{margin-bottom:12px;border:1px solid var(--border);background:#090909;box-shadow:0 12px 40px rgba(0,0,0,.28)}
+.research-route-head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)}
+.research-route-head strong{font-size:10px;letter-spacing:.14em;color:var(--white);font-weight:normal}.research-route-head span{font-size:8px;color:var(--muted)}
+.route-track{display:grid;grid-template-columns:repeat(8,minmax(110px,1fr));overflow-x:auto;background:#17130f;gap:1px}
+.route-step{min-height:86px;padding:12px;background:#0b0b0b;position:relative}
+.route-step::after{content:'›';position:absolute;right:-6px;top:29px;color:var(--gold);z-index:3;font-size:18px}
+.route-step:last-child::after{display:none}.route-step small{display:block;font-size:7px;letter-spacing:.14em;color:var(--muted);margin-bottom:7px}.route-step strong{display:block;color:var(--white);font-size:9px;font-weight:normal;line-height:1.45}.route-step.active{box-shadow:inset 0 2px 0 var(--cyan);background:#0d1112}.route-step.complete{box-shadow:inset 0 2px 0 #62d477}.route-step.pending{opacity:.58}
+.report-list{display:grid;gap:9px}.report-card{display:grid;grid-template-columns:1fr auto;gap:14px;padding:12px;border:1px solid #211d17;background:#0b0b0b}.report-card strong{display:block;color:var(--white);font-size:10px;font-weight:normal;margin-bottom:4px}.report-card small{display:block;color:var(--muted);font-size:8px;line-height:1.5}.report-badge{align-self:start;font-size:7px;letter-spacing:.12em;padding:5px 7px;border:1px solid var(--border);color:var(--gold)}
+.research-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;display:none;align-items:center;justify-content:center;padding:18px}.research-modal.show{display:flex}.research-dialog{width:min(980px,100%);max-height:92vh;overflow:auto;background:#080808;border:1px solid var(--border);box-shadow:0 30px 90px rgba(0,0,0,.7)}
+.research-dialog-head{display:flex;justify-content:space-between;align-items:center;padding:15px 17px;border-bottom:1px solid var(--border)}.research-dialog-head h2{font-family:'VT323';font-size:1.8rem;color:var(--white);font-weight:normal}.modal-close{background:none;border:1px solid var(--border);color:var(--text);padding:7px 10px;cursor:pointer}
+.report-builder{padding:16px;display:grid;gap:14px}.builder-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.builder-field{display:grid;gap:6px}.builder-field.full{grid-column:1/-1}.builder-field label{font-size:8px;letter-spacing:.13em;color:var(--muted)}.builder-field input,.builder-field select,.builder-field textarea{width:100%;background:#0c0c0c;border:1px solid var(--border);color:var(--white);padding:10px;font:inherit}.builder-field textarea{min-height:96px;resize:vertical}.division-checks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.division-checks label{border:1px solid var(--border);padding:9px;color:var(--text);font-size:8px}.builder-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}.builder-actions button{padding:10px 13px;border:1px solid var(--border);background:#0b0b0b;color:var(--text);cursor:pointer;font-size:9px;letter-spacing:.1em}.builder-actions .primary{border-color:var(--cyan);color:var(--cyan)}
+@media(max-width:800px){.builder-grid{grid-template-columns:1fr}.builder-field.full{grid-column:auto}.division-checks{grid-template-columns:1fr 1fr}}
+
 </style>
 <style>
 .command-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(220px,.6fr);gap:1px;background:#211a12;border:1px solid var(--border);margin-bottom:12px}
@@ -232,7 +245,7 @@ button,a{font:inherit}
       <div class="top-meta"><span>SESSION</span><strong>VERIFIED</strong></div>
     </header>
     <nav class="tabs">
-      <a class="active" href="index.html">OPERATIONS</a><a href="cases.html">CASE FILES</a><a href="archive.html">ARCHIVE</a><a href="../divisions.html">DIVISIONS</a><a href="../community.html">ROOMS</a><a href="../profile.html">MEMBER RECORD</a><a href="#" onclick="WildSisterAuth.signOut();return false">SIGN OUT</a>
+      <a class="active" href="index.html">OPERATIONS</a><a href="cases.html">CASE FILES</a><a href="reports.html">RESEARCH</a><a href="archive.html">ARCHIVE</a><a href="../divisions.html">DIVISIONS</a><a href="../community.html">ROOMS</a><a href="../profile.html">MEMBER RECORD</a><a href="#" onclick="WildSisterAuth.signOut();return false">SIGN OUT</a>
     </nav>
     <div class="warning" id="subWarning"></div>
     <section class="command-hero">
@@ -247,6 +260,19 @@ button,a{font:inherit}
         <div class="intel-block"><span>LATEST FINDING</span><strong id="heroFinding">No finding filed.</strong></div>
         <div class="intel-block"><span>MISSING EVIDENCE</span><strong id="heroMissing">Case selection required.</strong></div>
         <div class="intel-block"><span>NEXT WARRANT</span><strong id="heroNext">Open a case file.</strong></div>
+      </div>
+    </section>
+    <section class="research-route" id="researchRoute">
+      <div class="research-route-head"><div><strong>INVESTIGATION ROUTE</strong><span> // CROSS-DIVISION RESEARCH MAP</span></div><span id="routeStatus">NO CASE SELECTED</span></div>
+      <div class="route-track">
+        <div class="route-step active"><small>01</small><strong>QUESTION</strong></div>
+        <div class="route-step pending"><small>02 · LUX</small><strong>ORIGINAL TEXT</strong></div>
+        <div class="route-step pending"><small>03 · ARCHIVE</small><strong>HISTORICAL RECORD</strong></div>
+        <div class="route-step pending"><small>04 · CIPHER</small><strong>GEMATRIA / NUMERIC</strong></div>
+        <div class="route-step pending"><small>05 · CENTRA</small><strong>ASTROLOGY</strong></div>
+        <div class="route-step pending"><small>06 · NIX</small><strong>CROSS-SYSTEM REVIEW</strong></div>
+        <div class="route-step pending"><small>07</small><strong>CONFIDENCE REVIEW</strong></div>
+        <div class="route-step pending"><small>08 · ASH</small><strong>FINAL FINDING</strong></div>
       </div>
     </section>
     <div class="stats"><div class="stat"><div class="stat-num" id="statActive">00</div><div class="stat-label">ACTIVE CASES</div></div><div class="stat"><div class="stat-num" id="statClosed">00</div><div class="stat-label">CLOSED FILES</div></div><div class="stat"><div class="stat-num" id="statArchive">00</div><div class="stat-label">ARCHIVE FILES</div></div><div class="stat"><div class="stat-num">08</div><div class="stat-label">ANALYST ROSTER</div></div></div>
@@ -274,14 +300,42 @@ button,a{font:inherit}
           <article class="note pink"><h3>KEY PATTERN</h3><p id="boardPattern">No confirmed pattern yet.</p></article>
           <div class="evidence-folders" id="evidenceFolders"><div class="folder"><small>EVIDENCE FILE</small>Awaiting case selection</div></div>
         </div></section>
-        <div class="case-tools"><button id="refreshCaseBtn" onclick="refreshSelectedCase()" disabled>REFRESH CASE</button><button id="prepareReportBtn" onclick="prepareReport()" disabled>PREPARE REPORT</button></div>
+        <div class="case-tools"><button id="refreshCaseBtn" onclick="refreshSelectedCase()" disabled>REFRESH CASE</button><button id="prepareReportBtn" onclick="openResearchBuilder()" disabled>PREPARE REPORT</button></div>
         <section class="panel dossier"><div class="panel-head">LIVE DOSSIER<small>SELECTED CASE INTELLIGENCE</small></div><div class="dossier-tabs"><button class="dossier-tab active" data-tab="overview">OVERVIEW</button><button class="dossier-tab" data-tab="evidence">EVIDENCE</button><button class="dossier-tab" data-tab="reports">REPORTS</button><button class="dossier-tab" data-tab="timeline">TIMELINE</button><button class="dossier-tab" data-tab="notes">NOTES</button></div><div class="dossier-body">
           <div class="dossier-panel active" id="dossier-overview"><div class="dossier-summary"><div class="dossier-card"><span>CASE HEALTH</span><strong id="dossierHealth">Awaiting selection</strong></div><div class="dossier-card"><span>LEAD DIVISION</span><strong id="dossierDivision">—</strong></div><div class="dossier-card"><span>LAST ACTIVITY</span><strong id="dossierActivity">—</strong></div></div></div>
-          <div class="dossier-panel" id="dossier-evidence">Evidence files appear on the board above.</div><div class="dossier-panel" id="dossier-reports">Analyst reports populate after generation.</div><div class="dossier-panel" id="dossier-timeline">Case activity will appear here.</div><div class="dossier-panel" id="dossier-notes">Private operator notes will appear here.</div>
+          <div class="dossier-panel" id="dossier-evidence">Evidence files appear on the board above.</div><div class="dossier-panel" id="dossier-reports"><div class="report-list" id="caseReportList">
+            <div class="report-card"><div><strong>CENTRA · ASTROLOGICAL FINDING</strong><small>Chart architecture, timing, rulership, and symbolic correspondences.</small></div><span class="report-badge">READY</span></div>
+            <div class="report-card"><div><strong>LUX · ORIGINAL TEXT REVIEW</strong><small>Primary-language terms, translations, manuscripts, and textual context.</small></div><span class="report-badge">PENDING</span></div>
+            <div class="report-card"><div><strong>CIPHER · GEMATRIA / NUMERIC FILE</strong><small>Gematria calculations, number patterns, and symbolic sequence analysis.</small></div><span class="report-badge">PENDING</span></div>
+            <div class="report-card"><div><strong>ARCHIVE · HISTORICAL RECORD</strong><small>Documented chronology, institutional records, artifacts, and source provenance.</small></div><span class="report-badge">PENDING</span></div>
+            <div class="report-card"><div><strong>NIX · COMPARATIVE SYNTHESIS</strong><small>Agreements, conflicts, repeated symbols, and cross-system convergence.</small></div><span class="report-badge">LOCKED</span></div>
+            <div class="report-card"><div><strong>ASH · FINAL ASSESSMENT</strong><small>What survives review, what is discarded, and what remains unresolved.</small></div><span class="report-badge">LOCKED</span></div>
+          </div></div><div class="dossier-panel" id="dossier-timeline">Case activity will appear here.</div><div class="dossier-panel" id="dossier-notes">Private operator notes will appear here.</div>
         </div></section>
       </main>
       <aside class="right-rail"><section class="panel" style="margin-bottom:12px"><div class="panel-head">CASE FILE CABINET<small>CLICK TO LOAD</small></div><div class="case-files" id="caseGrid"></div><div id="errorNote"></div></section><section class="panel"><div class="panel-head">INSTITUTION FEED<small>RECENT ACTIVITY</small></div><div class="feed" id="institutionFeed"><div class="feed-item"><span>// LOADING LIVE ACTIVITY...</span></div></div></section></aside>
     </div>
+  </div>
+</div>
+
+<div class="research-modal" id="researchModal" aria-hidden="true">
+  <div class="research-dialog" role="dialog" aria-modal="true" aria-labelledby="researchBuilderTitle">
+    <div class="research-dialog-head"><div><h2 id="researchBuilderTitle">SID REPORT BUILDER</h2><div class="command-kicker">RESEARCH DIVISION // NEW DOSSIER</div></div><button class="modal-close" onclick="closeResearchBuilder()">CLOSE</button></div>
+    <form class="report-builder" id="reportBuilderForm" onsubmit="saveResearchDraft(event)">
+      <div class="builder-grid">
+        <div class="builder-field"><label>REPORT CODE</label><input id="reportCode" value="AUTO" readonly></div>
+        <div class="builder-field"><label>STATUS</label><select id="reportStatus"><option>DRAFT</option><option>ACTIVE INVESTIGATION</option><option>UNDER REVIEW</option><option>PUBLISHED</option></select></div>
+        <div class="builder-field full"><label>REPORT TITLE</label><input id="reportTitle" placeholder="Example: THE VATICAN AND ASTROLOGY" required></div>
+        <div class="builder-field full"><label>RESEARCH QUESTION</label><textarea id="reportQuestion" placeholder="Begin with a question, not a conclusion." required></textarea></div>
+        <div class="builder-field"><label>LEAD DIVISION</label><select id="leadDivision"><option>LUX · ORIGINAL TEXT</option><option>CIPHER · NUMERIC INTELLIGENCE</option><option>CENTRA · FORENSIC ASTROLOGY</option><option>ARCHIVE · HISTORICAL INTELLIGENCE</option><option>NIX · COMPARATIVE ANALYSIS</option><option>ASH · FINAL REVIEW</option></select></div>
+        <div class="builder-field"><label>VISIBILITY</label><select id="reportVisibility"><option>PRIVATE DRAFT</option><option>MEMBER ARCHIVE</option><option>PUBLIC ARCHIVE</option></select></div>
+        <div class="builder-field full"><label>SUPPORTING DIVISIONS</label><div class="division-checks"><label><input type="checkbox" value="CENTRA"> CENTRA</label><label><input type="checkbox" value="CIPHER"> CIPHER</label><label><input type="checkbox" value="LUX"> LUX</label><label><input type="checkbox" value="ARCHIVE"> ARCHIVE</label><label><input type="checkbox" value="NIX"> NIX</label><label><input type="checkbox" value="ASH"> ASH</label><label><input type="checkbox" value="LUNA"> LUNA</label><label><input type="checkbox" value="SCAR"> SCAR</label></div></div>
+        <div class="builder-field full"><label>RESEARCH ROUTE / SCOPE</label><textarea id="reportScope" placeholder="Example: public claim → Vatican record → original text → gematria → astrology → comparative review → final finding"></textarea></div>
+        <div class="builder-field full"><label>INITIAL EVIDENCE NOTES</label><textarea id="reportEvidence" placeholder="List sources, records, passages, artifacts, calculations, or claims that must be verified."></textarea></div>
+      </div>
+      <div class="builder-actions"><button class="primary" type="submit">SAVE DRAFT</button><button type="button" onclick="previewResearchReport()">PREVIEW ROUTE</button><button type="button" onclick="publishResearchReport()">PUBLISH TO ARCHIVE</button></div>
+      <div id="builderMessage" style="font-size:9px;color:var(--muted);min-height:18px"></div>
+    </form>
   </div>
 </div>
 <script src="../assets/js/supabase-client.js"></script>
@@ -290,5 +344,25 @@ button,a{font:inherit}
 <script src="../assets/js/dashboard-engine.js"></script>
 <script>
 document.addEventListener('click',function(e){var b=e.target.closest('.dossier-tab');if(!b)return;document.querySelectorAll('.dossier-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.dossier-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');var p=document.getElementById('dossier-'+b.dataset.tab);if(p)p.classList.add('active')});
+function openResearchBuilder(){
+  var modal=document.getElementById('researchModal');
+  var title=document.getElementById('reportTitle');
+  var question=document.getElementById('reportQuestion');
+  var heroNumber=document.getElementById('heroCaseNumber');
+  var heroQuestion=document.getElementById('heroQuestion');
+  if(heroNumber && heroNumber.textContent && !heroNumber.textContent.includes('NO ACTIVE')) title.value=heroNumber.textContent.replace(/^.*?\/\/\s*/, '');
+  if(heroQuestion && !heroQuestion.textContent.includes('Select a file')) question.value=heroQuestion.textContent;
+  modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+}
+function closeResearchBuilder(){var modal=document.getElementById('researchModal');modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
+function getResearchDraft(){
+  return {code:document.getElementById('reportCode').value,title:document.getElementById('reportTitle').value.trim(),question:document.getElementById('reportQuestion').value.trim(),status:document.getElementById('reportStatus').value,leadDivision:document.getElementById('leadDivision').value,visibility:document.getElementById('reportVisibility').value,scope:document.getElementById('reportScope').value.trim(),evidence:document.getElementById('reportEvidence').value.trim(),supportingDivisions:[...document.querySelectorAll('.division-checks input:checked')].map(x=>x.value),updatedAt:new Date().toISOString()};
+}
+function saveResearchDraft(event){event.preventDefault();var draft=getResearchDraft();if(!draft.title||!draft.question)return;localStorage.setItem('sidResearchDraft',JSON.stringify(draft));document.getElementById('builderMessage').textContent='DRAFT SAVED LOCALLY // DATABASE CONNECTION CAN BE ADDED NEXT.'}
+function previewResearchReport(){var draft=getResearchDraft();document.getElementById('builderMessage').textContent='ROUTE READY // '+(draft.scope||'ADD THE RESEARCH ROUTE BEFORE PREVIEWING.')}
+function publishResearchReport(){var draft=getResearchDraft();if(!draft.title||!draft.question){document.getElementById('builderMessage').textContent='TITLE AND RESEARCH QUESTION REQUIRED.';return}draft.status='PUBLISHED';draft.visibility='PUBLIC ARCHIVE';localStorage.setItem('sidResearchDraft',JSON.stringify(draft));document.getElementById('builderMessage').textContent='PUBLICATION QUEUED // CONNECT SUPABASE REPORT TABLES TO COMPLETE LIVE PUBLISHING.'}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeResearchBuilder()});
+document.getElementById('researchModal').addEventListener('click',function(e){if(e.target===this)closeResearchBuilder()});
+
 </script>
 </body></html>
