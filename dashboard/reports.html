@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SID Research Command — Wild Sister</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#050505;--panel:#0b0b0b;--line:#29231c;--muted:#756d60;--text:#bdb3a3;--white:#f4ead7;--gold:#c49b45;--cyan:#28c8df;--violet:#7b2fff;--red:#8b2424;--green:#62d477}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -20%,#21170d 0,transparent 35%),#050505;color:var(--text);font-family:'Share Tech Mono',monospace}.shell{padding:16px;max-width:1800px;margin:auto}
+.topbar{display:grid;grid-template-columns:1.6fr repeat(4,.5fr);gap:1px;background:#211c16;border:1px solid var(--line)}.brand,.meta{background:#090909;padding:14px}.brand h1{margin:0;font-family:'VT323';font-size:2.2rem;color:var(--white);letter-spacing:.07em}.brand p,.meta span{font-size:8px;letter-spacing:.17em;color:var(--muted)}.meta strong{display:block;color:var(--cyan);font-size:10px;margin-top:6px;font-weight:normal}
+.nav{display:flex;overflow:auto;margin:10px 0;border:1px solid var(--line);background:#1c1711}.nav a{min-width:130px;flex:1;padding:10px;text-align:center;text-decoration:none;color:#17110c;background:linear-gradient(#ad9166,#826747);font-size:9px}.nav a.active{background:#090909;color:var(--cyan);border-top:2px solid var(--cyan)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#211c16;border:1px solid var(--line);margin-bottom:12px}.stat{background:#090909;padding:13px;text-align:center}.stat strong{font-family:'VT323';font-size:2rem;color:var(--white)}.stat span{display:block;font-size:7px;color:var(--muted);letter-spacing:.15em}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.button{border:1px solid var(--line);background:#0b0b0b;color:var(--text);padding:10px 12px;font:inherit;font-size:9px;letter-spacing:.1em;cursor:pointer;text-decoration:none}.button.primary{border:0;background:linear-gradient(135deg,#1e6fff,#7b2fff);color:white}.button.gold{border-color:var(--gold);color:var(--gold)}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr) 310px;gap:12px;align-items:start}.panel{background:#090909;border:1px solid var(--line)}.panel-head{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--white);font-size:10px;letter-spacing:.12em}.panel-head small{display:block;color:var(--muted);font-size:7px;margin-top:4px}
+.board{padding:10px;display:grid;gap:8px}.report-card{width:100%;text-align:left;border:1px solid #211d18;background:linear-gradient(90deg,#15120e,#0a0a0a);color:var(--text);padding:12px;cursor:pointer}.report-card.selected{border-color:var(--cyan)}.report-card code{color:var(--gold);font-size:8px}.report-card strong{display:block;color:var(--white);font-size:10px;margin:6px 0}.report-card span{font-size:8px;color:var(--muted)}.stage{display:inline-block;margin-top:8px;font-size:7px;letter-spacing:.12em;color:var(--cyan)}
+.workspace{padding:16px}.empty{border:1px dashed #2b261f;padding:35px;text-align:center;color:var(--muted)}.report-header{display:grid;grid-template-columns:1fr auto;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px}.report-header h2{font-family:'VT323';font-size:2rem;color:var(--white);margin:4px 0}.report-code{font-size:8px;color:var(--gold);letter-spacing:.15em}.confidence{min-width:110px;text-align:center;border:1px solid var(--line);padding:12px}.confidence strong{font-family:'VT323';font-size:2rem;color:var(--white)}.confidence span{font-size:7px;color:var(--muted)}
+.route{display:flex;align-items:center;gap:5px;overflow:auto;padding:13px 0}.route-step{white-space:nowrap;border:1px solid #2e2921;padding:8px 10px;font-size:7px;color:var(--muted)}.route-step.active{border-color:var(--cyan);color:var(--cyan)}.arrow{color:var(--gold)}
+.tabs{display:flex;overflow:auto;border:1px solid var(--line);margin-top:10px}.tab{border:0;border-right:1px solid var(--line);background:#0b0b0b;color:var(--muted);padding:10px 12px;font:inherit;font-size:8px;cursor:pointer}.tab.active{color:var(--cyan);border-bottom:2px solid var(--cyan)}.tab-panel{display:none;padding:15px 0}.tab-panel.active{display:block}
+.records{display:grid;gap:8px}.record{border:1px solid #211d18;background:#0c0c0c;padding:12px}.record strong{color:var(--white);font-size:10px}.record small{display:block;color:var(--gold);font-size:7px;margin:5px 0}.record p{font-size:9px;line-height:1.65;white-space:pre-wrap}
+.source-list{padding:10px;display:grid;gap:7px}.source{border:1px solid #211d18;padding:10px}.source strong{display:block;color:var(--white);font-size:9px}.source span{font-size:7px;color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:7px;letter-spacing:.15em;color:var(--gold)}.field input,.field textarea,.field select{width:100%;background:#070707;border:1px solid #302a22;color:var(--white);padding:10px;font:inherit}.field textarea{min-height:90px;resize:vertical}.checks{display:flex;flex-wrap:wrap;gap:6px}.checks label{border:1px solid #302a22;padding:7px;font-size:8px}.form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.84);display:none;align-items:center;justify-content:center;padding:18px;z-index:1000}.modal.show{display:flex}.dialog{width:min(900px,100%);max-height:90vh;overflow:auto;background:#090909;border:1px solid var(--line);padding:18px}.dialog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.dialog h2{font-family:'VT323';color:var(--white);font-size:2rem;margin:0}
+.message{min-height:20px;color:var(--cyan);font-size:8px;margin-top:8px}
+@media(max-width:1100px){.layout{grid-template-columns:260px 1fr}.sources-panel{grid-column:1/-1}}@media(max-width:760px){.topbar{grid-template-columns:1fr 1fr}.brand{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.layout{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+<div class="brand"><h1>SID RESEARCH COMMAND</h1><p>REPORT ENGINE // EVIDENCE BEFORE CERTAINTY</p></div>
+<div class="meta"><span>OPERATOR</span><strong id="operatorName">VERIFYING</strong></div>
+<div class="meta"><span>ACCESS</span><strong id="accessLevel">CHECKING</strong></div>
+<div class="meta"><span>SYSTEM</span><strong id="systemStatus">ONLINE</strong></div>
+<div class="meta"><span>DATE</span><strong id="today">—</strong></div>
+</header>
+<nav class="nav"><a href="index.html">OPERATIONS</a><a href="cases.html">CASE FILES</a><a class="active" href="reports.html">RESEARCH</a><a href="archive.html">ARCHIVE</a><a href="../divisions.html">DIVISIONS</a><a href="../profile.html">MEMBER RECORD</a></nav>
+<section class="stats">
+<div class="stat"><strong id="statActive">00</strong><span>ACTIVE REPORTS</span></div>
+<div class="stat"><strong id="statDraft">00</strong><span>DRAFTS</span></div>
+<div class="stat"><strong id="statReview">00</strong><span>IN REVIEW</span></div>
+<div class="stat"><strong id="statPublished">00</strong><span>PUBLISHED</span></div>
+</section>
+<div class="toolbar">
+<button class="button primary" onclick="openReportEditor()">+ NEW INVESTIGATION</button>
+<button class="button" onclick="loadReports()">SYNC RESEARCH</button>
+<a class="button gold" href="../reports.html" target="_blank">OPEN PUBLIC ARCHIVE</a>
+<input id="searchInput" placeholder="Search title, question, or summary" oninput="filterReports()" style="min-width:260px;background:#090909;border:1px solid var(--line);color:var(--white);padding:10px">
+</div>
+<div class="layout">
+<aside class="panel"><div class="panel-head">RESEARCH BOARD<small>CLICK A REPORT TO OPEN</small></div><div class="board" id="reportBoard"><div class="empty">Loading reports...</div></div></aside>
+<main class="panel"><div class="panel-head">LIVE INVESTIGATION<small>REPORT WORKSPACE</small></div><div class="workspace" id="workspace"><div class="empty">Select a research report or open a new investigation.</div></div></main>
+<aside class="panel sources-panel"><div class="panel-head">SOURCE LIBRARY<small>ATTACHED TO SELECTED REPORT</small></div><div class="source-list" id="sourceList"><div class="empty">No report selected.</div></div></aside>
+</div>
+</div>
+
+<div class="modal" id="reportModal"><div class="dialog">
+<div class="dialog-head"><div><h2>SID REPORT BUILDER</h2><div class="report-code" id="modalCode">NEW REPORT</div></div><button class="button" onclick="closeReportEditor()">CLOSE</button></div>
+<form id="reportForm" onsubmit="submitReport(event)">
+<input type="hidden" id="reportId">
+<div class="form-grid">
+<div class="field"><label>REPORT CODE</label><input id="reportCode" readonly value="AUTO"></div>
+<div class="field"><label>STATUS</label><select id="reportStatus"><option value="draft">DRAFT</option><option value="active">ACTIVE INVESTIGATION</option><option value="review">DIVISION REVIEW</option><option value="published">PUBLISHED</option><option value="archived">ARCHIVED</option></select></div>
+<div class="field full"><label>TITLE</label><input id="reportTitle" required placeholder="THE VATICAN AND ASTROLOGY"></div>
+<div class="field full"><label>RESEARCH QUESTION</label><textarea id="reportQuestion" required placeholder="Begin with a question, not a conclusion."></textarea></div>
+<div class="field full"><label>SUMMARY</label><textarea id="reportSummary" placeholder="What is this investigation examining?"></textarea></div>
+<div class="field"><label>LEAD DIVISION</label><select id="leadDivision"><option>LUX</option><option>CIPHER</option><option>CENTRA</option><option>ARCHIVE</option><option>NIX</option><option>RELIC</option><option>LUNA</option><option>SCAR</option><option>ASH</option></select></div>
+<div class="field"><label>VISIBILITY</label><select id="visibility"><option value="private">PRIVATE</option><option value="members">MEMBER ARCHIVE</option><option value="public">PUBLIC</option></select></div>
+<div class="field full"><label>SUPPORTING DIVISIONS</label><div class="checks" id="divisionChecks"><label><input type="checkbox" value="LUX"> LUX</label><label><input type="checkbox" value="CIPHER"> CIPHER</label><label><input type="checkbox" value="CENTRA"> CENTRA</label><label><input type="checkbox" value="ARCHIVE"> ARCHIVE</label><label><input type="checkbox" value="NIX"> NIX</label><label><input type="checkbox" value="RELIC"> RELIC</label><label><input type="checkbox" value="ASH"> ASH</label></div></div>
+<div class="field full"><label>RESEARCH ROUTE</label><input id="routeSteps" placeholder="PUBLIC CLAIM > VATICAN RECORD > ORIGINAL TEXT > GEMATRIA > ASTROLOGY > NIX > ASH"></div>
+<div class="field full"><label>SCOPE</label><textarea id="reportScope" placeholder="Define what the report will and will not investigate."></textarea></div>
+<div class="field"><label>CONFIDENCE LABEL</label><select id="confidenceLabel"><option value="unresolved">UNRESOLVED</option><option value="weak">WEAK</option><option value="moderate">MODERATE</option><option value="strong">STRONG</option><option value="established">ESTABLISHED</option></select></div>
+<div class="field"><label>CONFIDENCE SCORE</label><input id="confidenceScore" type="number" min="0" max="100" value="0"></div>
+<div class="field full"><label>CURRENT FINDING</label><textarea id="currentFinding"></textarea></div>
+<div class="field full"><label>OPEN QUESTIONS</label><textarea id="openQuestions"></textarea></div>
+</div>
+<div class="form-actions"><button class="button primary" type="submit">SAVE REPORT</button><button class="button gold" type="button" id="publishButton" onclick="publishSelectedReport()">PUBLISH</button></div>
+<div class="message" id="formMessage"></div>
+</form>
+</div></div>
+
+<div class="modal" id="recordModal"><div class="dialog"><div class="dialog-head"><h2 id="recordTitle">ADD RECORD</h2><button class="button" onclick="closeRecordModal()">CLOSE</button></div><div id="recordForm"></div></div></div>
+
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/research-engine.js"></script>
+<script>
+var reports=[], filteredReports=[], selectedBundle=null;
+
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function setText(id,v){var n=document.getElementById(id);if(n)n.textContent=v}
+function fmt(v){return v?new Date(v).toLocaleDateString():'—'}
+function statusLabel(v){return String(v||'draft').replaceAll('_',' ').toUpperCase()}
+
+async function init(){
+  document.getElementById('today').textContent=new Date().toLocaleDateString();
+  try{
+    var state=await WildSisterAuth.getAccessState();
+    if(!state.signedIn){location.href='../login.html?next='+encodeURIComponent(location.pathname);return}
+    setText('operatorName',String(state.user.user_metadata?.full_name||state.user.email||'OPERATOR').toUpperCase());
+    setText('accessLevel',String(state.subscription?.clearance||'VERIFIED').toUpperCase());
+    await loadReports();
+    var params=new URLSearchParams(location.search), caseId=params.get('case');
+    if(caseId) openReportEditor(null, caseId);
+  }catch(e){setText('systemStatus','ERROR');document.getElementById('reportBoard').innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+}
+async function loadReports(){
+  reports=await ResearchEngine.listReports();
+  filteredReports=reports.slice();
+  updateStats();renderBoard();
+  if(selectedBundle){var id=selectedBundle.report.id;await selectReport(id)}
+}
+function updateStats(){
+  setText('statActive',String(reports.filter(x=>x.status==='active').length).padStart(2,'0'));
+  setText('statDraft',String(reports.filter(x=>x.status==='draft').length).padStart(2,'0'));
+  setText('statReview',String(reports.filter(x=>x.status==='review').length).padStart(2,'0'));
+  setText('statPublished',String(reports.filter(x=>x.status==='published').length).padStart(2,'0'));
+}
+function filterReports(){
+  var q=document.getElementById('searchInput').value.toLowerCase();
+  filteredReports=reports.filter(r=>[r.report_code,r.title,r.research_question,r.summary,r.lead_division].join(' ').toLowerCase().includes(q));
+  renderBoard();
+}
+function renderBoard(){
+  var board=document.getElementById('reportBoard');
+  if(!filteredReports.length){board.innerHTML='<div class="empty">No research reports found.</div>';return}
+  board.innerHTML=filteredReports.map(r=>'<button class="report-card '+(selectedBundle?.report.id===r.id?'selected':'')+'" onclick="selectReport(\''+r.id+'\')"><code>'+esc(r.report_code)+'</code><strong>'+esc(r.title)+'</strong><span>'+esc(r.lead_division)+' · '+fmt(r.updated_at)+'</span><div class="stage">'+statusLabel(r.status)+'</div></button>').join('');
+}
+async function selectReport(id){
+  selectedBundle=await ResearchEngine.getBundle(id);renderBoard();renderWorkspace();renderSources();
+}
+function routeHtml(steps){
+  var list=Array.isArray(steps)?steps:[];
+  if(!list.length)list=['QUESTION','EVIDENCE','DIVISION REVIEW','NIX','ASH'];
+  return list.map((s,i)=>'<span class="route-step '+(i===0?'active':'')+'">'+esc(s)+'</span>'+(i<list.length-1?'<span class="arrow">→</span>':'')).join('');
+}
+function renderWorkspace(){
+  var b=selectedBundle,r=b.report,w=document.getElementById('workspace');
+  w.innerHTML='<div class="report-header"><div><div class="report-code">'+esc(r.report_code)+' // '+statusLabel(r.status)+'</div><h2>'+esc(r.title)+'</h2><p>'+esc(r.research_question)+'</p></div><div class="confidence"><strong>'+Number(r.confidence_score||0)+'%</strong><span>'+statusLabel(r.confidence_label)+'</span></div></div>'+
+  '<div class="route">'+routeHtml(r.route_steps)+'</div>'+
+  '<div class="toolbar"><button class="button" onclick="openReportEditor(selectedBundle.report)">EDIT REPORT</button><button class="button" onclick="openRecordModal(\'section\')">ADD DIVISION FINDING</button><button class="button" onclick="openRecordModal(\'evidence\')">ADD EVIDENCE</button><button class="button" onclick="openRecordModal(\'source\')">ADD SOURCE</button><button class="button" onclick="openRecordModal(\'connection\')">CONNECT FILE</button></div>'+
+  '<div class="tabs"><button class="tab active" data-tab="summary">SUMMARY</button><button class="tab" data-tab="findings">DIVISION FINDINGS</button><button class="tab" data-tab="evidence">EVIDENCE</button><button class="tab" data-tab="connections">CONNECTIONS</button><button class="tab" data-tab="timeline">TIMELINE</button></div>'+
+  '<div class="tab-panel active" id="tab-summary"><div class="records"><div class="record"><strong>SCOPE</strong><p>'+esc(r.scope||'No scope filed.')+'</p></div><div class="record"><strong>CURRENT FINDING</strong><p>'+esc(r.current_finding||'No finding filed.')+'</p></div><div class="record"><strong>OPEN QUESTIONS</strong><p>'+esc(r.open_questions||'No open questions filed.')+'</p></div></div></div>'+
+  '<div class="tab-panel" id="tab-findings">'+records(b.sections,x=>'<div class="record"><strong>'+esc((x.division||'SID')+' // '+x.title)+'</strong><small>'+statusLabel(x.evidence_classification)+' · '+statusLabel(x.confidence_label)+'</small><p>'+esc(x.content)+'</p></div>')+'</div>'+
+  '<div class="tab-panel" id="tab-evidence">'+records(b.evidence,x=>'<div class="record"><strong>'+esc(x.title)+'</strong><small>'+statusLabel(x.evidence_type)+' · '+statusLabel(x.classification)+' · '+statusLabel(x.reliability)+'</small><p>'+esc(x.excerpt||x.finding||'')+'</p></div>')+'</div>'+
+  '<div class="tab-panel" id="tab-connections">'+records(b.connections,x=>'<div class="record"><strong>'+esc(x.connected_label)+'</strong><small>'+statusLabel(x.connection_type)+' · '+statusLabel(x.confidence_label)+'</small><p>'+esc(x.rationale||'')+'</p></div>')+'</div>'+
+  '<div class="tab-panel" id="tab-timeline">'+records(b.timeline,x=>'<div class="record"><strong>'+esc(statusLabel(x.event_type))+'</strong><small>'+fmt(x.created_at)+'</small><p>'+esc(x.detail||'')+'</p></div>')+'</div>';
+  wireTabs();
+}
+function records(rows,render){return '<div class="records">'+(rows.length?rows.map(render).join(''):'<div class="empty">No records filed.</div>')+'</div>'}
+function renderSources(){
+  var el=document.getElementById('sourceList'),rows=selectedBundle?.sources||[];
+  el.innerHTML=rows.length?rows.map(s=>'<div class="source"><strong>'+esc(s.title)+'</strong><span>'+esc(s.author||s.publication||s.source_type)+' · '+statusLabel(s.verification_status)+'</span></div>').join(''):'<div class="empty">No sources attached.</div>';
+}
+function wireTabs(){document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('tab-'+b.dataset.tab).classList.add('active')})}
+async function openReportEditor(report,caseId){
+  document.getElementById('reportForm').reset();document.getElementById('reportId').value='';
+  document.querySelectorAll('#divisionChecks input').forEach(x=>x.checked=false);
+  if(report){
+    document.getElementById('reportId').value=report.id;document.getElementById('reportCode').value=report.report_code;document.getElementById('reportTitle').value=report.title;document.getElementById('reportQuestion').value=report.research_question;document.getElementById('reportSummary').value=report.summary||'';document.getElementById('leadDivision').value=report.lead_division;document.getElementById('visibility').value=report.visibility;document.getElementById('reportStatus').value=report.status;document.getElementById('routeSteps').value=(report.route_steps||[]).join(' > ');document.getElementById('reportScope').value=report.scope||'';document.getElementById('confidenceLabel').value=report.confidence_label||'unresolved';document.getElementById('confidenceScore').value=report.confidence_score||0;document.getElementById('currentFinding').value=report.current_finding||'';document.getElementById('openQuestions').value=report.open_questions||'';(report.supporting_divisions||[]).forEach(v=>{var n=document.querySelector('#divisionChecks input[value="'+v+'"]');if(n)n.checked=true})
+  }else{
+    document.getElementById('reportCode').value=await ResearchEngine.nextReportCode();
+    if(caseId){document.getElementById('reportSummary').value='Opened from member case: '+caseId}
+  }
+  document.getElementById('reportModal').classList.add('show')
+}
+function closeReportEditor(){document.getElementById('reportModal').classList.remove('show')}
+function formPayload(){
+  return{id:document.getElementById('reportId').value||null,report_code:document.getElementById('reportCode').value,title:document.getElementById('reportTitle').value.trim(),research_question:document.getElementById('reportQuestion').value.trim(),summary:document.getElementById('reportSummary').value.trim(),lead_division:document.getElementById('leadDivision').value,visibility:document.getElementById('visibility').value,status:document.getElementById('reportStatus').value,supporting_divisions:[...document.querySelectorAll('#divisionChecks input:checked')].map(x=>x.value),route_steps:document.getElementById('routeSteps').value.split('>').map(x=>x.trim()).filter(Boolean),scope:document.getElementById('reportScope').value.trim(),confidence_label:document.getElementById('confidenceLabel').value,confidence_score:document.getElementById('confidenceScore').value,current_finding:document.getElementById('currentFinding').value.trim(),open_questions:document.getElementById('openQuestions').value.trim()}
+}
+async function submitReport(e){e.preventDefault();try{setText('formMessage','SAVING...');var saved=await ResearchEngine.saveReport(formPayload());setText('formMessage','REPORT SAVED // '+saved.report_code);await loadReports();await selectReport(saved.id);setTimeout(closeReportEditor,500)}catch(err){setText('formMessage',err.message)}}
+async function publishSelectedReport(){var id=document.getElementById('reportId').value||selectedBundle?.report.id;if(!id)return setText('formMessage','SAVE REPORT FIRST.');try{await ResearchEngine.publishReport(id);setText('formMessage','PUBLISHED TO PUBLIC ARCHIVE.');await loadReports();await selectReport(id)}catch(e){setText('formMessage',e.message)}}
+function openRecordModal(kind){
+  if(!selectedBundle)return;
+  setText('recordTitle','ADD '+kind.toUpperCase());
+  var f=document.getElementById('recordForm');
+  if(kind==='section')f.innerHTML=sectionForm();
+  if(kind==='evidence')f.innerHTML=evidenceForm();
+  if(kind==='source')f.innerHTML=sourceForm();
+  if(kind==='connection')f.innerHTML=connectionForm();
+  document.getElementById('recordModal').classList.add('show')
+}
+function closeRecordModal(){document.getElementById('recordModal').classList.remove('show')}
+function sectionForm(){return '<div class="form-grid"><div class="field"><label>DIVISION</label><select id="xDivision"><option>LUX</option><option>CIPHER</option><option>CENTRA</option><option>ARCHIVE</option><option>NIX</option><option>ASH</option></select></div><div class="field"><label>SECTION TYPE</label><select id="xType"><option>finding</option><option>agreement</option><option>conflict</option><option>counterargument</option><option>final_assessment</option></select></div><div class="field full"><label>TITLE</label><input id="xTitle"></div><div class="field full"><label>CONTENT</label><textarea id="xContent"></textarea></div><div class="field"><label>EVIDENCE CLASS</label><select id="xClass"><option>primary_source</option><option>secondary_source</option><option>tradition</option><option>interpretation</option><option>speculation</option><option>disputed</option></select></div><div class="field"><label>CONFIDENCE</label><select id="xConfidence"><option>unresolved</option><option>weak</option><option>moderate</option><option>strong</option><option>established</option></select></div></div><div class="form-actions"><button class="button primary" onclick="saveSection()">SAVE FINDING</button></div><div class="message" id="recordMessage"></div>'}
+function evidenceForm(){return '<div class="form-grid"><div class="field"><label>TYPE</label><select id="xEvidenceType"><option>primary_source</option><option>secondary_source</option><option>historical_record</option><option>church_document</option><option>astrology</option><option>gematria</option><option>artifact</option><option>counterevidence</option></select></div><div class="field"><label>CLASSIFICATION</label><select id="xEvidenceClass"><option>verified</option><option>unverified</option><option>disputed</option><option>interpretation</option></select></div><div class="field full"><label>TITLE</label><input id="xEvidenceTitle"></div><div class="field full"><label>EXCERPT / RECORD</label><textarea id="xExcerpt"></textarea></div><div class="field full"><label>FINDING</label><textarea id="xFinding"></textarea></div><div class="field"><label>SOURCE LABEL</label><input id="xSourceLabel"></div><div class="field"><label>URL</label><input id="xSourceUrl"></div></div><div class="form-actions"><button class="button primary" onclick="saveEvidence()">SAVE EVIDENCE</button></div><div class="message" id="recordMessage"></div>'}
+function sourceForm(){return '<div class="form-grid"><div class="field"><label>SOURCE TYPE</label><select id="xSourceType"><option>primary</option><option>secondary</option><option>tradition</option><option>archive</option></select></div><div class="field"><label>VERIFICATION</label><select id="xVerify"><option>unverified</option><option>verified</option><option>disputed</option></select></div><div class="field full"><label>TITLE</label><input id="xSourceTitle"></div><div class="field"><label>AUTHOR</label><input id="xAuthor"></div><div class="field"><label>PUBLICATION</label><input id="xPublication"></div><div class="field full"><label>URL</label><input id="xUrl"></div><div class="field full"><label>CITATION</label><textarea id="xCitation"></textarea></div></div><div class="form-actions"><button class="button primary" onclick="saveSource()">SAVE SOURCE</button></div><div class="message" id="recordMessage"></div>'}
+function connectionForm(){return '<div class="form-grid"><div class="field full"><label>CONNECTED FILE / SYMBOL</label><input id="xConnectionLabel"></div><div class="field"><label>TYPE</label><select id="xConnectionType"><option>related</option><option>supports</option><option>contradicts</option><option>expands</option><option>same_symbol</option></select></div><div class="field"><label>CONFIDENCE</label><select id="xConnectionConfidence"><option>provisional</option><option>moderate</option><option>strong</option></select></div><div class="field full"><label>RATIONALE</label><textarea id="xRationale"></textarea></div></div><div class="form-actions"><button class="button primary" onclick="saveConnection()">SAVE CONNECTION</button></div><div class="message" id="recordMessage"></div>'}
+async function saveSection(){try{await ResearchEngine.saveSection(selectedBundle.report.id,{division:val('xDivision'),section_type:val('xType'),title:val('xTitle'),content:val('xContent'),evidence_classification:val('xClass'),confidence_label:val('xConfidence'),position:selectedBundle.sections.length});await refreshBundle()}catch(e){setText('recordMessage',e.message)}}
+async function saveEvidence(){try{await ResearchEngine.addEvidence(selectedBundle.report.id,{evidence_type:val('xEvidenceType'),classification:val('xEvidenceClass'),title:val('xEvidenceTitle'),excerpt:val('xExcerpt'),finding:val('xFinding'),source_label:val('xSourceLabel'),source_url:val('xSourceUrl'),reliability:'moderate',position:selectedBundle.evidence.length});await refreshBundle()}catch(e){setText('recordMessage',e.message)}}
+async function saveSource(){try{await ResearchEngine.addSource(selectedBundle.report.id,{source_type:val('xSourceType'),verification_status:val('xVerify'),title:val('xSourceTitle'),author:val('xAuthor'),publication:val('xPublication'),url:val('xUrl'),citation_text:val('xCitation')});await refreshBundle()}catch(e){setText('recordMessage',e.message)}}
+async function saveConnection(){try{await ResearchEngine.addConnection(selectedBundle.report.id,{connected_label:val('xConnectionLabel'),connection_type:val('xConnectionType'),confidence_label:val('xConnectionConfidence'),rationale:val('xRationale')});await refreshBundle()}catch(e){setText('recordMessage',e.message)}}
+async function refreshBundle(){await selectReport(selectedBundle.report.id);closeRecordModal()}
+function val(id){return document.getElementById(id).value.trim()}
+init();
+</script>
+</body>
+</html>
