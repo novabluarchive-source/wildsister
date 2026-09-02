@@ -1,134 +1,776 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Member Access — Wild Sister</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{--black:#030303;--panel:#0a0a0a;--card:#0f0f0f;--border:#161616;--dim:#222;--muted:#444;--text:#888;--white:#f0f0f0;--cyan:#00d4ff;--violet:#7b2fff;--electric:#1e6fff;--gold:#d4a017;--lux:#ff4488;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--black);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 220px 90px at 10% 15%,rgba(0,212,255,0.08) 0%,transparent 70%),radial-gradient(ellipse 90px 220px at 90% 85%,rgba(123,47,255,0.08) 0%,transparent 70%),repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);}
+// ============================================================
+// PART 3
+// DIVISION FINDINGS + EVIDENCE BOARD
+// ============================================================
 
-nav{position:fixed;top:0;left:0;right:0;z-index:99;padding:16px 24px;background:rgba(3,3,3,0.9);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
-.nav-logo{font-family:'VT323',monospace;font-size:1.4rem;letter-spacing:0.15em;background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;}
 
-.wrap{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 24px 40px;}
-.auth-shell{width:100%;max-width:420px;border:1px solid var(--border);background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:36px 30px;position:relative;}
-.auth-shell::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);}
+// ==========================================================
+// LOAD DIVISION FINDINGS
+// ==========================================================
 
-.auth-tag{font-size:9px;letter-spacing:0.3em;color:var(--cyan);margin-bottom:10px;text-align:center;}
-.auth-title{font-family:'VT323',monospace;font-size:2.2rem;color:var(--white);text-align:center;margin-bottom:24px;line-height:1;}
+async function getSections(
+  reportId
+) {
 
-.mode-toggle{display:flex;border:1px solid var(--border);margin-bottom:24px;}
-.mode-btn{flex:1;background:none;border:none;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.15em;padding:10px;cursor:pointer;}
-.mode-btn.active{color:var(--cyan);background:rgba(0,212,255,0.06);}
+  requireValue(
+    reportId,
+    "ARCHIVE FILE ID"
+  );
 
-.field-group{margin-bottom:16px;}
-.field-label{font-size:9px;letter-spacing:0.2em;color:var(--muted);margin-bottom:6px;display:block;}
-.field-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:'Share Tech Mono',monospace;font-size:13px;padding:11px 14px;outline:none;}
-.field-input:focus{border-color:var(--cyan);}
 
-.auth-btn{width:100%;background:linear-gradient(135deg,var(--electric),var(--violet));color:white;border:none;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.2em;padding:14px;cursor:pointer;margin-top:8px;}
-.auth-btn:hover{opacity:0.85;}
-.auth-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  const {
+    data,
+    error
+  } =
+    await getClient()
 
-.status-msg{font-size:11px;line-height:1.7;padding:12px 14px;margin-top:16px;display:none;}
-.status-msg.error{display:block;color:var(--lux);border:1px solid rgba(255,68,136,0.3);background:rgba(255,68,136,0.05);}
-.status-msg.success{display:block;color:var(--cyan);border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.05);}
+      .from(
+        TABLES.sections
+      )
 
-.auth-footnote{font-size:9px;color:var(--dim);letter-spacing:0.1em;text-align:center;margin-top:20px;line-height:1.8;}
-</style>
-</head>
-<body>
+      .select("*")
 
-<nav>
-  <a href="index.html" class="nav-logo">WILD SISTER</a>
-</nav>
+      .eq(
+        "archive_file_id",
+        reportId
+      )
 
-<div class="wrap">
-  <div class="auth-shell">
-    <div class="auth-tag">// SYMBOL INTELLIGENCE DIVISION</div>
-    <div class="auth-title">MEMBER ACCESS</div>
+      .order(
+        "position",
+        {
+          ascending: true
+        }
+      );
 
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="btnSignIn" onclick="setMode('signin')">SIGN IN</button>
-      <button class="mode-btn" id="btnSignUp" onclick="setMode('signup')">CREATE ACCOUNT</button>
-    </div>
 
-    <form id="authForm" onsubmit="handleSubmit(event)">
-      <div class="field-group">
-        <label class="field-label">// EMAIL</label>
-        <input type="email" class="field-input" id="email" required autocomplete="email">
-      </div>
-      <div class="field-group">
-        <label class="field-label">// PASSWORD</label>
-        <input type="password" class="field-input" id="password" required autocomplete="current-password" minlength="6">
-      </div>
-      <button type="submit" class="auth-btn" id="submitBtn">SIGN IN →</button>
-    </form>
-
-    <div class="status-msg" id="statusMsg"></div>
-
-    <div class="auth-footnote">Access requires an active Institution-Wide clearance.<br>Not a member yet? <a href="pricing.html" style="color:var(--cyan);">See Access Levels →</a></div>
-  </div>
-</div>
-
-<script src="assets/js/supabase-client.js"></script>
-<script>
-var mode = 'signin';
-
-function setMode(m){
-  mode = m;
-  document.getElementById('btnSignIn').classList.toggle('active', m==='signin');
-  document.getElementById('btnSignUp').classList.toggle('active', m==='signup');
-  document.getElementById('submitBtn').textContent = m==='signin' ? 'SIGN IN →' : 'CREATE ACCOUNT →';
-  document.getElementById('statusMsg').className = 'status-msg';
-  document.getElementById('statusMsg').textContent = '';
-}
-
-async function handleSubmit(e){
-  e.preventDefault();
-  var email = document.getElementById('email').value.trim();
-  var password = document.getElementById('password').value;
-  var statusEl = document.getElementById('statusMsg');
-  var btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  statusEl.className = 'status-msg';
-
-  try {
-    if (mode === 'signin') {
-      var { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
-      if (error) throw error;
-      window.location.href = 'dashboard/index.html';
-    } else {
-      var { data, error } = await supabaseClient.auth.signUp({ email: email, password: password });
-      if (error) throw error;
-      if (data.session) {
-        // Email confirmation is off — signed in immediately
-        window.location.href = 'dashboard/index.html';
-      } else {
-        // Email confirmation is on — tell them to check inbox
-        statusEl.className = 'status-msg success';
-        statusEl.textContent = 'Account created. Check your email to confirm before signing in.';
-      }
-    }
-  } catch (err) {
-    statusEl.className = 'status-msg error';
-    statusEl.textContent = err.message || 'Something went wrong. Try again.';
-  } finally {
-    btn.disabled = false;
+  if (error) {
+    throw error;
   }
+
+
+  return data || [];
 }
 
-// If already signed in, skip straight to the dashboard
-(async function(){
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) window.location.href = 'dashboard/index.html';
-})();
-</script>
 
-</body>
-</html>
+const listSections =
+  getSections;
+
+
+// ==========================================================
+// SAVE DIVISION FINDING
+// ==========================================================
+
+async function saveSection(
+  reportId,
+  sectionData
+) {
+
+  requireValue(
+    reportId,
+    "ARCHIVE FILE ID"
+  );
+
+
+  requireObject(
+    sectionData,
+    "SECTION DATA"
+  );
+
+
+  requireValue(
+    sectionData.title,
+    "SECTION TITLE"
+  );
+
+
+  await requireResearchAdmin();
+
+
+  const payload = {
+
+    archive_file_id:
+      reportId,
+
+
+    section_type:
+      cleanText(
+        sectionData.section_type ||
+        "finding"
+      ),
+
+
+    division:
+      cleanText(
+        sectionData.division
+      )
+      ||
+      null,
+
+
+    title:
+      cleanText(
+        sectionData.title
+      ),
+
+
+    content:
+      cleanText(
+        sectionData.content
+      ),
+
+
+    evidence_classification:
+      cleanText(
+        sectionData.evidence_classification ||
+        "interpretation"
+      ),
+
+
+    confidence_label:
+      cleanText(
+        sectionData.confidence_label ||
+        "unresolved"
+      ),
+
+
+    position:
+      Number(
+        sectionData.position ||
+        0
+      ),
+
+
+    updated_at:
+      new Date()
+        .toISOString()
+
+  };
+
+
+  let result;
+
+
+  // ========================================================
+  // UPDATE EXISTING FINDING
+  // ========================================================
+
+  if (
+    sectionData.id
+  ) {
+
+    result =
+      await getClient()
+
+        .from(
+          TABLES.sections
+        )
+
+        .update(
+          payload
+        )
+
+        .eq(
+          "id",
+          sectionData.id
+        )
+
+        .select()
+
+        .single();
+
+  }
+
+
+  // ========================================================
+  // CREATE NEW FINDING
+  // ========================================================
+
+  else {
+
+    result =
+      await getClient()
+
+        .from(
+          TABLES.sections
+        )
+
+        .insert(
+          payload
+        )
+
+        .select()
+
+        .single();
+
+  }
+
+
+  if (
+    result.error
+  ) {
+
+    throw result.error;
+
+  }
+
+
+  await addTimeline(
+
+    reportId,
+
+    sectionData.id
+      ? "section_updated"
+      : "section_added",
+
+    payload.title
+
+  );
+
+
+  return result.data;
+}
+
+
+// ==========================================================
+// DELETE DIVISION FINDING
+// ==========================================================
+
+async function deleteSection(
+  sectionId
+) {
+
+  requireValue(
+    sectionId,
+    "SECTION ID"
+  );
+
+
+  await requireResearchAdmin();
+
+
+  const client =
+    getClient();
+
+
+  const {
+    data: existing,
+    error: readError
+  } =
+    await client
+
+      .from(
+        TABLES.sections
+      )
+
+      .select(
+        "archive_file_id,title"
+      )
+
+      .eq(
+        "id",
+        sectionId
+      )
+
+      .single();
+
+
+  if (
+    readError
+  ) {
+
+    throw readError;
+
+  }
+
+
+  const {
+    error
+  } =
+    await client
+
+      .from(
+        TABLES.sections
+      )
+
+      .delete()
+
+      .eq(
+        "id",
+        sectionId
+      );
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  await addTimeline(
+
+    existing.archive_file_id,
+
+    "section_deleted",
+
+    existing.title
+
+  );
+
+
+  return true;
+}
+
+
+// ==========================================================
+// LOAD EVIDENCE
+// ==========================================================
+
+async function getEvidence(
+  reportId
+) {
+
+  requireValue(
+    reportId,
+    "ARCHIVE FILE ID"
+  );
+
+
+  const {
+    data,
+    error
+  } =
+    await getClient()
+
+      .from(
+        TABLES.evidence
+      )
+
+      .select("*")
+
+      .eq(
+        "archive_file_id",
+        reportId
+      )
+
+      .order(
+        "position",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  return data || [];
+}
+
+
+const listEvidence =
+  getEvidence;
+
+
+// ==========================================================
+// ADD EVIDENCE
+// ==========================================================
+
+async function addEvidence(
+  reportId,
+  evidenceData
+) {
+
+  requireValue(
+    reportId,
+    "ARCHIVE FILE ID"
+  );
+
+
+  requireObject(
+    evidenceData,
+    "EVIDENCE DATA"
+  );
+
+
+  requireValue(
+    evidenceData.title,
+    "EVIDENCE TITLE"
+  );
+
+
+  await requireResearchAdmin();
+
+
+  const payload = {
+
+    archive_file_id:
+      reportId,
+
+
+    evidence_type:
+      cleanText(
+        evidenceData.evidence_type ||
+        "secondary_source"
+      ),
+
+
+    title:
+      cleanText(
+        evidenceData.title
+      ),
+
+
+    excerpt:
+      cleanText(
+        evidenceData.excerpt
+      ),
+
+
+    finding:
+      cleanText(
+        evidenceData.finding
+      ),
+
+
+    source_label:
+      cleanText(
+        evidenceData.source_label
+      ),
+
+
+    source_url:
+      cleanText(
+        evidenceData.source_url
+      )
+      ||
+      null,
+
+
+    classification:
+      cleanText(
+        evidenceData.classification ||
+        "unverified"
+      ),
+
+
+    reliability:
+      cleanText(
+        evidenceData.reliability ||
+        "moderate"
+      ),
+
+
+    position:
+      Number(
+        evidenceData.position ||
+        0
+      )
+
+  };
+
+
+  const {
+    data,
+    error
+  } =
+    await getClient()
+
+      .from(
+        TABLES.evidence
+      )
+
+      .insert(
+        payload
+      )
+
+      .select()
+
+      .single();
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  await addTimeline(
+
+    reportId,
+
+    "evidence_added",
+
+    payload.title
+
+  );
+
+
+  return data;
+}
+
+
+// ==========================================================
+// UPDATE EVIDENCE
+// ==========================================================
+
+async function updateEvidence(
+  evidenceId,
+  evidenceData
+) {
+
+  requireValue(
+    evidenceId,
+    "EVIDENCE ID"
+  );
+
+
+  requireObject(
+    evidenceData,
+    "EVIDENCE DATA"
+  );
+
+
+  await requireResearchAdmin();
+
+
+  const payload = {};
+
+
+  if (
+    "evidence_type" in evidenceData
+  ) {
+
+    payload.evidence_type =
+      cleanText(
+        evidenceData.evidence_type
+      );
+  }
+
+
+  if (
+    "title" in evidenceData
+  ) {
+
+    requireValue(
+      evidenceData.title,
+      "EVIDENCE TITLE"
+    );
+
+    payload.title =
+      cleanText(
+        evidenceData.title
+      );
+  }
+
+
+  if (
+    "excerpt" in evidenceData
+  ) {
+
+    payload.excerpt =
+      cleanText(
+        evidenceData.excerpt
+      );
+  }
+
+
+  if (
+    "finding" in evidenceData
+  ) {
+
+    payload.finding =
+      cleanText(
+        evidenceData.finding
+      );
+  }
+
+
+  if (
+    "source_label" in evidenceData
+  ) {
+
+    payload.source_label =
+      cleanText(
+        evidenceData.source_label
+      );
+  }
+
+
+  if (
+    "source_url" in evidenceData
+  ) {
+
+    payload.source_url =
+      cleanText(
+        evidenceData.source_url
+      )
+      ||
+      null;
+  }
+
+
+  if (
+    "classification" in evidenceData
+  ) {
+
+    payload.classification =
+      cleanText(
+        evidenceData.classification
+      );
+  }
+
+
+  if (
+    "reliability" in evidenceData
+  ) {
+
+    payload.reliability =
+      cleanText(
+        evidenceData.reliability
+      );
+  }
+
+
+  if (
+    "position" in evidenceData
+  ) {
+
+    payload.position =
+      Number(
+        evidenceData.position ||
+        0
+      );
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await getClient()
+
+      .from(
+        TABLES.evidence
+      )
+
+      .update(
+        payload
+      )
+
+      .eq(
+        "id",
+        evidenceId
+      )
+
+      .select()
+
+      .single();
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  await addTimeline(
+
+    data.archive_file_id,
+
+    "evidence_updated",
+
+    data.title
+
+  );
+
+
+  return data;
+}
+
+
+// ==========================================================
+// DELETE EVIDENCE
+// ==========================================================
+
+async function deleteEvidence(
+  evidenceId
+) {
+
+  requireValue(
+    evidenceId,
+    "EVIDENCE ID"
+  );
+
+
+  await requireResearchAdmin();
+
+
+  const client =
+    getClient();
+
+
+  const {
+    data: existing,
+    error: readError
+  } =
+    await client
+
+      .from(
+        TABLES.evidence
+      )
+
+      .select(
+        "archive_file_id,title"
+      )
+
+      .eq(
+        "id",
+        evidenceId
+      )
+
+      .single();
+
+
+  if (
+    readError
+  ) {
+
+    throw readError;
+
+  }
+
+
+  const {
+    error
+  } =
+    await client
+
+      .from(
+        TABLES.evidence
+      )
+
+      .delete()
+
+      .eq(
+        "id",
+        evidenceId
+      );
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  await addTimeline(
+
+    existing.archive_file_id,
+
+    "evidence_deleted",
+
+    existing.title
+
+  );
+
+
+  return true;
+}
