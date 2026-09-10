@@ -25,6 +25,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;padding:16px 24px;background:
 .field-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:'Share Tech Mono',monospace;font-size:13px;padding:11px 14px;outline:none;}
 .field-input:focus{border-color:var(--cyan);}.auth-btn{width:100%;background:linear-gradient(135deg,var(--electric),var(--violet));color:white;border:none;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.2em;padding:14px;cursor:pointer;margin-top:8px;}
 .auth-btn:hover{opacity:0.85;}.auth-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.reset-btn{display:block;width:100%;margin-top:14px;border:0;background:none;color:var(--cyan);font:inherit;font-size:9px;letter-spacing:.12em;cursor:pointer;}
 .status-msg{font-size:11px;line-height:1.7;padding:12px 14px;margin-top:16px;display:none;}
 .status-msg.error{display:block;color:var(--lux);border:1px solid rgba(255,68,136,0.3);background:rgba(255,68,136,0.05);}
 .status-msg.success{display:block;color:var(--cyan);border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.05);}
@@ -36,7 +37,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;padding:16px 24px;background:
 <div class="wrap"><div class="auth-shell">
 <div class="auth-tag">// SYMBOL INTELLIGENCE DIVISION</div><div class="auth-title">MEMBER ACCESS</div>
 <div class="mode-toggle"><button class="mode-btn active" id="btnSignIn" onclick="setMode('signin')">SIGN IN</button><button class="mode-btn" id="btnSignUp" onclick="setMode('signup')">CREATE ACCOUNT</button></div>
-<form id="authForm" onsubmit="handleSubmit(event)"><div class="field-group"><label class="field-label">// EMAIL</label><input type="email" class="field-input" id="email" required autocomplete="email"></div><div class="field-group"><label class="field-label">// PASSWORD</label><input type="password" class="field-input" id="password" required autocomplete="current-password" minlength="6"></div><button type="submit" class="auth-btn" id="submitBtn">SIGN IN →</button></form>
+<form id="authForm" onsubmit="handleSubmit(event)"><div class="field-group"><label class="field-label">// EMAIL</label><input type="email" class="field-input" id="email" required autocomplete="email"></div><div class="field-group"><label class="field-label">// PASSWORD</label><input type="password" class="field-input" id="password" required autocomplete="current-password" minlength="6"></div><button type="submit" class="auth-btn" id="submitBtn">SIGN IN →</button><button type="button" class="reset-btn" onclick="sendPasswordReset()">FORGOT PASSWORD?</button></form>
 <div class="status-msg" id="statusMsg"></div><div class="auth-footnote">Access requires an active Institution-Wide clearance.<br>Not a member yet? <a href="pricing.html" style="color:var(--cyan);">See Access Levels →</a></div>
 </div></div>
 <script src="assets/js/supabase-client.js"></script>
@@ -56,6 +57,15 @@ async function handleSubmit(e){
     if(mode==='signin'){var {error}=await supabaseClient.auth.signInWithPassword({email:email,password:password});if(error)throw error;window.location.href=safeNextPath();}
     else{var {data,error}=await supabaseClient.auth.signUp({email:email,password:password});if(error)throw error;if(data.session)window.location.href=safeNextPath();else{statusEl.className='status-msg success';statusEl.textContent='Account created. Check your email to confirm before signing in.';}}
   }catch(err){statusEl.className='status-msg error';statusEl.textContent=err.message||'Something went wrong. Try again.';}finally{btn.disabled=false;}
+}
+async function sendPasswordReset(){
+  var email=document.getElementById('email').value.trim();var statusEl=document.getElementById('statusMsg');
+  if(!email){statusEl.className='status-msg error';statusEl.textContent='Enter your email address first.';return;}
+  try{
+    var {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/reset-password.html'});
+    if(error)throw error;
+    statusEl.className='status-msg success';statusEl.textContent='Password reset sent. Check your email.';
+  }catch(err){statusEl.className='status-msg error';statusEl.textContent=err.message||'Unable to send password reset.';}
 }
 (async function(){const {data:{session}}=await supabaseClient.auth.getSession();if(session)window.location.href=safeNextPath();})();
 </script>
