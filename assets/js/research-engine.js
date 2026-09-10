@@ -18,7 +18,6 @@
   const TABLES = Object.freeze({
     admins: "archive_admins",
     reports: "archive_files",
-    publicReports: "archive_public_files",
     sections: "archive_sections",
     evidence: "archive_evidence",
     sources: "archive_sources",
@@ -1037,16 +1036,10 @@
     } =
       await getClient()
 
-        .from(
-          TABLES.publicReports
-        )
-
-        .select("*")
-
-        .order(
-          "last_updated",
+        .rpc(
+          "get_public_archive_files",
           {
-            ascending: false
+            lookup: null
           }
         );
 
@@ -1068,38 +1061,18 @@
     );
 
 
-    const value =
-      cleanText(identifier);
-
-
-    let query =
-      getClient()
-
-        .from(
-          TABLES.publicReports
-        )
-
-        .select("*");
-
-
-    if (isUuid(value)) {
-      query = query.eq("id", value);
-    }
-
-    else if (/^(?:RPT|SID|FILE)-\d+$/i.test(value)) {
-      query = query.eq("code", value.toUpperCase());
-    }
-
-    else {
-      query = query.eq("slug", value);
-    }
-
-
     const {
       data,
       error
     } =
-      await query.maybeSingle();
+      await getClient()
+
+        .rpc(
+          "get_public_archive_files",
+          {
+            lookup: cleanText(identifier)
+          }
+        );
 
 
     if (error) {
@@ -1107,7 +1080,13 @@
     }
 
 
-    return data ? toLegacyReport(data) : null;
+    const row =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    return row ? toLegacyReport(row) : null;
   }
 
 
