@@ -524,6 +524,9 @@ async function loadPublicCase(){
     const bundle = await ResearchEngine.getReportBundle(code);
     const file = bundle.report;
     if(file.status !== 'published' || file.visibility !== 'public') throw new Error('FILE NOT PUBLIC');
+    const originalText = bundle.sections.filter(row => String(row.division || '').toUpperCase() === 'LUX');
+    const otherFindings = bundle.sections.filter(row => String(row.division || '').toUpperCase() !== 'LUX');
+    const nix = file.nix_review || {};
     root.innerHTML = `
       <div class="topline"><span>SYMBOL INTELLIGENCE DIVISION</span><span>PUBLIC ARCHIVE</span></div>
       <header class="header">
@@ -533,34 +536,41 @@ async function loadPublicCase(){
           <div class="meta-cell"><span>FILE ID</span><strong>${caseEsc(file.report_code)}</strong></div>
           <div class="meta-cell"><span>STATUS</span><strong>PUBLISHED</strong></div>
           <div class="meta-cell"><span>LEAD DIVISION</span><strong>${caseEsc(file.lead_division)}</strong></div>
+          <div class="meta-cell"><span>CONFIDENCE</span><strong>${caseEsc(String(file.confidence_label || 'unresolved').toUpperCase())}</strong></div>
+          <div class="meta-cell"><span>LAST UPDATED</span><strong>${caseEsc(new Date(file.updated_at).toLocaleDateString())}</strong></div>
+          <div class="meta-cell"><span>CLASSIFICATION</span><strong>PUBLIC ARCHIVE</strong></div>
         </div>
       </header>
       <section class="section">
         <div class="section-label">// EXECUTIVE SUMMARY</div>
         <div class="summary-grid">
           <div class="summary-card"><span>CASE QUESTION</span><p>${caseEsc(file.research_question)}</p></div>
-          <div class="summary-card"><span>CURRENT SCOPE</span><p>${caseEsc(file.scope)}</p></div>
-          <div class="summary-card"><span>PURPOSE</span><p>${caseEsc(file.summary)}</p></div>
-          <div class="summary-card"><span>CURRENT FINDING</span><p>${caseEsc(file.current_finding)}</p></div>
+          ${file.scope ? `<div class="summary-card"><span>CURRENT SCOPE</span><p>${caseEsc(file.scope)}</p></div>` : ''}
+          ${file.summary ? `<div class="summary-card"><span>PURPOSE</span><p>${caseEsc(file.summary)}</p></div>` : ''}
+          ${file.current_finding ? `<div class="summary-card"><span>FINAL FINDING</span><p>${caseEsc(file.current_finding)}</p></div>` : ''}
         </div>
       </section>
       <div class="divider"></div>
-      <section class="section">
+      ${originalText.length ? `<section class="section"><div class="section-label">// ORIGINAL TEXT</div>${originalText.map(row => `<article class="report lux"><div class="report-head"><div class="report-code">LUX // ${caseEsc(row.evidence_classification)}</div><div class="report-name">${caseEsc(row.title)}</div></div><div class="report-body">${caseEsc(row.content)}</div></article>`).join('')}</section>` : ''}
+      ${file.historical_context ? `<section class="section"><div class="section-label">// HISTORICAL CONTEXT</div><div class="panel"><p>${caseEsc(file.historical_context)}</p></div></section>` : ''}
+      ${otherFindings.length ? `<section class="section">
         <div class="section-label">// DIVISION FINDINGS</div>
-        ${bundle.sections.map(row => `<article class="report ${caseEsc(String(row.division || '').toLowerCase())}"><div class="report-head"><div class="report-code">${caseEsc(row.division || 'SID')} // ${caseEsc(row.evidence_classification)}</div><div class="report-name">${caseEsc(row.title)}</div></div><div class="report-body">${caseEsc(row.content)}</div></article>`).join('') || '<div class="panel">NO DIVISION FINDINGS FILED.</div>'}
-      </section>
-      <section class="section">
+        ${otherFindings.map(row => `<article class="report ${caseEsc(String(row.division || '').toLowerCase())}"><div class="report-head"><div class="report-code">${caseEsc(row.division || 'SID')} // ${caseEsc(row.evidence_classification)}</div><div class="report-name">${caseEsc(row.title)}</div></div><div class="report-body">${caseEsc(row.content)}</div></article>`).join('')}
+      </section>` : ''}
+      ${bundle.evidence.length ? `<section class="section">
         <div class="section-label">// EVIDENCE LOG</div>
-        <div class="panel"><ul>${bundle.evidence.map(row => `<li><strong>${caseEsc(row.title)}</strong> — ${caseEsc(row.finding || row.excerpt)}</li>`).join('') || '<li>NO EVIDENCE FILED.</li>'}</ul></div>
-      </section>
-      <section class="section">
+        <div class="panel"><ul>${bundle.evidence.map(row => `<li><strong>${caseEsc(row.title)}</strong> — ${caseEsc(row.finding || row.excerpt)} [${caseEsc(row.classification)} / ${caseEsc(row.reliability)}]</li>`).join('')}</ul></div>
+      </section>` : ''}
+      ${nix.verdict ? `<section class="section"><div class="section-label">// NIX CROSS-SYSTEM REVIEW</div><div class="summary-grid"><div class="summary-card"><span>VERDICT</span><p>${caseEsc(String(nix.verdict).replaceAll('_',' ').toUpperCase())}</p></div>${nix.overall_convergence ? `<div class="summary-card"><span>OVERALL CONVERGENCE</span><p>${caseEsc(nix.overall_convergence)}</p></div>` : ''}${nix.agreements ? `<div class="summary-card"><span>AGREEMENTS</span><p>${caseEsc(nix.agreements)}</p></div>` : ''}${nix.contradictions ? `<div class="summary-card"><span>CONTRADICTIONS</span><p>${caseEsc(nix.contradictions)}</p></div>` : ''}</div></section>` : ''}
+      ${file.open_questions ? `<section class="section"><div class="section-label">// UNRESOLVED QUESTIONS</div><div class="panel"><p>${caseEsc(file.open_questions)}</p></div></section>` : ''}
+      ${bundle.sources.length ? `<section class="section">
         <div class="section-label">// SOURCES</div>
-        <div class="panel"><ul>${bundle.sources.map(row => { const url = caseUrl(row.url); return `<li>${url ? `<a href="${url}" rel="noopener noreferrer" style="color:var(--cyan)">${caseEsc(row.title)}</a>` : caseEsc(row.title)}${row.author ? ` — ${caseEsc(row.author)}` : ''}</li>`; }).join('') || '<li>NO SOURCES FILED.</li>'}</ul></div>
-      </section>
-      <section class="section">
+        <div class="panel"><ul>${bundle.sources.map(row => { const url = caseUrl(row.url); return `<li>${url ? `<a href="${url}" rel="noopener noreferrer" style="color:var(--cyan)">${caseEsc(row.title)}</a>` : caseEsc(row.title)}${row.author ? ` — ${caseEsc(row.author)}` : ''}</li>`; }).join('')}</ul></div>
+      </section>` : ''}
+      ${bundle.connections.length ? `<section class="section">
         <div class="section-label">// CONNECTIONS</div>
-        <div class="related-grid">${bundle.connections.map(row => `<div class="related-card"><small>${caseEsc(row.connection_type)}</small><strong>${caseEsc(row.connected_label)}</strong></div>`).join('') || '<div class="panel">NO CONNECTIONS FILED.</div>'}</div>
-      </section>
+        <div class="related-grid">${bundle.connections.map(row => `<div class="related-card"><small>${caseEsc(row.connection_type)}</small><strong>${caseEsc(row.connected_label)}</strong></div>`).join('')}</div>
+      </section>` : ''}
       <footer class="footer"><div>SYMBOL INTELLIGENCE DIVISION<br>PUBLIC ARCHIVE</div><div><a href="sid.html#published-files" style="color:var(--cyan)">RETURN TO ARCHIVE</a></div></footer>`;
     document.title = `${file.report_code} — ${file.title}`;
   }catch(error){

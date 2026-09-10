@@ -401,6 +401,35 @@ body{
   margin:12px 0;
 }
 
+.workspace-tabs{
+  display:flex;
+  overflow:auto;
+  border-bottom:1px solid var(--line);
+  margin:0 0 12px;
+}
+
+.workspace-tab{
+  border:0;
+  border-top:2px solid transparent;
+  background:#080808;
+  color:var(--muted);
+  padding:10px 12px;
+  font:inherit;
+  font-size:8px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+.workspace-tab.active{
+  color:var(--cyan);
+  border-top-color:var(--cyan);
+  background:#0d0d0d;
+}
+
+.tab-panel{display:none}
+.tab-panel.active{display:grid;gap:8px}
+.route.tab-panel.active{display:flex}
+
 .record-list{
   display:grid;
   gap:7px;
@@ -1029,6 +1058,8 @@ let selectedBundle = null;
 
 let editingReportId = null;
 
+let activeWorkspaceTab = 'overview';
+
 const SID_DIVISIONS = Object.freeze({
   CENTRA:{analyst:'CENTRA',name:'FORENSIC ASTROLOGY DIVISION'},
   SCAR:{analyst:'SCAR',name:'SHADOW BEHAVIOR DIVISION'},
@@ -1409,7 +1440,11 @@ function renderWorkspace(){
     ${report.status === 'published' ? '' : '<button class="button gold" onclick="openPublicationReview()">PUBLICATION REVIEW</button>'}
   </div>
 
-  <div class="summary-grid" style="margin-bottom:12px">
+  <div class="workspace-tabs">
+    ${['overview','findings','evidence','sources','connections','timeline','publication'].map(tab => `<button class="workspace-tab ${activeWorkspaceTab === tab ? 'active' : ''}" onclick="setWorkspaceTab('${tab}')">${statusLabel(tab)}</button>`).join('')}
+  </div>
+
+  <div class="summary-grid tab-panel ${activeWorkspaceTab === 'overview' ? 'active' : ''}" style="margin-bottom:12px">
     <div class="record"><strong>CLEARANCE</strong><small>${esc(report.clearance || 'PRIVATE')}</small></div>
     <div class="record"><strong>LEAD ANALYST / DIVISION</strong><small>${esc(report.lead_analyst || report.lead_division || 'UNASSIGNED')} // ${esc(divisionName(report.lead_division))}</small></div>
     <div class="record"><strong>SUPPORTING DIVISIONS</strong><small>${esc((report.supporting_divisions || []).join(', ') || 'NONE ASSIGNED')}</small></div>
@@ -1417,7 +1452,7 @@ function renderWorkspace(){
   </div>
 
 
-  <div class="route">
+  <div class="route tab-panel ${activeWorkspaceTab === 'overview' ? 'active' : ''}">
 
   ${renderRoute(report,sections)}
 
@@ -1426,7 +1461,7 @@ function renderWorkspace(){
 
   <div class="records">
 
-    <div class="record">
+    <div class="record tab-panel ${activeWorkspaceTab === 'overview' ? 'active' : ''}">
 
       <strong>
       CURRENT SCOPE
@@ -1439,7 +1474,7 @@ function renderWorkspace(){
     </div>
 
 
-    <div class="record">
+    <div class="record tab-panel ${activeWorkspaceTab === 'overview' ? 'active' : ''}">
 
       <strong>
       CURRENT FINDING
@@ -1452,7 +1487,7 @@ function renderWorkspace(){
     </div>
 
 
-    <div class="record">
+    <div class="record tab-panel ${activeWorkspaceTab === 'findings' ? 'active' : ''}">
 
       <strong>
       DIVISION FINDINGS
@@ -1475,7 +1510,7 @@ function renderWorkspace(){
     </div>
 
 
-    <div class="record">
+    <div class="record tab-panel ${activeWorkspaceTab === 'evidence' ? 'active' : ''}">
 
       <strong>
       EVIDENCE BOARD
@@ -1497,7 +1532,7 @@ function renderWorkspace(){
 
     </div>
 
-    <div class="record">
+    <div class="record tab-panel ${activeWorkspaceTab === 'connections' ? 'active' : ''}">
       <strong>CONNECTIONS</strong>
       <small>${connections.length} LINK(S)</small>
       <div class="record-list">
@@ -1511,13 +1546,13 @@ function renderWorkspace(){
 
     </div>
 
-    <div class="record">
+    <div class="record tab-panel ${activeWorkspaceTab === 'findings' ? 'active' : ''}">
       <strong>NIX CROSS-SYSTEM REVIEW</strong>
       <small>${statusLabel(report.nix_review?.verdict || 'not started')}</small>
       ${report.nix_review?.verdict ? `<div class="record-list"><div class="record-item"><b>${esc(report.nix_review.verdict)}</b><span>AGREEMENTS: ${esc(report.nix_review.agreements || 'None filed.')}</span><span>CONTRADICTIONS: ${esc(report.nix_review.contradictions || 'None filed.')}</span><span>${statusLabel(report.nix_review.confidence)}</span></div></div>` : ''}
     </div>
 
-    <div class="record">
+    <div class="record tab-panel ${activeWorkspaceTab === 'timeline' ? 'active' : ''}">
       <strong>TIMELINE</strong>
       <small>${timeline.length} EVENT(S)</small>
       <div class="record-list">
@@ -1533,8 +1568,26 @@ function renderWorkspace(){
 
   </div>
 
+  <div class="record tab-panel ${activeWorkspaceTab === 'sources' ? 'active' : ''}">
+    <strong>SOURCE LIBRARY</strong><small>${(selectedBundle.sources || []).length} SOURCE(S)</small>
+    <p>Source records are displayed in the linked intelligence panel at right. Add, verify, edit, delete, or open source links there.</p>
+    <button class="button" onclick="openRecordEditor('source')">+ ADD SOURCE</button>
+  </div>
+
+  <div class="record tab-panel ${activeWorkspaceTab === 'publication' ? 'active' : ''}">
+    <strong>PUBLICATION STATUS</strong><small>${statusLabel(report.publication_status)}</small>
+    <p>Confidence: ${statusLabel(report.confidence_label)}<br>NIX verdict: ${statusLabel(report.nix_review?.verdict || 'not filed')}<br>Clearance: ${esc(report.clearance)}</p>
+    ${report.status === 'published' ? `<a class="button gold" href="../sid-case-file.html?file=${encodeURIComponent(report.report_code)}" target="_blank">OPEN PUBLIC FILE</a>` : '<button class="button gold" onclick="openPublicationReview()">OPEN PUBLICATION REVIEW</button>'}
+  </div>
+
   `;
 
+}
+
+function setWorkspaceTab(tab){
+  activeWorkspaceTab = tab;
+  renderWorkspace();
+  if(tab === 'sources') document.getElementById('sourceList')?.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 

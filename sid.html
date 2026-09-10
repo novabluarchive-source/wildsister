@@ -199,6 +199,14 @@ body.archive-open::before {
 .recent-file-no { font-size: 8px; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 2px; }
 .recent-name { font-size: 10px; color: var(--gold-bright); margin-bottom: 2px; }
 .recent-div { font-size: 8px; color: var(--muted); }
+.archive-tools { display:grid; grid-template-columns:2fr 1fr; gap:8px; margin-bottom:10px; }
+.archive-tools input,.archive-tools select { width:100%; background:#03060d; border:1px solid var(--border); color:var(--gold-bright); padding:11px; font:10px 'Share Tech Mono',monospace; }
+.public-file-card { display:grid; grid-template-columns:1fr auto; gap:14px; padding:16px; border:1px solid var(--border); margin-bottom:8px; text-decoration:none; background:rgba(7,10,7,.8); }
+.public-file-card:hover { border-color:var(--gold-dim); }
+.public-file-card strong { display:block; color:var(--gold-bright); margin:5px 0; font:1.5rem 'VT323',monospace; }
+.public-file-card p { color:var(--muted); font-size:9px; line-height:1.6; }
+.public-file-meta { text-align:right; color:var(--gold-dim); font-size:8px; line-height:1.8; }
+@media(max-width:600px){.archive-tools{grid-template-columns:1fr}.public-file-card{grid-template-columns:1fr}.public-file-meta{text-align:left}}
 
 /* AGENTS */
 .agents-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
@@ -484,6 +492,10 @@ body.archive-open::before {
     </div>
 
     <div class="section-label" id="published-files">// PUBLISHED INVESTIGATION FILES</div>
+    <div class="archive-tools">
+      <input id="archiveSearch" type="search" placeholder="SEARCH CODE, TITLE, OR CASE QUESTION" oninput="filterPublishedArchive()">
+      <select id="archiveDivision" onchange="filterPublishedArchive()"><option value="">ALL DIVISIONS</option></select>
+    </div>
     <div class="recent-panel" id="publishedArchive">
       <div class="recent-title">SYNCING PUBLIC ARCHIVE...</div>
     </div>
@@ -775,20 +787,31 @@ function archiveEsc(value) {
 async function loadPublishedArchive() {
   const panel = document.getElementById('publishedArchive');
   try {
-    const files = await ResearchEngine.getReports({ publicOnly: true });
-    panel.innerHTML = files.length ? files.map(file => `
-      <a class="recent-item" style="text-decoration:none" href="sid-case-file.html?file=${encodeURIComponent(file.report_code)}">
-        <div class="recent-icon">◈</div>
-        <div>
-          <div class="recent-file-no">${archiveEsc(file.report_code)}</div>
-          <div class="recent-name">${archiveEsc(file.title)}</div>
-          <div class="recent-div">${archiveEsc(file.lead_division || 'SID')} // PUBLIC ARCHIVE</div>
-        </div>
-      </a>`).join('') : '<div class="recent-title">NO PUBLIC INVESTIGATIONS FILED.</div>';
+    publishedFiles = await ResearchEngine.getReports({ publicOnly: true });
+    const divisions = [...new Set(publishedFiles.map(file => file.lead_division).filter(Boolean))].sort();
+    document.getElementById('archiveDivision').innerHTML = '<option value="">ALL DIVISIONS</option>' + divisions.map(value => `<option value="${archiveEsc(value)}">${archiveEsc(value)}</option>`).join('');
+    filterPublishedArchive();
   } catch (error) {
     console.error('SID PUBLIC ARCHIVE ERROR:', error);
     panel.innerHTML = '<div class="recent-title">PUBLIC ARCHIVE TEMPORARILY UNAVAILABLE.</div>';
   }
+}
+
+let publishedFiles = [];
+
+function filterPublishedArchive(){
+  const search = String(document.getElementById('archiveSearch')?.value || '').trim().toLowerCase();
+  const division = document.getElementById('archiveDivision')?.value || '';
+  const rows = publishedFiles.filter(file => {
+    const haystack = [file.report_code,file.title,file.research_question].join(' ').toLowerCase();
+    return (!search || haystack.includes(search)) && (!division || file.lead_division === division);
+  });
+  const panel = document.getElementById('publishedArchive');
+  panel.innerHTML = rows.length ? rows.map(file => `
+    <a class="public-file-card" href="sid-case-file.html?file=${encodeURIComponent(file.report_code)}">
+      <div><div class="recent-file-no">${archiveEsc(file.report_code)}</div><strong>${archiveEsc(file.title)}</strong><p>${archiveEsc(file.research_question || 'No case question filed.')}</p></div>
+      <div class="public-file-meta">${archiveEsc(file.lead_division || 'SID')}<br>${archiveEsc(String(file.confidence_label || 'unresolved').toUpperCase())}<br>${archiveEsc(new Date(file.updated_at).toLocaleDateString())}<br>OPEN FILE →</div>
+    </a>`).join('') : '<div class="recent-title">NO PUBLIC INVESTIGATIONS MATCH THIS SEARCH.</div>';
 }
 
 window.addEventListener('load', loadPublishedArchive);
