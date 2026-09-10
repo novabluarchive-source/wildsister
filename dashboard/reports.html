@@ -1705,7 +1705,9 @@ function openRecordEditor(type,record){
   document.getElementById('recordModalTitle').textContent = schema.title;
   document.getElementById('recordModalCode').textContent = selectedBundle.report.report_code;
   document.querySelector('#recordForm .form-actions').innerHTML = '<button class="button primary" type="submit">SAVE RECORD</button>';
-  document.getElementById('recordFields').innerHTML = schema.fields.map(fieldMarkup).join('');
+  document.getElementById('recordFields').innerHTML =
+    `<input type="hidden" name="record_id" value="${esc(recordId || '')}">` +
+    schema.fields.map(fieldMarkup).join('');
   if(record){
     Object.entries(record).forEach(([name,value]) => {
       const field = document.getElementById('recordForm').elements.namedItem(name);
@@ -1745,13 +1747,15 @@ async function saveRecord(event){
   event.preventDefault();
   const message = document.getElementById('recordMessage');
   const data = Object.fromEntries(new FormData(event.target).entries());
+  const editingId = data.record_id || recordId || null;
+  delete data.record_id;
   const reportId = selectedBundle.report.id;
   message.textContent = 'SAVING RECORD...';
   try{
-    if(recordType === 'section') await ResearchEngine.saveSection(reportId,{...data,id:recordId});
-    if(recordType === 'evidence') await (recordId ? ResearchEngine.updateEvidence(recordId,data) : ResearchEngine.addEvidence(reportId,data));
-    if(recordType === 'source') await (recordId ? ResearchEngine.updateSource(recordId,data) : ResearchEngine.addSource(reportId,data));
-    if(recordType === 'connection') await (recordId ? ResearchEngine.updateConnection(recordId,data) : ResearchEngine.addConnection(reportId,data));
+    if(recordType === 'section') await ResearchEngine.saveSection(reportId,{...data,id:editingId});
+    if(recordType === 'evidence') await (editingId ? ResearchEngine.updateEvidence(editingId,data) : ResearchEngine.addEvidence(reportId,data));
+    if(recordType === 'source') await (editingId ? ResearchEngine.updateSource(editingId,data) : ResearchEngine.addSource(reportId,data));
+    if(recordType === 'connection') await (editingId ? ResearchEngine.updateConnection(editingId,data) : ResearchEngine.addConnection(reportId,data));
     if(recordType === 'nix'){
       const user = await ResearchEngine.currentUser();
       await ResearchEngine.updateReport(reportId,{nix_review:{...data,reviewed_at:new Date().toISOString(),reviewed_by:user.id}});
