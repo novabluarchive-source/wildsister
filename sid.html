@@ -483,6 +483,11 @@ body.archive-open::before {
       </div>
     </div>
 
+    <div class="section-label" id="published-files">// PUBLISHED INVESTIGATION FILES</div>
+    <div class="recent-panel" id="publishedArchive">
+      <div class="recent-title">SYNCING PUBLIC ARCHIVE...</div>
+    </div>
+
     <!-- ANALYSTS / AGENTS -->
     <div class="section-label" id="analysts">// DIVISION ANALYSTS — PURCHASE AGENT ACCESS</div>
     <div class="agents-grid">
@@ -703,6 +708,9 @@ body.archive-open::before {
 <!-- ============================================
      ENTRY SEQUENCE SCRIPT
      ============================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/research-engine.js"></script>
 <script>
 const seq = [
   { id: 'l1', text: 'Searching...', delay: 400, cls: 'lit' },
@@ -759,6 +767,31 @@ function enterArchive() {
 }
 
 window.addEventListener('load', runSeq);
+
+function archiveEsc(value) {
+  return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function loadPublishedArchive() {
+  const panel = document.getElementById('publishedArchive');
+  try {
+    const files = await ResearchEngine.getReports({ publicOnly: true });
+    panel.innerHTML = files.length ? files.map(file => `
+      <a class="recent-item" style="text-decoration:none" href="sid-case-file.html?file=${encodeURIComponent(file.report_code)}">
+        <div class="recent-icon">◈</div>
+        <div>
+          <div class="recent-file-no">${archiveEsc(file.report_code)}</div>
+          <div class="recent-name">${archiveEsc(file.title)}</div>
+          <div class="recent-div">${archiveEsc(file.lead_division || 'SID')} // PUBLIC ARCHIVE</div>
+        </div>
+      </a>`).join('') : '<div class="recent-title">NO PUBLIC INVESTIGATIONS FILED.</div>';
+  } catch (error) {
+    console.error('SID PUBLIC ARCHIVE ERROR:', error);
+    panel.innerHTML = '<div class="recent-title">PUBLIC ARCHIVE TEMPORARILY UNAVAILABLE.</div>';
+  }
+}
+
+window.addEventListener('load', loadPublishedArchive);
 </script>
 
 </body>

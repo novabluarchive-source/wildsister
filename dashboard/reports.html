@@ -385,6 +385,50 @@ body{
   white-space:pre-wrap;
 }
 
+.workspace-actions,
+.record-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.workspace-actions{
+  margin:12px 0;
+}
+
+.record-list{
+  display:grid;
+  gap:7px;
+  margin-top:9px;
+}
+
+.record-item{
+  border-left:2px solid var(--gold);
+  background:#080808;
+  padding:10px;
+}
+
+.record-item b{
+  display:block;
+  color:var(--white);
+  font-size:9px;
+}
+
+.record-item span,
+.record-item time{
+  display:block;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+
+.button.danger{
+  border-color:var(--red);
+  color:#d87373;
+}
+
 /* =========================================================
    MODAL
 ========================================================= */
@@ -928,6 +972,30 @@ id="formMessage">
 
 
 <!-- =========================================================
+RECORD EDITOR MODAL
+========================================================= -->
+
+<div class="modal" id="recordModal">
+<div class="dialog">
+<div class="dialog-head">
+<div>
+<h2 id="recordModalTitle">ADD RECORD</h2>
+<div class="report-code" id="recordModalCode">SID FILE</div>
+</div>
+<button class="button" type="button" onclick="closeRecordEditor()">CLOSE</button>
+</div>
+<form id="recordForm" onsubmit="saveRecord(event)">
+<div class="form-grid" id="recordFields"></div>
+<div class="form-actions">
+<button class="button primary" type="submit">SAVE RECORD</button>
+</div>
+<div class="message" id="recordMessage"></div>
+</form>
+</div>
+</div>
+
+
+<!-- =========================================================
 APPLICATION SCRIPTS
 ========================================================= -->
 
@@ -1205,6 +1273,12 @@ function renderWorkspace(){
   const evidence =
     selectedBundle.evidence || [];
 
+  const connections =
+    selectedBundle.connections || [];
+
+  const timeline =
+    selectedBundle.timeline || [];
+
 
   document.getElementById(
     'workspace'
@@ -1245,6 +1319,14 @@ function renderWorkspace(){
 
     </div>
 
+  </div>
+
+  <div class="workspace-actions">
+    <button class="button" onclick="openRecordEditor('section')">+ DIVISION FINDING</button>
+    <button class="button" onclick="openRecordEditor('evidence')">+ EVIDENCE</button>
+    <button class="button" onclick="openRecordEditor('source')">+ SOURCE</button>
+    <button class="button" onclick="openRecordEditor('connection')">+ CONNECTION</button>
+    ${report.status === 'published' ? '' : '<button class="button gold" onclick="publishSelected()">PUBLISH FILE</button>'}
   </div>
 
 
@@ -1331,6 +1413,15 @@ function renderWorkspace(){
       ${sections.length} RECORD(S)
       </small>
 
+      <div class="record-list">
+      ${sections.map(row => `
+        <div class="record-item">
+          <b>${esc(row.division || 'SID')} // ${esc(row.title)}</b>
+          <span>${esc(row.content || '')}</span>
+          <span>${statusLabel(row.confidence_label)}</span>
+        </div>`).join('') || '<span>No division findings filed.</span>'}
+      </div>
+
     </div>
 
 
@@ -1344,12 +1435,165 @@ function renderWorkspace(){
       ${evidence.length} ITEM(S)
       </small>
 
+      <div class="record-list">
+      ${evidence.map(row => `
+        <div class="record-item">
+          <b>${esc(row.title)}</b>
+          <span>${esc(row.finding || row.excerpt || '')}</span>
+          <span>${statusLabel(row.classification)} // ${statusLabel(row.reliability)}</span>
+        </div>`).join('') || '<span>No evidence filed.</span>'}
+      </div>
+
+    </div>
+
+    <div class="record">
+      <strong>CONNECTIONS</strong>
+      <small>${connections.length} LINK(S)</small>
+      <div class="record-list">
+      ${connections.map(row => `
+        <div class="record-item">
+          <b>${esc(row.connected_label)}</b>
+          <span>${esc(row.connection_type)} // ${esc(row.rationale || '')}</span>
+        </div>`).join('') || '<span>No connections filed.</span>'}
+      </div>
+
+    </div>
+
+    <div class="record">
+      <strong>TIMELINE</strong>
+      <small>${timeline.length} EVENT(S)</small>
+      <div class="record-list">
+      ${timeline.map(row => `
+        <div class="record-item">
+          <b>${statusLabel(row.event_type)}</b>
+          <span>${esc(row.detail || '')}</span>
+          <time>${esc(new Date(row.created_at).toLocaleString())}</time>
+        </div>`).join('') || '<span>No timeline events filed.</span>'}
+      </div>
+
     </div>
 
   </div>
 
   `;
 
+}
+
+
+// ============================================================
+// INVESTIGATION RECORD EDITOR
+// ============================================================
+
+let recordType = '';
+
+const recordSchemas = {
+  section: {
+    title: 'ADD DIVISION FINDING',
+    fields: [
+      ['title','FINDING TITLE','text',true],
+      ['division','DIVISION','select',true,['LUX','CENTRA','CIPHER','SCAR','ASH','NIX']],
+      ['content','FINDING','textarea',true],
+      ['evidence_classification','EVIDENCE CLASSIFICATION','select',true,['primary','secondary','interpretation','disputed']],
+      ['confidence_label','CONFIDENCE','select',true,['unresolved','provisional','supported','confirmed']]
+    ]
+  },
+  evidence: {
+    title: 'ADD EVIDENCE',
+    fields: [
+      ['title','EVIDENCE TITLE','text',true],
+      ['evidence_type','EVIDENCE TYPE','select',true,['primary_source','secondary_source','artifact','testimony','data']],
+      ['excerpt','EXCERPT / OBSERVATION','textarea',false],
+      ['finding','SUPPORTED FINDING','textarea',true],
+      ['source_label','SOURCE LABEL','text',false],
+      ['source_url','SOURCE URL','url',false],
+      ['classification','CLASSIFICATION','select',true,['unverified','corroborated','confirmed','disputed']],
+      ['reliability','RELIABILITY','select',true,['low','moderate','high']]
+    ]
+  },
+  source: {
+    title: 'ADD SOURCE',
+    fields: [
+      ['title','SOURCE TITLE','text',true],
+      ['source_type','SOURCE TYPE','select',true,['primary','secondary','reference','archive']],
+      ['author','AUTHOR','text',false],
+      ['publication','PUBLICATION','text',false],
+      ['source_date','SOURCE DATE','date',false],
+      ['url','URL','url',false],
+      ['citation_text','CITATION','textarea',false],
+      ['notes','SOURCE NOTES','textarea',false],
+      ['verification_status','VERIFICATION','select',true,['unverified','reviewed','verified','disputed']]
+    ]
+  },
+  connection: {
+    title: 'ADD CONNECTION',
+    fields: [
+      ['connected_label','CONNECTED FILE / SUBJECT','text',true],
+      ['connection_type','CONNECTION TYPE','select',true,['related','supports','contradicts','extends','source_for']],
+      ['rationale','RATIONALE','textarea',true],
+      ['confidence_label','CONFIDENCE','select',true,['provisional','supported','confirmed']]
+    ]
+  }
+};
+
+function fieldMarkup(field){
+  const [name,label,type,required,options] = field;
+  const req = required ? ' required' : '';
+  const control = type === 'textarea'
+    ? `<textarea name="${name}"${req}></textarea>`
+    : type === 'select'
+      ? `<select name="${name}"${req}>${options.map(value => `<option value="${value}">${statusLabel(value)}</option>`).join('')}</select>`
+      : `<input name="${name}" type="${type}"${req}>`;
+  return `<div class="field ${type === 'textarea' ? 'full' : ''}"><label>${label}</label>${control}</div>`;
+}
+
+function openRecordEditor(type){
+  if(!selectedBundle?.report) return;
+  recordType = type;
+  const schema = recordSchemas[type];
+  document.getElementById('recordModalTitle').textContent = schema.title;
+  document.getElementById('recordModalCode').textContent = selectedBundle.report.report_code;
+  document.getElementById('recordFields').innerHTML = schema.fields.map(fieldMarkup).join('');
+  document.getElementById('recordMessage').textContent = '';
+  document.getElementById('recordModal').classList.add('show');
+}
+
+function closeRecordEditor(){
+  document.getElementById('recordModal').classList.remove('show');
+}
+
+async function saveRecord(event){
+  event.preventDefault();
+  const message = document.getElementById('recordMessage');
+  const data = Object.fromEntries(new FormData(event.target).entries());
+  const reportId = selectedBundle.report.id;
+  message.textContent = 'SAVING RECORD...';
+  try{
+    if(recordType === 'section') await ResearchEngine.saveSection(reportId,data);
+    if(recordType === 'evidence') await ResearchEngine.addEvidence(reportId,data);
+    if(recordType === 'source') await ResearchEngine.addSource(reportId,data);
+    if(recordType === 'connection') await ResearchEngine.addConnection(reportId,data);
+    selectedBundle = await ResearchEngine.getBundle(reportId);
+    renderWorkspace();
+    renderSources();
+    message.textContent = 'RECORD FILED.';
+    setTimeout(closeRecordEditor,500);
+  }catch(error){
+    console.error('SID RECORD SAVE ERROR:',error);
+    message.textContent = error.message || 'UNABLE TO SAVE RECORD.';
+  }
+}
+
+async function publishSelected(){
+  if(!selectedBundle?.report) return;
+  if(!window.confirm('Publish this investigation to the public archive?')) return;
+  try{
+    await ResearchEngine.publishReport(selectedBundle.report.id);
+    await loadReports();
+    await selectReport(selectedBundle.report.id);
+  }catch(error){
+    console.error('SID PUBLISH ERROR:',error);
+    window.alert(error.message || 'UNABLE TO PUBLISH FILE.');
+  }
 }
 
 

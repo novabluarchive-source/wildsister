@@ -315,7 +315,7 @@ body::before{
 </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="caseRoot">
 
   <div class="topline">
     <span>SYMBOL INTELLIGENCE DIVISION</span>
@@ -496,5 +496,80 @@ body::before{
   </footer>
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/research-engine.js"></script>
+<script>
+function caseEsc(value){
+  return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function caseUrl(value){
+  try{
+    const url = new URL(String(value || ''),location.origin);
+    return ['http:','https:'].includes(url.protocol) ? caseEsc(url.href) : '';
+  }catch(_error){
+    return '';
+  }
+}
+
+async function loadPublicCase(){
+  const root = document.getElementById('caseRoot');
+  const code = new URLSearchParams(location.search).get('file');
+  if(!code){
+    root.innerHTML = '<div class="panel">NO ARCHIVE FILE SPECIFIED.</div>';
+    return;
+  }
+  try{
+    const bundle = await ResearchEngine.getReportBundle(code);
+    const file = bundle.report;
+    if(file.status !== 'published' || file.visibility !== 'public') throw new Error('FILE NOT PUBLIC');
+    root.innerHTML = `
+      <div class="topline"><span>SYMBOL INTELLIGENCE DIVISION</span><span>PUBLIC ARCHIVE</span></div>
+      <header class="header">
+        <div class="kicker">// RECOVERED INVESTIGATION</div>
+        <div class="title">${caseEsc(file.title)}</div>
+        <div class="meta">
+          <div class="meta-cell"><span>FILE ID</span><strong>${caseEsc(file.report_code)}</strong></div>
+          <div class="meta-cell"><span>STATUS</span><strong>PUBLISHED</strong></div>
+          <div class="meta-cell"><span>LEAD DIVISION</span><strong>${caseEsc(file.lead_division)}</strong></div>
+        </div>
+      </header>
+      <section class="section">
+        <div class="section-label">// EXECUTIVE SUMMARY</div>
+        <div class="summary-grid">
+          <div class="summary-card"><span>CASE QUESTION</span><p>${caseEsc(file.research_question)}</p></div>
+          <div class="summary-card"><span>CURRENT SCOPE</span><p>${caseEsc(file.scope)}</p></div>
+          <div class="summary-card"><span>PURPOSE</span><p>${caseEsc(file.summary)}</p></div>
+          <div class="summary-card"><span>CURRENT FINDING</span><p>${caseEsc(file.current_finding)}</p></div>
+        </div>
+      </section>
+      <div class="divider"></div>
+      <section class="section">
+        <div class="section-label">// DIVISION FINDINGS</div>
+        ${bundle.sections.map(row => `<article class="report ${caseEsc(String(row.division || '').toLowerCase())}"><div class="report-head"><div class="report-code">${caseEsc(row.division || 'SID')} // ${caseEsc(row.evidence_classification)}</div><div class="report-name">${caseEsc(row.title)}</div></div><div class="report-body">${caseEsc(row.content)}</div></article>`).join('') || '<div class="panel">NO DIVISION FINDINGS FILED.</div>'}
+      </section>
+      <section class="section">
+        <div class="section-label">// EVIDENCE LOG</div>
+        <div class="panel"><ul>${bundle.evidence.map(row => `<li><strong>${caseEsc(row.title)}</strong> — ${caseEsc(row.finding || row.excerpt)}</li>`).join('') || '<li>NO EVIDENCE FILED.</li>'}</ul></div>
+      </section>
+      <section class="section">
+        <div class="section-label">// SOURCES</div>
+        <div class="panel"><ul>${bundle.sources.map(row => { const url = caseUrl(row.url); return `<li>${url ? `<a href="${url}" rel="noopener noreferrer" style="color:var(--cyan)">${caseEsc(row.title)}</a>` : caseEsc(row.title)}${row.author ? ` — ${caseEsc(row.author)}` : ''}</li>`; }).join('') || '<li>NO SOURCES FILED.</li>'}</ul></div>
+      </section>
+      <section class="section">
+        <div class="section-label">// CONNECTIONS</div>
+        <div class="related-grid">${bundle.connections.map(row => `<div class="related-card"><small>${caseEsc(row.connection_type)}</small><strong>${caseEsc(row.connected_label)}</strong></div>`).join('') || '<div class="panel">NO CONNECTIONS FILED.</div>'}</div>
+      </section>
+      <footer class="footer"><div>SYMBOL INTELLIGENCE DIVISION<br>PUBLIC ARCHIVE</div><div><a href="sid.html#published-files" style="color:var(--cyan)">RETURN TO ARCHIVE</a></div></footer>`;
+    document.title = `${file.report_code} — ${file.title}`;
+  }catch(error){
+    console.error('SID PUBLIC FILE ERROR:',error);
+    root.innerHTML = '<div class="panel">THIS FILE IS NOT AVAILABLE IN THE PUBLIC ARCHIVE.</div>';
+  }
+}
+
+loadPublicCase();
+</script>
 </body>
 </html>
