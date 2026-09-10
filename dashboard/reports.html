@@ -1700,11 +1700,14 @@ function openRecordEditor(type,record){
   if(!selectedBundle?.report) return;
   recordType = type;
   recordId = record?.id || null;
+  const recordForm = document.getElementById('recordForm');
+  recordForm.dataset.recordId = recordId || '';
+  recordForm.dataset.mode = recordId ? 'edit' : 'add';
   if(type === 'nix') record = selectedBundle.report.nix_review || null;
   const schema = recordSchemas[type];
   document.getElementById('recordModalTitle').textContent = schema.title;
   document.getElementById('recordModalCode').textContent = selectedBundle.report.report_code;
-  document.querySelector('#recordForm .form-actions').innerHTML = '<button class="button primary" type="submit">SAVE RECORD</button>';
+  document.querySelector('#recordForm .form-actions').innerHTML = `<button class="button primary" type="submit">${recordId ? 'UPDATE RECORD' : 'SAVE RECORD'}</button>`;
   document.getElementById('recordFields').innerHTML =
     `<input type="hidden" name="record_id" value="${esc(recordId || '')}">` +
     schema.fields.map(fieldMarkup).join('');
@@ -1747,11 +1750,13 @@ async function saveRecord(event){
   event.preventDefault();
   const message = document.getElementById('recordMessage');
   const data = Object.fromEntries(new FormData(event.target).entries());
-  const editingId = data.record_id || recordId || null;
+  const editingId = event.currentTarget.dataset.recordId || data.record_id || recordId || null;
+  const editMode = event.currentTarget.dataset.mode === 'edit';
   delete data.record_id;
   const reportId = selectedBundle.report.id;
   message.textContent = 'SAVING RECORD...';
   try{
+    if(editMode && !editingId) throw new Error('EDIT RECORD ID IS MISSING. CLOSE AND REOPEN THE EDITOR.');
     if(recordType === 'section') await ResearchEngine.saveSection(reportId,{...data,id:editingId});
     if(recordType === 'evidence') await (editingId ? ResearchEngine.updateEvidence(editingId,data) : ResearchEngine.addEvidence(reportId,data));
     if(recordType === 'source') await (editingId ? ResearchEngine.updateSource(editingId,data) : ResearchEngine.addSource(reportId,data));
