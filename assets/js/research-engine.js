@@ -208,6 +208,56 @@
   }
 
 
+  const ROUTE_STAGE_KEYS = Object.freeze([
+    "question","original_text","historical_record","numeric",
+    "astrology","symbol_behavior","nix_review","final_finding"
+  ]);
+
+  const ROUTE_STATE_VALUES = Object.freeze([
+    "not_started","active","complete","blocked","contradicted"
+  ]);
+
+  const CONFIDENCE_VALUES = Object.freeze([
+    "unresolved","low","moderate","high","confirmed"
+  ]);
+
+  const NIX_VERDICTS = Object.freeze([
+    "convergence_confirmed","partial_convergence","insufficient_evidence",
+    "connection_rejected","contradiction_unresolved"
+  ]);
+
+  function normalizeConfidenceLabel(value) {
+    const label = cleanText(value).toLowerCase().replace(/\s+/g,"_");
+    return CONFIDENCE_VALUES.includes(label) ? label : "unresolved";
+  }
+
+  function normalizeRouteState(value) {
+    const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    return ROUTE_STAGE_KEYS.reduce((result,key) => {
+      const state = cleanText(input[key]).toLowerCase().replace(/\s+/g,"_");
+      if(ROUTE_STATE_VALUES.includes(state)) result[key] = state;
+      return result;
+    },{});
+  }
+
+  function normalizeNixReview(value) {
+    const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    const verdict = cleanText(input.verdict).toLowerCase().replace(/\s+/g,"_");
+    return {
+      systems_reviewed: cleanText(input.systems_reviewed),
+      agreements: cleanText(input.agreements),
+      contradictions: cleanText(input.contradictions),
+      unresolved_links: cleanText(input.unresolved_links),
+      rejected_connections: cleanText(input.rejected_connections),
+      overall_convergence: cleanText(input.overall_convergence),
+      confidence: normalizeConfidenceLabel(input.confidence),
+      verdict: NIX_VERDICTS.includes(verdict) ? verdict : "insufficient_evidence",
+      reviewed_at: cleanText(input.reviewed_at) || null,
+      reviewed_by: cleanText(input.reviewed_by) || null
+    };
+  }
+
+
   function isUuid(value) {
 
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -1713,12 +1763,7 @@ async function updateReport(
       updates.route_state ||
       updates.route_steps;
 
-    payload.route_state =
-      routeState &&
-      typeof routeState === "object" &&
-      !Array.isArray(routeState)
-        ? routeState
-        : {};
+    payload.route_state = normalizeRouteState(routeState);
   }
 
 
@@ -1726,12 +1771,7 @@ async function updateReport(
     "nix_review" in updates
   ) {
 
-    payload.nix_review =
-      updates.nix_review &&
-      typeof updates.nix_review === "object" &&
-      !Array.isArray(updates.nix_review)
-        ? updates.nix_review
-        : {};
+    payload.nix_review = normalizeNixReview(updates.nix_review);
   }
 
 
@@ -1989,10 +2029,10 @@ async function updateReport(
 
       label:
         cleanText(
-          existingConfidence.label ||
+          normalizeConfidenceLabel(existingConfidence.label ||
           updates.confidence_label ||
-          "unresolved"
-        ).toLowerCase(),
+          "unresolved")
+        ),
 
       score:
         normalizeScore(
@@ -4270,6 +4310,12 @@ global.ResearchEngine =
     // ------------------------------------------------------
 
     slugify,
+
+    normalizeRouteState,
+
+    normalizeNixReview,
+
+    normalizeConfidenceLabel,
 
 
     // ------------------------------------------------------

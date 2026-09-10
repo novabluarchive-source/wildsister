@@ -230,7 +230,8 @@ button,a{font:inherit}
 .command-side{display:grid;gap:12px}.intel-block{border-left:2px solid var(--gold);padding-left:11px}.intel-block span{display:block;font-size:7px;letter-spacing:.17em;color:var(--muted);margin-bottom:5px}.intel-block strong{display:block;color:var(--white);font-size:10px;font-weight:normal;line-height:1.55}
 .analyst{cursor:pointer;transition:.2s}.analyst:hover{border-color:var(--gold);transform:translateX(2px)}.analyst-status{display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:7px;letter-spacing:.12em}.analyst-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#555}.analyst-status.active{color:#62d477}.analyst-status.active::before{background:#62d477;box-shadow:0 0 8px #62d477}.analyst-status.ready{color:var(--cyan)}.analyst-status.ready::before{background:var(--cyan)}.analyst-status.waiting{color:var(--gold)}.analyst-status.waiting::before{background:var(--gold)}
 .dossier{margin-top:12px}.dossier-tabs{display:flex;overflow:auto;border-bottom:1px solid var(--border)}.dossier-tab{border:0;border-right:1px solid var(--border);background:#0a0a0a;color:var(--muted);padding:11px 14px;font-size:8px;letter-spacing:.12em;cursor:pointer}.dossier-tab.active{color:var(--cyan);background:#111;border-bottom:2px solid var(--cyan)}.dossier-body{padding:16px;min-height:130px}.dossier-panel{display:none}.dossier-panel.active{display:block}.dossier-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.dossier-card{padding:12px;border:1px solid #211d17;background:#0b0b0b}.dossier-card span{display:block;font-size:7px;color:var(--muted);letter-spacing:.14em;margin-bottom:6px}.dossier-card strong{font-size:10px;color:var(--white);font-weight:normal;line-height:1.5}
-@media(max-width:800px){.command-hero{grid-template-columns:1fr}.dossier-summary{grid-template-columns:1fr}}
+.research-summary{margin:12px 0;border:1px solid var(--border);background:#090909}.research-summary-head{padding:12px 14px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:.16em;color:var(--white)}.research-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}.research-summary-stat{padding:14px;background:#090909;text-align:center}.research-summary-stat strong{display:block;font:2rem 'VT323';color:var(--white)}.research-summary-stat span{font-size:7px;color:var(--muted)}.research-summary-lists{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}.research-summary-list{background:#090909;padding:14px}.research-summary-list h3{font-size:8px;color:var(--gold);letter-spacing:.14em;margin:0 0 10px}.research-summary-item{display:block;border-top:1px solid #211d17;padding:8px 0;text-decoration:none;color:var(--text);font-size:9px}.research-summary-item small{display:block;color:var(--muted);margin-top:3px}
+@media(max-width:800px){.command-hero{grid-template-columns:1fr}.dossier-summary{grid-template-columns:1fr}.research-summary-grid{grid-template-columns:1fr 1fr}.research-summary-lists{grid-template-columns:1fr}}
 </style>
 <body>
 <div class="shell">
@@ -276,6 +277,12 @@ button,a{font:inherit}
       </div>
     </section>
     <div class="stats"><div class="stat"><div class="stat-num" id="statActive">00</div><div class="stat-label">ACTIVE CASES</div></div><div class="stat"><div class="stat-num" id="statClosed">00</div><div class="stat-label">CLOSED FILES</div></div><div class="stat"><div class="stat-num" id="statArchive">00</div><div class="stat-label">ARCHIVE FILES</div></div><div class="stat"><div class="stat-num">08</div><div class="stat-label">ANALYST ROSTER</div></div></div>
+    <section class="research-summary">
+      <div class="research-summary-head">SID RESEARCH COMMAND // INSTITUTION SUMMARY</div>
+      <div class="research-summary-grid"><div class="research-summary-stat"><strong id="researchActive">00</strong><span>ACTIVE INVESTIGATIONS</span></div><div class="research-summary-stat"><strong id="researchDraft">00</strong><span>DRAFTS</span></div><div class="research-summary-stat"><strong id="researchReview">00</strong><span>UNDER REVIEW</span></div><div class="research-summary-stat"><strong id="researchPublished">00</strong><span>PUBLISHED</span></div></div>
+      <div class="research-summary-lists"><div class="research-summary-list"><h3>RECENTLY UPDATED</h3><div id="researchRecentlyUpdated">SYNCING...</div></div><div class="research-summary-list"><h3>RECENT ACTIVITY</h3><div id="researchRecentActivity">SYNCING...</div></div></div>
+      <div class="actions" style="padding:12px"><button class="action primary" onclick="window.location.href='reports.html#new'">NEW INVESTIGATION</button><button class="action" onclick="window.location.href='reports.html'">OPEN RESEARCH COMMAND</button><button class="action" onclick="window.location.href='../sid.html#published-files'">VIEW PUBLIC ARCHIVE</button></div>
+    </section>
     <div class="actions"><button class="action primary" id="btnNewCase" onclick="handleOpenNewCase()">OPEN NEW INVESTIGATION</button><button class="action" onclick="toggleCaseSearch()">SEARCH CASES</button><button class="action" onclick="window.location.href='../sid.html'">SEARCH SID ARCHIVE</button><button class="action" onclick="syncOperations()">SYNC OPERATIONS</button></div>
     <div class="search-bar" id="caseSearchBar"><input id="caseSearchInput" placeholder="Search case number, subject, division, or analyst" oninput="filterCases()"><button onclick="clearCaseSearch()">CLEAR</button></div>
     <div class="operations-grid">
@@ -342,7 +349,22 @@ button,a{font:inherit}
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/investigation-engine.js"></script>
 <script src="../assets/js/dashboard-engine.js"></script>
+<script src="../assets/js/research-engine.js"></script>
 <script>
+function escapeDashboardText(value){return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+async function loadResearchSummary(){
+  try{
+    var reports=await ResearchEngine.getReports();var counts={active:0,draft:0,review:0,published:0};
+    reports.forEach(function(report){if(counts[report.status]!==undefined)counts[report.status]++});
+    ['Active','Draft','Review','Published'].forEach(function(key){document.getElementById('research'+key).textContent=String(counts[key.toLowerCase()]).padStart(2,'0')});
+    var recent=reports.slice().sort(function(a,b){return new Date(b.updated_at)-new Date(a.updated_at)}).slice(0,5);
+    document.getElementById('researchRecentlyUpdated').innerHTML=recent.map(function(report){return '<a class="research-summary-item" href="reports.html?file='+encodeURIComponent(report.report_code)+'"><strong>'+escapeDashboardText(report.report_code+' // '+report.title)+'</strong><small>'+escapeDashboardText(report.status.toUpperCase()+' // '+new Date(report.updated_at).toLocaleString())+'</small></a>'}).join('')||'NO RESEARCH FILES';
+    var bundles=await Promise.all(recent.slice(0,3).map(function(report){return ResearchEngine.getBundle(report.id)}));
+    var events=bundles.flatMap(function(bundle){return bundle.timeline||[]}).sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)}).slice(0,6);
+    document.getElementById('researchRecentActivity').innerHTML=events.map(function(event){return '<div class="research-summary-item"><strong>'+escapeDashboardText(String(event.event_type).replaceAll('_',' ').toUpperCase())+'</strong><small>'+escapeDashboardText(event.detail+' // '+new Date(event.created_at).toLocaleString())+'</small></div>'}).join('')||'NO RECENT ACTIVITY';
+  }catch(error){console.error('SID RESEARCH SUMMARY ERROR:',error);document.getElementById('researchRecentlyUpdated').textContent='RESEARCH SUMMARY UNAVAILABLE';document.getElementById('researchRecentActivity').textContent='SYNC REQUIRED'}
+}
+window.addEventListener('load',loadResearchSummary);
 document.addEventListener('click',function(e){var b=e.target.closest('.dossier-tab');if(!b)return;document.querySelectorAll('.dossier-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.dossier-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');var p=document.getElementById('dossier-'+b.dataset.tab);if(p)p.classList.add('active')});
 function openResearchBuilder(){
   var modal=document.getElementById('researchModal');

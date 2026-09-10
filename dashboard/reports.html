@@ -945,6 +945,17 @@ PUBLISHED (KEEP CURRENT PUBLICATION)
 
 </div>
 
+<div class="field">
+<label>CASE CONFIDENCE</label>
+<select id="reportConfidence">
+<option value="unresolved">UNRESOLVED</option>
+<option value="low">LOW</option>
+<option value="moderate">MODERATE</option>
+<option value="high">HIGH</option>
+<option value="confirmed">CONFIRMED</option>
+</select>
+</div>
+
 
 <div class="field full">
 
@@ -1155,6 +1166,13 @@ async function init(){
 
 
     await loadReports();
+
+    const requestedFile = new URLSearchParams(location.search).get('file');
+    if(requestedFile){
+      const match = reports.find(report => report.id === requestedFile || report.report_code === requestedFile);
+      if(match) await selectReport(match.id);
+    }
+    if(location.hash === '#new') await openNewInvestigation();
 
   }
 
@@ -1730,7 +1748,8 @@ async function saveRecord(event){
     if(recordType === 'source') await (recordId ? ResearchEngine.updateSource(recordId,data) : ResearchEngine.addSource(reportId,data));
     if(recordType === 'connection') await (recordId ? ResearchEngine.updateConnection(recordId,data) : ResearchEngine.addConnection(reportId,data));
     if(recordType === 'nix'){
-      await ResearchEngine.updateReport(reportId,{nix_review:data});
+      const user = await ResearchEngine.currentUser();
+      await ResearchEngine.updateReport(reportId,{nix_review:{...data,reviewed_at:new Date().toISOString(),reviewed_by:user.id}});
       await ResearchEngine.addTimeline(reportId,'nix_review_completed',data.verdict);
     }
     selectedBundle = await ResearchEngine.getBundle(reportId);
@@ -1889,6 +1908,7 @@ function openCaseEditor(){
   document.getElementById('reportSummary').value = report.summary || '';
   document.getElementById('leadDivision').value = report.lead_division || 'LUX';
   document.getElementById('reportStatus').value = report.status;
+  document.getElementById('reportConfidence').value = report.confidence_label || 'unresolved';
   document.getElementById('reportScope').value = report.scope || '';
   document.getElementById('currentFinding').value = report.current_finding || '';
   document.getElementById('openQuestions').value = report.open_questions || '';
@@ -1972,10 +1992,10 @@ async function saveInvestigation(event){
         ).value.trim(),
 
       confidence_label:
-        'unresolved',
+        document.getElementById('reportConfidence').value,
 
       confidence_score:
-        0,
+        ({unresolved:0,low:25,moderate:50,high:75,confirmed:100})[document.getElementById('reportConfidence').value],
 
       current_finding:
         document.getElementById(
