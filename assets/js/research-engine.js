@@ -3757,6 +3757,37 @@ async function updateConnection(
   await requireResearchAdmin();
 
 
+  const client =
+    getClient();
+
+
+  const {
+    data: existing,
+    error: existingError
+  } =
+    await client
+
+      .from(
+        TABLES.connections
+      )
+
+      .select(
+        "archive_file_id"
+      )
+
+      .eq(
+        "id",
+        connectionId
+      )
+
+      .single();
+
+
+  if (existingError) {
+    throw existingError;
+  }
+
+
   const payload = {};
 
 
@@ -3772,6 +3803,17 @@ async function updateConnection(
       )
       ||
       null;
+
+
+    if (
+      payload.connected_archive_id &&
+      payload.connected_archive_id === existing.archive_file_id
+    ) {
+
+      throw new Error(
+        "AN ARCHIVE FILE CANNOT CONNECT TO ITSELF"
+      );
+    }
   }
 
 
@@ -3828,7 +3870,7 @@ async function updateConnection(
     data,
     error
   } =
-    await getClient()
+    await client
 
       .from(
         TABLES.connections
