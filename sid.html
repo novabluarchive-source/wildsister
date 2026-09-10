@@ -787,7 +787,7 @@ function archiveEsc(value) {
 async function loadPublishedArchive() {
   const panel = document.getElementById('publishedArchive');
   try {
-    publishedFiles = await ResearchEngine.getReports({ publicOnly: true });
+    publishedFiles = await ResearchEngine.getPublicReports();
     const divisions = [...new Set(publishedFiles.map(file => file.lead_division).filter(Boolean))].sort();
     document.getElementById('archiveDivision').innerHTML = '<option value="">ALL DIVISIONS</option>' + divisions.map(value => `<option value="${archiveEsc(value)}">${archiveEsc(value)}</option>`).join('');
     filterPublishedArchive();

@@ -521,7 +521,7 @@ async function loadPublicCase(){
     return;
   }
   try{
-    const bundle = await ResearchEngine.getReportBundle(code);
+    const bundle = await ResearchEngine.getPublicReportBundle(code);
     const file = bundle.report;
     if(file.status !== 'published' || file.visibility !== 'public') throw new Error('FILE NOT PUBLIC');
     const originalText = bundle.sections.filter(row => String(row.division || '').toUpperCase() === 'LUX');

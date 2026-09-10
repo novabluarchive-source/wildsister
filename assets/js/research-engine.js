@@ -18,6 +18,7 @@
   const TABLES = Object.freeze({
     admins: "archive_admins",
     reports: "archive_files",
+    publicReports: "archive_public_files",
     sections: "archive_sections",
     evidence: "archive_evidence",
     sources: "archive_sources",
@@ -1018,6 +1019,96 @@
 
   const listReports =
     getReports;
+
+
+  // ==========================================================
+  // SANITIZED PUBLIC ARCHIVE READS
+  //
+  // Public pages must use the published-only database view.
+  // The view excludes operator/admin fields and removes
+  // nix_review.reviewed_by before data reaches the browser.
+  // ==========================================================
+
+  async function getPublicReports() {
+
+    const {
+      data,
+      error
+    } =
+      await getClient()
+
+        .from(
+          TABLES.publicReports
+        )
+
+        .select("*")
+
+        .order(
+          "last_updated",
+          {
+            ascending: false
+          }
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    return (data || []).map(toLegacyReport);
+  }
+
+
+  async function getPublicReport(identifier) {
+
+    requireValue(
+      identifier,
+      "PUBLIC ARCHIVE FILE IDENTIFIER"
+    );
+
+
+    const value =
+      cleanText(identifier);
+
+
+    let query =
+      getClient()
+
+        .from(
+          TABLES.publicReports
+        )
+
+        .select("*");
+
+
+    if (isUuid(value)) {
+      query = query.eq("id", value);
+    }
+
+    else if (/^(?:RPT|SID|FILE)-\d+$/i.test(value)) {
+      query = query.eq("code", value.toUpperCase());
+    }
+
+    else {
+      query = query.eq("slug", value);
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await query.maybeSingle();
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    return data ? toLegacyReport(data) : null;
+  }
 
 
   // ==========================================================
@@ -4232,6 +4323,47 @@ async function getReportBundle(
 }
 
 
+async function getPublicReportBundle(
+  identifier
+) {
+
+  const report =
+    await getPublicReport(identifier);
+
+
+  if (!report) {
+    throw new Error(
+      "PUBLIC ARCHIVE FILE NOT FOUND"
+    );
+  }
+
+
+  const [
+    sections,
+    evidence,
+    sources,
+    connections
+  ] =
+    await Promise.all([
+      getSections(report.id),
+      getEvidence(report.id),
+      getSources(report.id),
+      getConnections(report.id)
+    ]);
+
+
+  return {
+    report,
+    file: report,
+    sections,
+    evidence,
+    sources,
+    connections,
+    timeline: []
+  };
+}
+
+
 // Existing dashboard compatibility.
 const getBundle =
   getReportBundle;
@@ -4388,9 +4520,15 @@ global.ResearchEngine =
 
     listReports,
 
+    getPublicReports,
+
+    getPublicReport,
+
     getReport,
 
     getReportBundle,
+
+    getPublicReportBundle,
 
     getBundle,
 
