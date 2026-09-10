@@ -345,6 +345,11 @@ body{
   border-color:var(--cyan);
 }
 
+.route-step.complete{color:var(--green);border-color:var(--green)}
+.route-step.blocked{color:#d87373;border-color:var(--red)}
+.route-step.contradicted{color:var(--gold);border-color:var(--gold)}
+.route-step.not_started{color:var(--muted)}
+
 .arrow{
   color:var(--gold);
 }
@@ -400,6 +405,12 @@ body{
   display:grid;
   gap:7px;
   margin-top:9px;
+}
+
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
 }
 
 .record-item{
@@ -897,6 +908,10 @@ ACTIVE INVESTIGATION
 DIVISION REVIEW
 </option>
 
+<option value="published">
+PUBLISHED (KEEP CURRENT PUBLICATION)
+</option>
+
 </select>
 
 </div>
@@ -1011,6 +1026,26 @@ APPLICATION SCRIPTS
 let reports = [];
 
 let selectedBundle = null;
+
+let editingReportId = null;
+
+const SID_DIVISIONS = Object.freeze({
+  CENTRA:{analyst:'CENTRA',name:'FORENSIC ASTROLOGY DIVISION'},
+  SCAR:{analyst:'SCAR',name:'SHADOW BEHAVIOR DIVISION'},
+  ASH:{analyst:'ASH',name:'SYMBOL ARCHIVE DIVISION'},
+  LUX:{analyst:'LUX',name:'ORIGINAL TEXT DIVISION'},
+  LUNA:{analyst:'LUNA',name:'LUNAR INTELLIGENCE DIVISION'},
+  CIPHER:{analyst:'CIPHER',name:'NUMERIC INTELLIGENCE DIVISION'},
+  NIX:{analyst:'NIX',name:'CROSS-SYSTEM REVIEW / INTEGRATION'}
+});
+
+function divisionName(code){
+  return SID_DIVISIONS[String(code || '').toUpperCase()]?.name || 'SID DIVISION';
+}
+
+function divisionAnalyst(code){
+  return SID_DIVISIONS[String(code || '').toUpperCase()]?.analyst || String(code || 'SID');
+}
 
 
 // ============================================================
@@ -1260,6 +1295,49 @@ async function selectReport(id){
 // WORKSPACE
 // ============================================================
 
+const ROUTE_STAGES = [
+  ['question','QUESTION'],
+  ['original_text','ORIGINAL TEXT'],
+  ['historical_record','HISTORICAL RECORD'],
+  ['numeric','NUMERIC INTELLIGENCE'],
+  ['astrology','ASTROLOGY'],
+  ['symbol_behavior','SYMBOL / BEHAVIOR'],
+  ['nix_review','NIX REVIEW'],
+  ['final_finding','FINAL FINDING']
+];
+
+const ROUTE_STATES = ['not_started','active','complete','blocked','contradicted'];
+
+function derivedRoute(report,sections){
+  const divisions = new Set(sections.map(row => String(row.division || '').toUpperCase()));
+  return {
+    question:report.research_question ? 'complete' : 'active',
+    original_text:divisions.has('LUX') ? 'complete' : 'not_started',
+    historical_record:sections.some(row => row.section_type === 'historical_record') ? 'complete' : 'not_started',
+    numeric:divisions.has('CIPHER') ? 'complete' : 'not_started',
+    astrology:divisions.has('CENTRA') ? 'complete' : 'not_started',
+    symbol_behavior:(divisions.has('ASH') || divisions.has('SCAR')) ? 'complete' : 'not_started',
+    nix_review:report.nix_review?.verdict ? 'complete' : 'not_started',
+    final_finding:report.current_finding ? 'complete' : 'not_started',
+    ...(report.route_steps || {})
+  };
+}
+
+function renderRoute(report,sections){
+  const states = derivedRoute(report,sections);
+  return ROUTE_STAGES.map(([key,label],index) => `${index ? '<span class="arrow">→</span>' : ''}<button class="route-step ${states[key]}" title="${statusLabel(states[key])}; click to change" onclick="cycleRouteState('${key}')">${label}<small style="display:block;margin-top:4px">${statusLabel(states[key])}</small></button>`).join('');
+}
+
+async function cycleRouteState(stage){
+  const report = selectedBundle.report;
+  const states = derivedRoute(report,selectedBundle.sections || []);
+  const next = ROUTE_STATES[(ROUTE_STATES.indexOf(states[stage]) + 1) % ROUTE_STATES.length];
+  const route_steps = {...(report.route_steps || {}),[stage]:next};
+  await ResearchEngine.updateReport(report.id,{route_steps});
+  await ResearchEngine.addTimeline(report.id,'route_state_updated',`${stage}: ${next}`);
+  await selectReport(report.id);
+}
+
 function renderWorkspace(){
 
   const report =
@@ -1322,55 +1400,26 @@ function renderWorkspace(){
   </div>
 
   <div class="workspace-actions">
+    <button class="button" onclick="openCaseEditor()">EDIT CASE</button>
     <button class="button" onclick="openRecordEditor('section')">+ DIVISION FINDING</button>
     <button class="button" onclick="openRecordEditor('evidence')">+ EVIDENCE</button>
     <button class="button" onclick="openRecordEditor('source')">+ SOURCE</button>
     <button class="button" onclick="openRecordEditor('connection')">+ CONNECTION</button>
-    ${report.status === 'published' ? '' : '<button class="button gold" onclick="publishSelected()">PUBLISH FILE</button>'}
+    <button class="button" onclick="openRecordEditor('nix')">NIX REVIEW</button>
+    ${report.status === 'published' ? '' : '<button class="button gold" onclick="openPublicationReview()">PUBLICATION REVIEW</button>'}
+  </div>
+
+  <div class="summary-grid" style="margin-bottom:12px">
+    <div class="record"><strong>CLEARANCE</strong><small>${esc(report.clearance || 'PRIVATE')}</small></div>
+    <div class="record"><strong>LEAD ANALYST / DIVISION</strong><small>${esc(report.lead_analyst || report.lead_division || 'UNASSIGNED')} // ${esc(divisionName(report.lead_division))}</small></div>
+    <div class="record"><strong>SUPPORTING DIVISIONS</strong><small>${esc((report.supporting_divisions || []).join(', ') || 'NONE ASSIGNED')}</small></div>
+    <div class="record"><strong>PUBLICATION / UPDATED</strong><small>${statusLabel(report.publication_status)} // ${esc(new Date(report.updated_at).toLocaleString())}</small></div>
   </div>
 
 
   <div class="route">
 
-  <span class="route-step active">
-  QUESTION
-  </span>
-
-  <span class="arrow">→</span>
-
-  <span class="route-step">
-  ORIGINAL TEXT
-  </span>
-
-  <span class="arrow">→</span>
-
-  <span class="route-step">
-  HISTORICAL RECORD
-  </span>
-
-  <span class="arrow">→</span>
-
-  <span class="route-step">
-  NUMERIC
-  </span>
-
-  <span class="arrow">→</span>
-
-  <span class="route-step">
-  ASTROLOGY
-  </span>
-
-  <span class="arrow">→</span>
-
-  <span class="route-step">
-  NIX REVIEW
-  </span>
-
-  <span class="arrow">→</span>
-
-  <span class="route-step">
-  FINAL FINDING
-  </span>
+  ${renderRoute(report,sections)}
 
   </div>
 
@@ -1418,7 +1467,8 @@ function renderWorkspace(){
         <div class="record-item">
           <b>${esc(row.division || 'SID')} // ${esc(row.title)}</b>
           <span>${esc(row.content || '')}</span>
-          <span>${statusLabel(row.confidence_label)}</span>
+          <span>${statusLabel(row.evidence_classification)} // ${statusLabel(row.confidence_label)} // ${esc(divisionAnalyst(row.division))}</span>
+          <div class="record-actions"><button class="button" onclick="editRecord('section','${row.id}')">EDIT</button><button class="button danger" onclick="removeRecord('section','${row.id}')">DELETE</button></div>
         </div>`).join('') || '<span>No division findings filed.</span>'}
       </div>
 
@@ -1441,6 +1491,7 @@ function renderWorkspace(){
           <b>${esc(row.title)}</b>
           <span>${esc(row.finding || row.excerpt || '')}</span>
           <span>${statusLabel(row.classification)} // ${statusLabel(row.reliability)}</span>
+          <div class="record-actions"><button class="button" onclick="editRecord('evidence','${row.id}')">EDIT</button><button class="button danger" onclick="removeRecord('evidence','${row.id}')">DELETE</button></div>
         </div>`).join('') || '<span>No evidence filed.</span>'}
       </div>
 
@@ -1454,9 +1505,16 @@ function renderWorkspace(){
         <div class="record-item">
           <b>${esc(row.connected_label)}</b>
           <span>${esc(row.connection_type)} // ${esc(row.rationale || '')}</span>
+          <div class="record-actions"><button class="button" onclick="editRecord('connection','${row.id}')">EDIT</button><button class="button danger" onclick="removeRecord('connection','${row.id}')">DELETE</button></div>
         </div>`).join('') || '<span>No connections filed.</span>'}
       </div>
 
+    </div>
+
+    <div class="record">
+      <strong>NIX CROSS-SYSTEM REVIEW</strong>
+      <small>${statusLabel(report.nix_review?.verdict || 'not started')}</small>
+      ${report.nix_review?.verdict ? `<div class="record-list"><div class="record-item"><b>${esc(report.nix_review.verdict)}</b><span>AGREEMENTS: ${esc(report.nix_review.agreements || 'None filed.')}</span><span>CONTRADICTIONS: ${esc(report.nix_review.contradictions || 'None filed.')}</span><span>${statusLabel(report.nix_review.confidence)}</span></div></div>` : ''}
     </div>
 
     <div class="record">
@@ -1485,6 +1543,7 @@ function renderWorkspace(){
 // ============================================================
 
 let recordType = '';
+let recordId = null;
 
 const recordSchemas = {
   section: {
@@ -1506,8 +1565,9 @@ const recordSchemas = {
       ['finding','SUPPORTED FINDING','textarea',true],
       ['source_label','SOURCE LABEL','text',false],
       ['source_url','SOURCE URL','url',false],
-      ['classification','CLASSIFICATION','select',true,['unverified','corroborated','confirmed','disputed']],
-      ['reliability','RELIABILITY','select',true,['low','moderate','high']]
+      ['classification','CLASSIFICATION','select',true,['confirmed','provisional','unverified','contradicted','rejected']],
+      ['reliability','RELIABILITY','select',true,['high','moderate','low','unknown']],
+      ['position','POSITION / ORDER','number',false]
     ]
   },
   source: {
@@ -1521,16 +1581,30 @@ const recordSchemas = {
       ['url','URL','url',false],
       ['citation_text','CITATION','textarea',false],
       ['notes','SOURCE NOTES','textarea',false],
-      ['verification_status','VERIFICATION','select',true,['unverified','reviewed','verified','disputed']]
+      ['verification_status','VERIFICATION','select',true,['verified','partially_verified','unverified','disputed']]
     ]
   },
   connection: {
     title: 'ADD CONNECTION',
     fields: [
       ['connected_label','CONNECTED FILE / SUBJECT','text',true],
-      ['connection_type','CONNECTION TYPE','select',true,['related','supports','contradicts','extends','source_for']],
+      ['connected_archive_id','CONNECTED ARCHIVE FILE','select',false,[]],
+      ['connection_type','CONNECTION TYPE','select',true,['related','supports','contradicts','derived_from','shared_symbol','shared_text','shared_number','shared_astrological_pattern','historical_link']],
       ['rationale','RATIONALE','textarea',true],
       ['confidence_label','CONFIDENCE','select',true,['provisional','supported','confirmed']]
+    ]
+  },
+  nix: {
+    title: 'NIX CROSS-SYSTEM REVIEW',
+    fields: [
+      ['systems_reviewed','SYSTEMS REVIEWED','text',true],
+      ['agreements','AGREEMENTS','textarea',false],
+      ['contradictions','CONTRADICTIONS','textarea',false],
+      ['unresolved_links','UNRESOLVED LINKS','textarea',false],
+      ['rejected_connections','REJECTED CONNECTIONS','textarea',false],
+      ['overall_convergence','OVERALL CONVERGENCE','textarea',true],
+      ['verdict','VERDICT','select',true,['convergence_confirmed','partial_convergence','insufficient_evidence','connection_rejected','contradiction_unresolved']],
+      ['confidence','CONFIDENCE','select',true,['unresolved','low','moderate','high','confirmed']]
     ]
   }
 };
@@ -1541,20 +1615,50 @@ function fieldMarkup(field){
   const control = type === 'textarea'
     ? `<textarea name="${name}"${req}></textarea>`
     : type === 'select'
-      ? `<select name="${name}"${req}>${options.map(value => `<option value="${value}">${statusLabel(value)}</option>`).join('')}</select>`
+      ? `<select name="${name}"${req}>${name === 'connected_archive_id' ? '<option value="">LABEL ONLY / NO FILE LINK</option>' + reports.filter(row => row.id !== selectedBundle?.report?.id).map(row => `<option value="${row.id}">${esc(row.report_code)} // ${esc(row.title)}</option>`).join('') : options.map(value => `<option value="${value}">${statusLabel(value)}</option>`).join('')}</select>`
       : `<input name="${name}" type="${type}"${req}>`;
   return `<div class="field ${type === 'textarea' ? 'full' : ''}"><label>${label}</label>${control}</div>`;
 }
 
-function openRecordEditor(type){
+function openRecordEditor(type,record){
   if(!selectedBundle?.report) return;
   recordType = type;
+  recordId = record?.id || null;
+  if(type === 'nix') record = selectedBundle.report.nix_review || null;
   const schema = recordSchemas[type];
   document.getElementById('recordModalTitle').textContent = schema.title;
   document.getElementById('recordModalCode').textContent = selectedBundle.report.report_code;
+  document.querySelector('#recordForm .form-actions').innerHTML = '<button class="button primary" type="submit">SAVE RECORD</button>';
   document.getElementById('recordFields').innerHTML = schema.fields.map(fieldMarkup).join('');
+  if(record){
+    Object.entries(record).forEach(([name,value]) => {
+      const field = document.getElementById('recordForm').elements.namedItem(name);
+      if(field && value !== null && value !== undefined) field.value = value;
+    });
+    document.getElementById('recordModalTitle').textContent = schema.title.replace('ADD','EDIT');
+  }
   document.getElementById('recordMessage').textContent = '';
   document.getElementById('recordModal').classList.add('show');
+}
+
+function editRecord(type,id){
+  const keys = {section:'sections',evidence:'evidence',source:'sources',connection:'connections'};
+  const record = (selectedBundle[keys[type]] || []).find(row => row.id === id);
+  if(record) openRecordEditor(type,record);
+}
+
+async function removeRecord(type,id){
+  if(!window.confirm('Delete this record? This cannot be undone.')) return;
+  const actions = {
+    section:ResearchEngine.deleteSection,
+    evidence:ResearchEngine.deleteEvidence,
+    source:ResearchEngine.deleteSource,
+    connection:ResearchEngine.deleteConnection
+  };
+  await actions[type](id);
+  selectedBundle = await ResearchEngine.getBundle(selectedBundle.report.id);
+  renderWorkspace();
+  renderSources();
 }
 
 function closeRecordEditor(){
@@ -1568,10 +1672,14 @@ async function saveRecord(event){
   const reportId = selectedBundle.report.id;
   message.textContent = 'SAVING RECORD...';
   try{
-    if(recordType === 'section') await ResearchEngine.saveSection(reportId,data);
-    if(recordType === 'evidence') await ResearchEngine.addEvidence(reportId,data);
-    if(recordType === 'source') await ResearchEngine.addSource(reportId,data);
-    if(recordType === 'connection') await ResearchEngine.addConnection(reportId,data);
+    if(recordType === 'section') await ResearchEngine.saveSection(reportId,{...data,id:recordId});
+    if(recordType === 'evidence') await (recordId ? ResearchEngine.updateEvidence(recordId,data) : ResearchEngine.addEvidence(reportId,data));
+    if(recordType === 'source') await (recordId ? ResearchEngine.updateSource(recordId,data) : ResearchEngine.addSource(reportId,data));
+    if(recordType === 'connection') await (recordId ? ResearchEngine.updateConnection(recordId,data) : ResearchEngine.addConnection(reportId,data));
+    if(recordType === 'nix'){
+      await ResearchEngine.updateReport(reportId,{nix_review:data});
+      await ResearchEngine.addTimeline(reportId,'nix_review_completed',data.verdict);
+    }
     selectedBundle = await ResearchEngine.getBundle(reportId);
     renderWorkspace();
     renderSources();
@@ -1585,15 +1693,41 @@ async function saveRecord(event){
 
 async function publishSelected(){
   if(!selectedBundle?.report) return;
-  if(!window.confirm('Publish this investigation to the public archive?')) return;
   try{
     await ResearchEngine.publishReport(selectedBundle.report.id);
+    closeRecordEditor();
     await loadReports();
     await selectReport(selectedBundle.report.id);
   }catch(error){
     console.error('SID PUBLISH ERROR:',error);
     window.alert(error.message || 'UNABLE TO PUBLISH FILE.');
   }
+}
+
+function openPublicationReview(){
+  const {report,sections=[],evidence=[],sources=[],connections=[]} = selectedBundle;
+  const missing = [];
+  if(!report.research_question) missing.push('CASE QUESTION');
+  if(!report.summary) missing.push('PURPOSE');
+  if(!report.current_finding) missing.push('FINAL FINDING');
+  if(!sections.length) missing.push('DIVISION FINDINGS');
+  if(!evidence.length) missing.push('EVIDENCE');
+  if(!sources.length) missing.push('SOURCES');
+  if(!report.nix_review?.verdict) missing.push('NIX VERDICT');
+  document.getElementById('recordModalTitle').textContent = 'PUBLICATION REVIEW';
+  document.getElementById('recordModalCode').textContent = report.report_code;
+  document.getElementById('recordFields').innerHTML = `
+    <div class="field full"><label>CASE QUESTION</label><div class="record">${esc(report.research_question)}</div></div>
+    <div class="field full"><label>PURPOSE</label><div class="record">${esc(report.summary || 'NOT FILED')}</div></div>
+    <div class="field full"><label>FINAL FINDING</label><div class="record">${esc(report.current_finding || 'NOT FILED')}</div></div>
+    <div class="field"><label>CONFIDENCE</label><div class="record">${statusLabel(report.confidence_label)}</div></div>
+    <div class="field"><label>NIX VERDICT</label><div class="record">${statusLabel(report.nix_review?.verdict || 'NOT FILED')}</div></div>
+    <div class="field full"><label>UNRESOLVED QUESTIONS</label><div class="record">${esc(report.open_questions || 'NONE FILED')}</div></div>
+    <div class="field full"><label>RECORD COUNTS</label><div class="record">${sections.length} FINDINGS // ${evidence.length} EVIDENCE // ${sources.length} SOURCES // ${connections.length} CONNECTIONS</div></div>
+    ${missing.length ? `<div class="field full"><div class="record" style="border-color:var(--red);color:#d87373">WARNING // MISSING: ${esc(missing.join(', '))}</div></div>` : ''}`;
+  document.querySelector('#recordForm .form-actions').innerHTML = '<button class="button gold" type="button" onclick="publishSelected()">PUBLISH FILE</button> <button class="button" type="button" onclick="closeRecordEditor()">RETURN TO INVESTIGATION</button>';
+  document.getElementById('recordMessage').textContent = '';
+  document.getElementById('recordModal').classList.add('show');
 }
 
 
@@ -1643,11 +1777,26 @@ function renderSources(){
       )}
       </span>
 
+      <div class="record-actions">
+        <button class="button" onclick="editRecord('source','${source.id}')">EDIT</button>
+        <button class="button danger" onclick="removeRecord('source','${source.id}')">DELETE</button>
+        ${safeUrl(source.url) ? `<a class="button" href="${safeUrl(source.url)}" target="_blank" rel="noopener noreferrer">OPEN LINK</a>` : ''}
+      </div>
+
       </div>
 
       `
     ).join('');
 
+}
+
+function safeUrl(value){
+  try{
+    const url = new URL(String(value || ''),location.origin);
+    return ['http:','https:'].includes(url.protocol) ? esc(url.href) : '';
+  }catch(_error){
+    return '';
+  }
 }
 
 
@@ -1656,6 +1805,10 @@ function renderSources(){
 // ============================================================
 
 async function openNewInvestigation(){
+
+  editingReportId = null;
+
+  document.querySelector('#reportStatus option[value="published"]').disabled = true;
 
   document.getElementById(
     'reportForm'
@@ -1671,6 +1824,24 @@ async function openNewInvestigation(){
     'reportModal'
   ).classList.add('show');
 
+}
+
+function openCaseEditor(){
+  const report = selectedBundle?.report;
+  if(!report) return;
+  editingReportId = report.id;
+  document.querySelector('#reportStatus option[value="published"]').disabled = false;
+  document.getElementById('reportTitle').value = report.title || '';
+  document.getElementById('reportQuestion').value = report.research_question || '';
+  document.getElementById('reportSummary').value = report.summary || '';
+  document.getElementById('leadDivision').value = report.lead_division || 'LUX';
+  document.getElementById('reportStatus').value = report.status;
+  document.getElementById('reportScope').value = report.scope || '';
+  document.getElementById('currentFinding').value = report.current_finding || '';
+  document.getElementById('openQuestions').value = report.open_questions || '';
+  document.getElementById('modalCode').textContent = report.report_code;
+  document.getElementById('formMessage').textContent = '';
+  document.getElementById('reportModal').classList.add('show');
 }
 
 
@@ -1710,6 +1881,9 @@ async function saveInvestigation(event){
 
 
     const payload = {
+
+      id:
+        editingReportId,
 
       title:
         document.getElementById(
@@ -1772,7 +1946,7 @@ async function saveInvestigation(event){
 
 
     message.textContent =
-      'FILE OPENED // ' +
+      (editingReportId ? 'FILE UPDATED // ' : 'FILE OPENED // ') +
       saved.report_code;
 
 

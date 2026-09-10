@@ -522,7 +522,15 @@
 
 
       route_steps:
-        [],
+        row.route_state && typeof row.route_state === "object"
+          ? row.route_state
+          : {},
+
+
+      nix_review:
+        row.nix_review && typeof row.nix_review === "object"
+          ? row.nix_review
+          : {},
 
 
       status:
@@ -1689,6 +1697,41 @@ async function updateReport(
       normalizeJsonArray(
         updates.supporting_divisions
       );
+  }
+
+
+  // ========================================================
+  // ROUTE STATE + NIX REVIEW
+  // ========================================================
+
+  if (
+    "route_state" in updates ||
+    "route_steps" in updates
+  ) {
+
+    const routeState =
+      updates.route_state ||
+      updates.route_steps;
+
+    payload.route_state =
+      routeState &&
+      typeof routeState === "object" &&
+      !Array.isArray(routeState)
+        ? routeState
+        : {};
+  }
+
+
+  if (
+    "nix_review" in updates
+  ) {
+
+    payload.nix_review =
+      updates.nix_review &&
+      typeof updates.nix_review === "object" &&
+      !Array.isArray(updates.nix_review)
+        ? updates.nix_review
+        : {};
   }
 
 
