@@ -1,0 +1,16 @@
+# SID // Server-only files. Never publish these as static assets.
+.assetsignore
+.git/
+.github/
+worker.js
+wrangler.jsonc
+functions/
+supabase/
+database/
+docs/
+README.md
+stripe-webhook.js
+package.json
+package-lock.json
+node_modules/
+

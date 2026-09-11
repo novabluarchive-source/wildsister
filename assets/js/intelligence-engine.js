@@ -23,6 +23,7 @@
     "RETURN TO ANALYST": "RETURNED",
     "MARK UNRESOLVED": "UNRESOLVED"
   });
+  const SID_BACKEND_BASE = String(global.SID_BACKEND_BASE || global.location.origin).replace(/\/$/, "");
 
   function client() {
     const value = global.supabaseClient || global.wildSisterSupabase;
@@ -250,7 +251,7 @@
     const { data: { session } } = await client().auth.getSession();
     if (!session) throw new Error("AUTHENTICATION REQUIRED");
     const key = global.crypto?.randomUUID?.() || `${assignmentId}-${Date.now()}`;
-    const response = await fetch("/api/analyst-run", {
+    const response = await fetch(`${SID_BACKEND_BASE}/api/analyst-run`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}`, "Idempotency-Key": key },
       body: JSON.stringify({ archive_file_id: fileId, assignment_id: assignmentId, analyst: assignment.analyst })
