@@ -11,6 +11,7 @@
     support: "archive_claim_support",
     nix: "archive_nix_reviews",
     review: "archive_review_queue",
+    runs: "archive_analyst_runs",
     timeline: "archive_timeline"
   });
 
@@ -60,16 +61,17 @@
   async function getBundle(fileId) {
     required(fileId, "ARCHIVE FILE ID");
     await admin();
-    const [plans, assignments, returns, claims, support, nixReviews, reviewQueue] = await Promise.all([
+    const [plans, assignments, returns, claims, support, nixReviews, reviewQueue, runs] = await Promise.all([
       client().from(TABLES.plans).select("*").eq("archive_file_id", fileId).order("created_at"),
       client().from(TABLES.assignments).select("*").eq("archive_file_id", fileId).order("priority").order("created_at"),
       client().from(TABLES.returns).select("*").eq("archive_file_id", fileId).order("created_at"),
       client().from(TABLES.claims).select("*").eq("archive_file_id", fileId).order("created_at"),
       client().from(TABLES.support).select("*").eq("archive_file_id", fileId).order("created_at"),
       client().from(TABLES.nix).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }),
-      client().from(TABLES.review).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false })
+      client().from(TABLES.review).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }),
+      client().from(TABLES.runs).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false })
     ]);
-    const result = [plans, assignments, returns, claims, support, nixReviews, reviewQueue];
+    const result = [plans, assignments, returns, claims, support, nixReviews, reviewQueue, runs];
     const failed = result.find(entry => entry.error);
     if (failed) throw failed.error;
     return {
@@ -79,7 +81,8 @@
       claims: claims.data || [],
       support: support.data || [],
       nixReviews: nixReviews.data || [],
-      reviewQueue: reviewQueue.data || []
+      reviewQueue: reviewQueue.data || [],
+      runs: runs.data || []
     };
   }
 
@@ -240,6 +243,74 @@
     return { row, evaluation };
   }
 
+  async function runAnalyst(fileId, assignmentId) {
+    await admin();
+    const assignment = await one(client().from(TABLES.assignments).select("*").eq("id", assignmentId));
+    if (assignment.archive_file_id !== fileId) throw new Error("ASSIGNMENT DOES NOT BELONG TO THIS FILE");
+    const { data: { session } } = await client().auth.getSession();
+    if (!session) throw new Error("AUTHENTICATION REQUIRED");
+    const key = global.crypto?.randomUUID?.() || `${assignmentId}-${Date.now()}`;
+    const response = await fetch("/api/analyst-run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}`, "Idempotency-Key": key },
+      body: JSON.stringify({ archive_file_id: fileId, assignment_id: assignmentId, analyst: assignment.analyst })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.detail || payload.error || `ANALYST RUN FAILED (${response.status})`);
+    return payload;
+  }
+
+  async function createProposedClaim(runId, index, edits) {
+    await admin();
+    const run = await one(client().from(TABLES.runs).select("*").eq("id", runId));
+    const proposals = [...(run.proposed_claims || [])];
+    const proposal = proposals[index];
+    if (!proposal) throw new Error("PROPOSED CLAIM NOT FOUND");
+    if (proposal.created_claim_id) throw new Error("PROPOSED CLAIM ALREADY CREATED");
+    const claim = await createClaim(run.archive_file_id, {
+      originating_return_id: run.analyst_return_id,
+      claim_text: edits?.claim_text || proposal.claim_text,
+      claim_kind: edits?.claim_kind || proposal.claim_kind || "CLAIM",
+      significance: edits?.significance || proposal.significance || "STANDARD",
+      rule_003_applies: edits?.rule_003_applies ?? proposal.rule_003_suggested === true
+    });
+    proposals[index] = { ...proposal, created_claim_id: claim.id, operator_status: "CREATED" };
+    await one(client().from(TABLES.runs).update({ proposed_claims: proposals }).eq("id", runId).select("*"));
+    await log(run.archive_file_id, "PROPOSED CLAIM CREATED", claim.claim_text, { run_id: runId, claim_id: claim.id });
+    return claim;
+  }
+
+  async function discardProposedClaim(runId, index) {
+    await admin();
+    const run = await one(client().from(TABLES.runs).select("*").eq("id", runId));
+    const proposals = [...(run.proposed_claims || [])];
+    if (!proposals[index]) throw new Error("PROPOSED CLAIM NOT FOUND");
+    proposals[index] = { ...proposals[index], operator_status: "DISCARDED" };
+    return one(client().from(TABLES.runs).update({ proposed_claims: proposals }).eq("id", runId).select("*"));
+  }
+
+  async function approveProposedSupport(runId, index) {
+    await admin();
+    const run = await one(client().from(TABLES.runs).select("*").eq("id", runId));
+    const suggestions = [...(run.proposed_support || [])];
+    const suggestion = suggestions[index];
+    if (!suggestion) throw new Error("PROPOSED SUPPORT NOT FOUND");
+    if (suggestion.operator_status === "APPROVED") throw new Error("SUPPORT ALREADY APPROVED");
+    const proposal = (run.proposed_claims || [])[suggestion.claim_index];
+    if (!proposal?.created_claim_id) throw new Error("CREATE THE PROPOSED CLAIM BEFORE ATTACHING SUPPORT");
+    const result = await addClaimSupport(run.archive_file_id, {
+      claim_id: proposal.created_claim_id, analyst_return_id: run.analyst_return_id,
+      evidence_id: suggestion.evidence_id, source_id: suggestion.source_id,
+      originating_analyst: run.analyst, stance: "SUPPORTS", support_type: suggestion.source_id ? "SOURCE" : "EVIDENCE",
+      independence_status: "INDEPENDENT", verification_status: "UNVERIFIED", lineage_key: suggestion.lineage_key,
+      notes: "Operator-approved support suggested by validated analyst return. Verification remains required."
+    });
+    suggestions[index] = { ...suggestion, operator_status: "APPROVED", support_id: result.row.id };
+    await one(client().from(TABLES.runs).update({ proposed_support: suggestions }).eq("id", runId).select("*"));
+    await log(run.archive_file_id, "SUPPORT APPROVED", suggestion.lineage_key, { run_id: runId, support_id: result.row.id });
+    return result;
+  }
+
   async function createNixReview(fileId, values) {
     await admin();
     const row = await one(client().from(TABLES.nix).insert({
@@ -347,7 +418,8 @@
   global.IntelligenceEngine = Object.freeze({
     TABLES, getBundle, savePlan, createAssignment, updateAssignment, saveReturn,
     createClaim, addClaimSupport, evaluateClaim, evaluateSupportRows,
-    createNixReview, ensureReview, reviewItem, setPromotionEligibility,
+    createNixReview, ensureReview, reviewItem, setPromotionEligibility, runAnalyst,
+    createProposedClaim, discardProposedClaim, approveProposedSupport,
     promoteReview, acceptNixProjection, log
   });
 })(window);

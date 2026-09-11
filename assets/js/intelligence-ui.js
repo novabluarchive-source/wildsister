@@ -46,7 +46,11 @@
       </div>
       <div class="record">
         <strong>ANALYST ASSIGNMENTS</strong><small>${state.assignments.length} ASSIGNMENT(S)</small>
-        <div class="record-list">${state.assignments.map(row => `<div class="record-item"><b>${esc(row.analyst)} // ${esc(row.division)}</b><span>${esc(row.question)}</span><span>${label(row.status)} // PRIORITY ${row.priority}</span><div class="record-actions">${row.status !== "IN PROGRESS" && row.status !== "COMPLETE" ? `<button class="button" onclick="SIDIntelligenceUI.assignment('${row.id}','IN PROGRESS')">START</button>` : ""}${row.status !== "COMPLETE" ? `<button class="button" onclick="SIDIntelligenceUI.open('return','${row.id}')">RECORD RETURN</button>` : ""}</div></div>`).join("") || "<span>NO ASSIGNMENTS</span>"}</div>
+        <div class="record-list">${state.assignments.map(row => { const run=(state.runs||[]).find(item=>item.assignment_id===row.id); const active=run&&["QUEUED","RUNNING"].includes(run.status); return `<div class="record-item"><b>${esc(row.analyst)} // ${esc(row.division)}</b><span>${esc(row.question)}</span><span>${label(row.status)} // PRIORITY ${row.priority}${run ? ` // LAST RUN: ${esc(run.status)} // ${esc(run.output_validation_status)}` : ""}</span><div class="record-actions">${row.status !== "COMPLETE" ? `<button class="button" ${active?'disabled':''} onclick="SIDIntelligenceUI.run('${row.id}',this)">${active?'RUNNING...':(run?.status==='COMPLETE'?'RUN AGAIN':'RUN ANALYST')}</button><button class="button" onclick="SIDIntelligenceUI.open('return','${row.id}')">RECORD RETURN</button>` : `<span>RETURN READY FOR REVIEW</span>`}</div></div>`; }).join("") || "<span>NO ASSIGNMENTS</span>"}</div>
+      </div>
+      <div class="record">
+        <strong>ANALYST RUN HISTORY</strong><small>${(state.runs||[]).length} RUN(S)</small>
+        <div class="record-list">${(state.runs||[]).map(row => `<div class="record-item"><b>${esc(row.analyst)} // ${esc(row.status)}</b><span>${esc(row.provider)} / ${esc(row.model)} // PROMPT ${esc(row.prompt_version)} // SCHEMA ${esc(row.schema_version)}</span><span>${row.completed_at ? new Date(row.completed_at).toLocaleString() : "IN PROGRESS"} // VALIDATION: ${esc(row.output_validation_status)}</span>${row.error?`<span>${esc(row.error)}</span>`:""}${(row.proposed_claims||[]).map((claim,index)=>`<div class="record-item"><b>PROPOSED CLAIM // ${esc(claim.operator_status||'PENDING')}</b><span>${esc(claim.claim_text)}</span><span>${esc(claim.reasoning_summary)}</span>${!claim.operator_status?`<div class="record-actions"><button class="button" onclick="SIDIntelligenceUI.open('proposedClaim','${row.id}:${index}')">CREATE / EDIT CLAIM</button><button class="button danger" onclick="SIDIntelligenceUI.discardClaim('${row.id}',${index})">DISCARD</button></div>`:""}</div>`).join("")}${(row.proposed_support||[]).map((item,index)=>`<div class="record-item"><b>PROPOSED SUPPORT // ${esc(item.operator_status||'PENDING')}</b><span>${esc(item.lineage_key)}</span>${!item.operator_status?`<button class="button" onclick="SIDIntelligenceUI.approveSupport('${row.id}',${index})">ATTACH SUPPORT</button>`:""}</div>`).join("")}</div>`).join("") || "<span>NO RUNS</span>"}</div>
       </div>
       <div class="record">
         <strong>ANALYST RETURNS</strong><small>${state.returns.length} STRUCTURED RETURN(S)</small>
@@ -92,6 +96,10 @@
     } else if (kind === "claim") {
       title = "CLAIM LEDGER RECORD";
       html = field("originating_return_id","ORIGINATING RETURN","select","",options(state.returns,"id",row=>`${row.analyst} // ${row.summary.slice(0,70)}`),"SELECT RETURN",true) + field("claim_text","CLAIM","textarea","","",true) + field("claim_kind","CLAIM TYPE","select","",options(["SOURCE","FACT","CLAIM","INTERPRETATION","INFERENCE","CONTRADICTION","UNRESOLVED QUESTION","REJECTED CONNECTION","FINAL FINDING"].map(v=>({v})),"v","v")) + field("significance","SIGNIFICANCE","select","",options(["STANDARD","MAJOR","CRITICAL"].map(v=>({v})),"v","v")) + field("rule_003_applies","APPLY RULE 003","select","",options([{v:"false",t:"NO"},{v:"true",t:"YES — OPERATOR DESIGNATED MAJOR CLAIM"}],"v","t"));
+    } else if (kind === "proposedClaim") {
+      title = "REVIEW PROPOSED CLAIM";
+      const [runId,indexText]=relatedId.split(":"); const proposal=(state.runs.find(row=>row.id===runId)?.proposed_claims||[])[Number(indexText)]||{};
+      html = field("claim_text","CLAIM","textarea",proposal.claim_text,"",true) + field("claim_kind","CLAIM TYPE","select",proposal.claim_kind,options(["SOURCE","FACT","CLAIM","INTERPRETATION","INFERENCE","CONTRADICTION","UNRESOLVED QUESTION","REJECTED CONNECTION","FINAL FINDING"].map(v=>({v})),"v","v")) + field("significance","SIGNIFICANCE","select",proposal.significance,options(["STANDARD","MAJOR","CRITICAL"].map(v=>({v})),"v","v")) + field("rule_003_applies","APPLY RULE 003","select",String(proposal.rule_003_suggested===true),options([{v:"false",t:"NO"},{v:"true",t:"YES — OPERATOR DESIGNATED"}],"v","t"));
     } else if (kind === "support") {
       title = "CLAIM PROVENANCE";
       html =
@@ -133,6 +141,7 @@
       if (kind === "assignment") await global.IntelligenceEngine.createAssignment(fileId, { ...values, plan_id: state.plan.id });
       if (kind === "return") await global.IntelligenceEngine.saveReturn(fileId, values);
       if (kind === "claim") await global.IntelligenceEngine.createClaim(fileId, values);
+      if (kind === "proposedClaim") { const [runId,index]=event.target.dataset.relatedId.split(":"); await global.IntelligenceEngine.createProposedClaim(runId,Number(index),values); }
       if (kind === "support") await global.IntelligenceEngine.addClaimSupport(fileId, values);
       if (kind === "nix") {
         const assessments = await Promise.all(state.claims.map(async claim => { const e = await global.IntelligenceEngine.evaluateClaim(claim.id, false); return { claim_id: claim.id, independent_support: e.independentCount, derivative_support: e.derivativeCount, contradictions: e.contradictions.length, rule_003_result: claim.rule_003_applies ? (e.rule003Satisfied ? "SATISFIED" : "NOT SATISFIED") : "NOT APPLIED", verdict: claim.sid_verdict || (e.rule003Satisfied ? "PARTIAL CONVERGENCE" : "INSUFFICIENT EVIDENCE") }; }));
@@ -147,11 +156,14 @@
   }
 
   async function assignment(id, status) { await global.IntelligenceEngine.updateAssignment(id, { status }); await refresh(); }
+  async function run(id, button) { button.disabled=true; button.textContent="RUNNING..."; try { await global.IntelligenceEngine.runAnalyst(selectedBundle.report.id,id); await refresh(); } catch(error) { console.error("SID ANALYST RUN ERROR:",error); alert(error.message); await refresh(); } }
+  async function discardClaim(runId,index) { if(confirm("DISCARD THIS PROPOSED CLAIM?")){ await global.IntelligenceEngine.discardProposedClaim(runId,index); await refresh(); } }
+  async function approveSupport(runId,index) { try { await global.IntelligenceEngine.approveProposedSupport(runId,index); await refresh(); } catch(error) { alert(error.message); } }
   async function review(id, action) { await global.IntelligenceEngine.reviewItem(id, action, "Manual Phase 3A operator review."); selectedBundle = await global.ResearchEngine.getBundle(selectedBundle.report.id); renderWorkspace(); }
   async function eligible(id) { await global.IntelligenceEngine.setPromotionEligibility(id, true); await refresh(); }
   async function promote(id) { await global.IntelligenceEngine.promoteReview(id); selectedBundle = await global.ResearchEngine.getBundle(selectedBundle.report.id); renderWorkspace(); renderSources(); }
   function close() { document.getElementById("intelligenceModal")?.classList.remove("show"); }
 
   global.renderIntelligencePanel = refresh;
-  global.SIDIntelligenceUI = Object.freeze({ refresh, open, close, assignment, review, eligible, promote });
+  global.SIDIntelligenceUI = Object.freeze({ refresh, open, close, assignment, run, discardClaim, approveSupport, review, eligible, promote });
 })(window);
