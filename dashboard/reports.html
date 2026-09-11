@@ -1065,6 +1065,12 @@ APPLICATION SCRIPTS
 
 <script src="../assets/js/research-engine.js"></script>
 
+<script src="../assets/js/analyst-registry.js"></script>
+
+<script src="../assets/js/intelligence-engine.js"></script>
+
+<script src="../assets/js/intelligence-ui.js"></script>
+
 
 <script>
 
@@ -1464,7 +1470,7 @@ function renderWorkspace(){
   </div>
 
   <div class="workspace-tabs">
-    ${['overview','findings','evidence','sources','connections','timeline','publication'].map(tab => `<button class="workspace-tab ${activeWorkspaceTab === tab ? 'active' : ''}" onclick="setWorkspaceTab('${tab}')">${statusLabel(tab)}</button>`).join('')}
+    ${['overview','intelligence','findings','evidence','sources','connections','timeline','publication'].map(tab => `<button class="workspace-tab ${activeWorkspaceTab === tab ? 'active' : ''}" onclick="setWorkspaceTab('${tab}')">${statusLabel(tab)}</button>`).join('')}
   </div>
 
   <div class="summary-grid tab-panel ${activeWorkspaceTab === 'overview' ? 'active' : ''}" style="margin-bottom:12px">
@@ -1483,6 +1489,8 @@ function renderWorkspace(){
 
 
   <div class="records">
+
+    <div id="intelligencePanel" class="tab-panel ${activeWorkspaceTab === 'intelligence' ? 'active' : ''}"></div>
 
     <div class="record tab-panel ${activeWorkspaceTab === 'overview' ? 'active' : ''}">
 
@@ -1604,6 +1612,8 @@ function renderWorkspace(){
   </div>
 
   `;
+
+  if(activeWorkspaceTab === 'intelligence') renderIntelligencePanel();
 
 }
 
