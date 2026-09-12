@@ -6,12 +6,14 @@ const DEFAULT_MODEL_URL = 'https://oracle-api.capcancerian3.workers.dev';
 const PROVIDER = 'anthropic';
 const MODEL = 'claude-haiku-4-5-20251001';
 const PROMPT_VERSION = 'sid-analysts-1.1';
-const SCHEMA_VERSION = 'sid-return-1.1';
+const SCHEMA_VERSION = 'sid-return-1.2';
 const INITIAL_MAX_TOKENS = 1800;
 const RETRY_MAX_TOKENS = 4096;
 const CONFIDENCE = ['UNRESOLVED','LOW','MODERATE','HIGH','CONFIRMED'];
 const VERDICTS = ['CONVERGENCE CONFIRMED','PARTIAL CONVERGENCE','INSUFFICIENT EVIDENCE','CONNECTION REJECTED','CONTRADICTION UNRESOLVED'];
 const STRING_ARRAY = {type:'array',items:{type:'string'}};
+const NULLABLE_STRING = {anyOf:[{type:'string'},{type:'null'}]};
+const NULLABLE_STRING_ARRAY = {anyOf:[STRING_ARRAY,{type:'null'}]};
 const CLAIM_SCHEMA = {
   type:'object',
   additionalProperties:false,
@@ -43,12 +45,12 @@ const SID_RETURN_SCHEMA = {
     open_questions:STRING_ARRAY,
     confidence:{type:'string',enum:CONFIDENCE},
     recommended_next_step:{type:'string'},
-    verdict:{type:['string','null'],enum:[...VERDICTS,null]},
-    systems_reviewed:{type:['array','null'],items:{type:'string'}},
-    agreements:{type:['array','null'],items:{type:'string'}},
-    unresolved_links:{type:['array','null'],items:{type:'string'}},
-    rejected_connections:{type:['array','null'],items:{type:'string'}},
-    overall_convergence:{type:['string','null']}
+    verdict:{anyOf:[{type:'string',enum:VERDICTS},{type:'null'}]},
+    systems_reviewed:NULLABLE_STRING_ARRAY,
+    agreements:NULLABLE_STRING_ARRAY,
+    unresolved_links:NULLABLE_STRING_ARRAY,
+    rejected_connections:NULLABLE_STRING_ARRAY,
+    overall_convergence:NULLABLE_STRING
   },
   required:['analyst','division','assignment_question','summary','claims','calculations','interpretations','contradictions','limitations','open_questions','confidence','recommended_next_step']
 };
@@ -149,8 +151,9 @@ async function executeModel(url, assignment, context, maxTokens = INITIAL_MAX_TO
   catch { throw modelError('UNEXPECTED PROVIDER RESPONSE','MODEL RESPONSE WAS NOT JSON',{provider_request_id:requestId,retryable:false}); }
   if(data?.type==='error'||data?.error){
     const providerErrorType=String(data.error?.type||'unknown_error');
-    const retryable=/rate_limit|overloaded|api_error/i.test(providerErrorType);
-    throw modelError('UNEXPECTED PROVIDER RESPONSE',`MODEL PROVIDER ERROR ${providerErrorType}`,{provider_request_id:requestId||data.request_id||null,retryable});
+    const providerErrorMessage=sanitizeProviderMessage(data.error?.message);
+    const retryable=!/invalid_request/i.test(providerErrorType)&&/rate_limit|overloaded|api_error/i.test(providerErrorType);
+    throw modelError('UNEXPECTED PROVIDER RESPONSE',`MODEL PROVIDER ERROR ${providerErrorType}${providerErrorMessage?`: ${providerErrorMessage}`:''}`,{provider_request_id:requestId||data.request_id||null,retryable});
   }
   const stopReason=String(data.stop_reason||'').toLowerCase();
   const meta={stop_reason:stopReason||null,output_tokens:data.usage?.output_tokens??null,provider_request_id:requestId||data.request_id||null};
@@ -175,6 +178,10 @@ async function executeWithSingleRetry(executor,onRetry=async()=>{}){
 
 function modelError(category,message,metadata={}){
   const error=new Error(message); error.category=category; Object.assign(error,metadata); return error;
+}
+
+function sanitizeProviderMessage(value){
+  return String(value||'').replace(/[\u0000-\u001f\u007f]+/g,' ').replace(/\s+/g,' ').trim().slice(0,500);
 }
 
 function diagnostic(error,stage){
@@ -226,4 +233,4 @@ function api(auth){const h={Authorization:auth,apikey:SUPABASE_KEY,'Content-Type
 async function timeline(db,fileId,actor,event,detail,metadata){await db.post('archive_timeline',{archive_file_id:fileId,event_type:event,detail,metadata,actor_id:actor});}
 function json(value,status){return new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
 
-export const __test = Object.freeze({SID_RETURN_SCHEMA,executeModel,executeWithSingleRetry,validateOutput,diagnostic});
+export const __test = Object.freeze({SID_RETURN_SCHEMA,executeModel,executeWithSingleRetry,validateOutput,diagnostic,sanitizeProviderMessage});
