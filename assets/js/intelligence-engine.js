@@ -40,6 +40,35 @@
   function required(value, label) { if (!text(value)) throw new Error(`${label} IS REQUIRED`); }
   async function admin() { return global.ResearchEngine.requireResearchAdmin(); }
 
+  function isTransportFailure(error) {
+    return /failed to fetch|networkerror|network request failed|load failed/i.test(text(error?.message || error));
+  }
+
+  async function withReadRetry(label, operation) {
+    let lastError;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        if (attempt === 0 && isTransportFailure(error)) {
+          await new Promise(resolve => global.setTimeout(resolve, 300));
+          continue;
+        }
+        throw new Error(`INTELLIGENCE READ FAILED // ${label} // ${text(error?.message || error)}`);
+      }
+    }
+    throw new Error(`INTELLIGENCE READ FAILED // ${label} // ${text(lastError?.message || lastError)}`);
+  }
+
+  async function readRows(label, query) {
+    return withReadRetry(label, async () => {
+      const { data, error } = await query();
+      if (error) throw error;
+      return data || [];
+    });
+  }
+
   async function one(query) {
     const { data, error } = await query.single();
     if (error) throw error;
@@ -61,29 +90,24 @@
 
   async function getBundle(fileId) {
     required(fileId, "ARCHIVE FILE ID");
-    await admin();
-    const [plans, assignments, returns, claims, support, nixReviews, reviewQueue, runs] = await Promise.all([
-      client().from(TABLES.plans).select("*").eq("archive_file_id", fileId).order("created_at"),
-      client().from(TABLES.assignments).select("*").eq("archive_file_id", fileId).order("priority").order("created_at"),
-      client().from(TABLES.returns).select("*").eq("archive_file_id", fileId).order("created_at"),
-      client().from(TABLES.claims).select("*").eq("archive_file_id", fileId).order("created_at"),
-      client().from(TABLES.support).select("*").eq("archive_file_id", fileId).order("created_at"),
-      client().from(TABLES.nix).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }),
-      client().from(TABLES.review).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }),
-      client().from(TABLES.runs).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false })
-    ]);
-    const result = [plans, assignments, returns, claims, support, nixReviews, reviewQueue, runs];
-    const failed = result.find(entry => entry.error);
-    if (failed) throw failed.error;
+    await withReadRetry("SUPABASE AUTH / ARCHIVE ADMIN", admin);
+    const plans = await readRows(TABLES.plans, () => client().from(TABLES.plans).select("*").eq("archive_file_id", fileId).order("created_at"));
+    const assignments = await readRows(TABLES.assignments, () => client().from(TABLES.assignments).select("*").eq("archive_file_id", fileId).order("priority").order("created_at"));
+    const returns = await readRows(TABLES.returns, () => client().from(TABLES.returns).select("*").eq("archive_file_id", fileId).order("created_at"));
+    const claims = await readRows(TABLES.claims, () => client().from(TABLES.claims).select("*").eq("archive_file_id", fileId).order("created_at"));
+    const support = await readRows(TABLES.support, () => client().from(TABLES.support).select("*").eq("archive_file_id", fileId).order("created_at"));
+    const nixReviews = await readRows(TABLES.nix, () => client().from(TABLES.nix).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }));
+    const reviewQueue = await readRows(TABLES.review, () => client().from(TABLES.review).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }));
+    const runs = await readRows(TABLES.runs, () => client().from(TABLES.runs).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }));
     return {
-      plan: plans.data?.[0] || null,
-      assignments: assignments.data || [],
-      returns: returns.data || [],
-      claims: claims.data || [],
-      support: support.data || [],
-      nixReviews: nixReviews.data || [],
-      reviewQueue: reviewQueue.data || [],
-      runs: runs.data || []
+      plan: plans[0] || null,
+      assignments,
+      returns,
+      claims,
+      support,
+      nixReviews,
+      reviewQueue,
+      runs
     };
   }
 
