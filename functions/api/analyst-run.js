@@ -163,7 +163,12 @@ async function buildContext(db, a) {
 }
 
 async function executeModel(url, assignment, context, maxTokens = INITIAL_MAX_TOKENS) {
-  const system=`You are ${assignment.analyst}, SID ${assignment.division}. Follow the supplied analyst rule. Return JSON only. Never invent IDs or evidence. Required keys: analyst, division, assignment_question, summary, claims, calculations, interpretations, contradictions, limitations, open_questions, confidence, recommended_next_step. Each claim needs claim_text, claim_kind, significance, rule_003_suggested, support_refs, source_refs, evidence_refs, reasoning_summary. For NIX also return verdict, systems_reviewed, agreements, unresolved_links, rejected_connections, overall_convergence.`;
+  const allowedReferences={
+    support_refs:(context.claim_support||[]).map(item=>item.id),
+    source_refs:(context.relevant_sources||[]).map(item=>item.id),
+    evidence_refs:(context.relevant_evidence||[]).map(item=>item.id)
+  };
+  const system=`You are ${assignment.analyst}, SID ${assignment.division}. Follow the supplied analyst rule. Return JSON only. Never invent IDs or evidence. Required keys: analyst, division, assignment_question, summary, claims, calculations, interpretations, contradictions, limitations, open_questions, confidence, recommended_next_step. Each claim needs claim_text, claim_kind, significance, rule_003_suggested, support_refs, source_refs, evidence_refs, reasoning_summary. Reference arrays may contain only IDs in this allowlist: ${JSON.stringify(allowedReferences)}. When an allowlist is empty, return [] for that reference field. For NIX also return verdict, systems_reviewed, agreements, unresolved_links, rejected_connections, overall_convergence.`;
   const payload={model:MODEL,max_tokens:maxTokens,system,messages:[{role:'user',content:JSON.stringify(context)}],output_config:{format:{type:'json_schema',schema:buildProviderSchema(assignment,context)}}};
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   const requestId=res.headers.get('request-id')||res.headers.get('x-request-id')||null;
