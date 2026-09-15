@@ -61,7 +61,7 @@ function constrainedReferenceArray(values) {
   const ids=[...new Set((values||[]).map(value=>String(value)).filter(Boolean))];
   return ids.length
     ? {type:'array',items:{type:'string',enum:ids}}
-    : {type:'array',maxItems:0,items:{type:'string'}};
+    : {type:'array',items:{type:'string'}};
 }
 function buildProviderSchema(assignment,context) {
   const schema=JSON.parse(JSON.stringify(SID_RETURN_SCHEMA));
