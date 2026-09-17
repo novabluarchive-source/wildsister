@@ -45,6 +45,12 @@
         <div class="record-actions"><button class="button" onclick="SIDIntelligenceUI.open('plan')">${plan ? "EDIT PLAN" : "+ INVESTIGATION PLAN"}</button>${plan ? `<button class="button" onclick="SIDIntelligenceUI.open('assignment')">+ ASSIGN ANALYST</button>` : ""}</div>
       </div>
       <div class="record">
+        <strong>RESEARCH FILE INTAKE</strong><small>${(state.researchAssets||[]).length} PRIVATE ASSET(S)</small>
+        <p>Imported material stays private and outside analyst context until operator approval creates a Source and Evidence record.</p>
+        <div class="record-actions"><button class="button" onclick="SIDIntelligenceUI.open('research')">+ IMPORT RESEARCH</button></div>
+        <div class="record-list">${(state.researchAssets||[]).map(row => `<div class="record-item"><b>${esc(row.title)} // ${esc(row.intake_status)}</b><span>${esc(row.intake_type)} // ${esc(row.mime_type)} // ${row.byte_size} BYTES</span><span>LINEAGE: ${esc(row.lineage_key)} // EXTRACTION: ${esc(row.extraction_status)} // VERIFICATION: ${esc(row.verification_status)}</span>${row.source_url?`<span>${esc(row.source_url)}</span>`:""}${row.extracted_text?`<span>${esc(row.extracted_text.slice(0,600))}${row.extracted_text.length>600?"…":""}</span>`:""}<div class="record-actions">${row.intake_status==='READY FOR REVIEW'?`<button class="button" onclick="SIDIntelligenceUI.open('researchReview','${row.id}')">REVIEW / APPROVE</button><button class="button danger" onclick="SIDIntelligenceUI.rejectResearch('${row.id}')">REJECT</button>`:""}${row.intake_status==='PENDING EXTRACTION'?`<span>PDF STORED PRIVATELY — TEXT EXTRACTION REQUIRED BEFORE APPROVAL</span>`:""}</div></div>`).join("") || "<span>NO RESEARCH FILES IMPORTED</span>"}</div>
+      </div>
+      <div class="record">
         <strong>ANALYST ASSIGNMENTS</strong><small>${state.assignments.length} ASSIGNMENT(S)</small>
         <div class="record-list">${state.assignments.map(row => { const run=(state.runs||[]).find(item=>item.assignment_id===row.id); const active=run&&["QUEUED","RUNNING"].includes(run.status); return `<div class="record-item"><b>${esc(row.analyst)} // ${esc(row.division)}</b><span>${esc(row.question)}</span><span>${label(row.status)} // PRIORITY ${row.priority}${run ? ` // LAST RUN: ${esc(run.status)} // ${esc(run.output_validation_status)}` : ""}</span><div class="record-actions">${row.status !== "COMPLETE" ? `<button class="button" ${active?'disabled':''} onclick="SIDIntelligenceUI.run('${row.id}',this)">${active?'RUNNING...':(run?.status==='COMPLETE'?'RUN AGAIN':'RUN ANALYST')}</button><button class="button" onclick="SIDIntelligenceUI.open('return','${row.id}')">RECORD RETURN</button>` : `<span>RETURN READY FOR REVIEW</span>`}</div></div>`; }).join("") || "<span>NO ASSIGNMENTS</span>"}</div>
       </div>
@@ -89,6 +95,22 @@
     } else if (kind === "assignment") {
       title = "ANALYST ASSIGNMENT";
       html = field("analyst","ANALYST","select","",options(global.SIDAnalystRegistry.codes.map(v=>({v})),"v",row=>`${row.v} // ${global.SIDAnalystRegistry.get(row.v).division}`),true) + field("question","ASSIGNMENT QUESTION","textarea","","",true) + field("objective","OBJECTIVE","textarea") + field("required_inputs","REQUIRED INPUTS — ONE PER LINE","textarea") + field("priority","PRIORITY 0–100","number",50);
+    } else if (kind === "research") {
+      title = "IMPORT RESEARCH";
+      html = field("title","RESEARCH TITLE","text","","",true) +
+        field("assignment_id","ATTACH TO ASSIGNMENT","select","",options(state.assignments,"id",row=>`${row.analyst} // ${row.question.slice(0,70)}`,"UNASSIGNED")) +
+        field("source_url","APPROVED HTTPS URL","url") +
+        `<div class="field full"><label>PRIVATE FILE — TXT, MD, CSV, JSON, HTML, PDF; MAX 5 MB</label><input name="file" type="file" accept=".txt,.md,.csv,.json,.html,.htm,.pdf,text/plain,text/markdown,text/csv,application/json,text/html,application/pdf"></div>` +
+        field("text_content","OR PASTE TEXT","textarea") + field("citation_text","CITATION","textarea") +
+        field("lineage_key","LINEAGE KEY — SHARED UNDERLYING SOURCE","text");
+    } else if (kind === "researchReview") {
+      title = "REVIEW RESEARCH FILE";
+      const asset=(state.researchAssets||[]).find(row=>row.id===relatedId);
+      html = `<div class="field full"><label>EXTRACTION PREVIEW</label><textarea readonly>${esc(asset?.extracted_text||"")}</textarea></div>` +
+        field("source_type","SOURCE TYPE","select","primary",options(["primary","secondary","reference","dataset","archive"].map(v=>({v})) ,"v","v")) +
+        field("evidence_type","EVIDENCE TYPE","select","primary_source",options(["primary_source","secondary_source","document","dataset","web_source"].map(v=>({v})),"v","v")) +
+        field("verification_status","VERIFICATION","select","verified",options(["unverified","checked","verified","disputed"].map(v=>({v})),"v","v")) +
+        field("operator_notes","OPERATOR REVIEW NOTES","textarea");
     } else if (kind === "return") {
       title = "STRUCTURED ANALYST RETURN";
       const assignment = state.assignments.find(row => row.id === relatedId);
@@ -129,7 +151,8 @@
   async function save(event) {
     event.preventDefault();
     const message = document.getElementById("intelligenceMessage");
-    const values = Object.fromEntries(new FormData(event.target).entries());
+    const formData = new FormData(event.target);
+    const values = Object.fromEntries(formData.entries());
     const kind = event.target.dataset.kind;
     const fileId = selectedBundle.report.id;
     message.textContent = "FILING INTELLIGENCE...";
@@ -138,6 +161,12 @@
         values.proposed_divisions = values.proposed_divisions.split(/\r?\n/).filter(Boolean).map(line => { const [analyst, disposition, ...why] = line.split("|").map(x=>x.trim()); return { analyst: analyst.toUpperCase(), division: global.SIDAnalystRegistry.get(analyst)?.division || "", disposition: (disposition || "CONDITIONAL").toUpperCase(), relevance: why.join(" | ") }; });
         await global.IntelligenceEngine.savePlan(fileId, values);
       }
+      if (kind === "research") {
+        const file=formData.get("file");
+        if (!(file instanceof File) || !file.size) values.file = null;
+        await global.IntelligenceEngine.importResearch(fileId, values, values.file || file);
+      }
+      if (kind === "researchReview") await global.IntelligenceEngine.approveResearchAsset(event.target.dataset.relatedId, values);
       if (kind === "assignment") await global.IntelligenceEngine.createAssignment(fileId, { ...values, plan_id: state.plan.id });
       if (kind === "return") await global.IntelligenceEngine.saveReturn(fileId, values);
       if (kind === "claim") await global.IntelligenceEngine.createClaim(fileId, values);
@@ -162,8 +191,9 @@
   async function review(id, action) { await global.IntelligenceEngine.reviewItem(id, action, "Manual Phase 3A operator review."); selectedBundle = await global.ResearchEngine.getBundle(selectedBundle.report.id); renderWorkspace(); }
   async function eligible(id) { await global.IntelligenceEngine.setPromotionEligibility(id, true); await refresh(); }
   async function promote(id) { await global.IntelligenceEngine.promoteReview(id); selectedBundle = await global.ResearchEngine.getBundle(selectedBundle.report.id); renderWorkspace(); renderSources(); }
+  async function rejectResearch(id) { if(confirm("REJECT THIS PRIVATE RESEARCH ASSET?")){ await global.IntelligenceEngine.rejectResearchAsset(id,"Rejected during operator intake review."); await refresh(); } }
   function close() { document.getElementById("intelligenceModal")?.classList.remove("show"); }
 
   global.renderIntelligencePanel = refresh;
-  global.SIDIntelligenceUI = Object.freeze({ refresh, open, close, assignment, run, discardClaim, approveSupport, review, eligible, promote });
+  global.SIDIntelligenceUI = Object.freeze({ refresh, open, close, assignment, run, discardClaim, approveSupport, review, eligible, promote, rejectResearch });
 })(window);
