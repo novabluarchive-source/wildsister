@@ -54,27 +54,6 @@ const SID_RETURN_SCHEMA = {
   },
   required:['analyst','division','assignment_question','summary','claims','calculations','interpretations','contradictions','limitations','open_questions','confidence','recommended_next_step']
 };
-function constrainedString(value) {
-  return {type:'string',enum:[String(value)]};
-}
-function constrainedReferenceArray(values) {
-  const ids=[...new Set((values||[]).map(value=>String(value)).filter(Boolean))];
-  return ids.length
-    ? {type:'array',items:{type:'string',enum:ids}}
-    : {type:'array',items:{type:'string'}};
-}
-function buildProviderSchema(assignment,context) {
-  const schema=JSON.parse(JSON.stringify(SID_RETURN_SCHEMA));
-  schema.properties.analyst=constrainedString(assignment.analyst);
-  schema.properties.division=constrainedString(assignment.division);
-  schema.properties.assignment_question=constrainedString(assignment.question);
-  const claim=schema.properties.claims.items;
-  claim.properties.support_refs=constrainedReferenceArray((context.claim_support||[]).map(item=>item.id));
-  claim.properties.source_refs=constrainedReferenceArray((context.relevant_sources||[]).map(item=>item.id));
-  claim.properties.evidence_refs=constrainedReferenceArray((context.relevant_evidence||[]).map(item=>item.id));
-  return schema;
-}
-
 const RULES = {
   CENTRA:'Separate astronomical/chart facts from interpretation; identify the system; never invent chart data; cite stored inputs; flag missing chart data.',
   LUX:'Prioritize primary/original text; separate text, translation, historical interpretation, and modern interpretation; identify uncertainty; never fabricate quotations or manuscripts.',
@@ -124,7 +103,6 @@ export async function onRequestPost({ request, env }) {
     if (!validation.valid) {
       const category = validation.errors.some(error => /SOURCE ID|EVIDENCE ID|REFERENCE/i.test(error)) ? 'REFERENCE VALIDATION FAILURE' : 'SCHEMA VALIDATION FAILURE';
       run = (await db.patch(`archive_analyst_runs?id=eq.${run.id}`, {status:'INVALID OUTPUT',output_validation_status:'INVALID',validation_errors:validation.errors,error:diagnostic({category,message:'Structured output validation failed'},'APPLICATION VALIDATION'),completed_at:new Date().toISOString()}))[0];
-      await db.patch(`archive_analyst_assignments?id=eq.${assignment.id}`, {status:'NEEDS REVIEW'});
       await timeline(db, assignment.archive_file_id, user.id, 'ANALYST OUTPUT INVALID', `${assignment.analyst} // ${validation.errors.join('; ')}`, {run_id:run.id});
       return json({run,validation},422);
     }
@@ -148,7 +126,7 @@ export async function onRequestPost({ request, env }) {
 }
 
 async function buildContext(db, a) {
-  const [files,evidence,sources,sections,connections,claims,support,returns] = await Promise.all([
+  const [files,evidence,sources,sections,connections,claims,support,returns,researchAssets] = await Promise.all([
     db.get(`archive_files?id=eq.${a.archive_file_id}&select=id,code,name,investigation_question,current_scope,unresolved_questions`),
     db.get(`archive_evidence?archive_file_id=eq.${a.archive_file_id}&select=id,title,excerpt,finding,evidence_type,classification,reliability`),
     db.get(`archive_sources?archive_file_id=eq.${a.archive_file_id}&select=id,title,url,source_type,notes,verification_status`),
@@ -156,20 +134,17 @@ async function buildContext(db, a) {
     db.get(`archive_connections?archive_file_id=eq.${a.archive_file_id}&select=id,connected_archive_id,connected_label,connection_type,rationale,confidence_label`),
     db.get(`archive_claims?archive_file_id=eq.${a.archive_file_id}&select=id,claim_text,status,rule_003_applies`),
     db.get(`archive_claim_support?archive_file_id=eq.${a.archive_file_id}&select=id,claim_id,evidence_id,source_id,stance,lineage_key,independence_status,verification_status`),
-    db.get(`archive_analyst_returns?archive_file_id=eq.${a.archive_file_id}&status=eq.ACCEPTED&select=id,analyst,summary,contradictions,limitations`)
+    db.get(`archive_analyst_returns?archive_file_id=eq.${a.archive_file_id}&status=eq.ACCEPTED&select=id,analyst,summary,contradictions,limitations`),
+    db.get(`archive_research_assets?archive_file_id=eq.${a.archive_file_id}&intake_status=eq.APPROVED&select=id,title,extracted_text,lineage_key,source_id,evidence_id,verification_status`)
   ]);
   const file=files[0]; if(!file) throw new Error('ARCHIVE FILE NOT FOUND');
-  return {case_code:file.code,case_question:file.investigation_question,assignment_question:a.question,objective:a.objective,required_inputs:a.required_inputs,relevant_evidence:evidence,relevant_sources:sources,relevant_accepted_findings:sections,known_contradictions:[...returns.flatMap(x=>x.contradictions||[]),...support.filter(x=>x.stance==='CONTRADICTS')],known_gaps:file.unresolved_questions,analyst_specific_rules:RULES[a.analyst],claims:a.analyst==='NIX'?claims:undefined,claim_support:a.analyst==='NIX'?support:undefined,analyst_returns:a.analyst==='NIX'?returns:undefined,connections:a.analyst==='NIX'?connections:undefined};
+  const relevantDocuments=researchAssets.slice(0,8).map(item=>({...item,extracted_text:String(item.extracted_text||'').slice(0,12000)}));
+  return {case_code:file.code,case_question:file.investigation_question,assignment_question:a.question,objective:a.objective,required_inputs:a.required_inputs,relevant_evidence:evidence,relevant_sources:sources,relevant_research_documents:relevantDocuments,relevant_accepted_findings:sections,known_contradictions:[...returns.flatMap(x=>x.contradictions||[]),...support.filter(x=>x.stance==='CONTRADICTS')],known_gaps:file.unresolved_questions,analyst_specific_rules:RULES[a.analyst],claims:a.analyst==='NIX'?claims:undefined,claim_support:a.analyst==='NIX'?support:undefined,analyst_returns:a.analyst==='NIX'?returns:undefined,connections:a.analyst==='NIX'?connections:undefined};
 }
 
 async function executeModel(url, assignment, context, maxTokens = INITIAL_MAX_TOKENS) {
-  const allowedReferences={
-    support_refs:(context.claim_support||[]).map(item=>item.id),
-    source_refs:(context.relevant_sources||[]).map(item=>item.id),
-    evidence_refs:(context.relevant_evidence||[]).map(item=>item.id)
-  };
-  const system=`You are ${assignment.analyst}, SID ${assignment.division}. Follow the supplied analyst rule. Return JSON only. Never invent IDs or evidence. Required keys: analyst, division, assignment_question, summary, claims, calculations, interpretations, contradictions, limitations, open_questions, confidence, recommended_next_step. Each claim needs claim_text, claim_kind, significance, rule_003_suggested, support_refs, source_refs, evidence_refs, reasoning_summary. Reference arrays may contain only IDs in this allowlist: ${JSON.stringify(allowedReferences)}. When an allowlist is empty, return [] for that reference field. For NIX also return verdict, systems_reviewed, agreements, unresolved_links, rejected_connections, overall_convergence.`;
-  const payload={model:MODEL,max_tokens:maxTokens,system,messages:[{role:'user',content:JSON.stringify(context)}],output_config:{format:{type:'json_schema',schema:buildProviderSchema(assignment,context)}}};
+  const system=`You are ${assignment.analyst}, SID ${assignment.division}. Follow the supplied analyst rule. Return JSON only. Never invent IDs or evidence. Required keys: analyst, division, assignment_question, summary, claims, calculations, interpretations, contradictions, limitations, open_questions, confidence, recommended_next_step. Each claim needs claim_text, claim_kind, significance, rule_003_suggested, support_refs, source_refs, evidence_refs, reasoning_summary. For NIX also return verdict, systems_reviewed, agreements, unresolved_links, rejected_connections, overall_convergence.`;
+  const payload={model:MODEL,max_tokens:maxTokens,system,messages:[{role:'user',content:JSON.stringify(context)}],output_config:{format:{type:'json_schema',schema:SID_RETURN_SCHEMA}}};
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   const requestId=res.headers.get('request-id')||res.headers.get('x-request-id')||null;
   if(!res.ok) throw modelError('UNEXPECTED PROVIDER RESPONSE',`MODEL HTTP ${res.status}`,{provider_request_id:requestId,retryable:res.status===429||res.status>=500});
@@ -260,4 +235,4 @@ function api(auth){const h={Authorization:auth,apikey:SUPABASE_KEY,'Content-Type
 async function timeline(db,fileId,actor,event,detail,metadata){await db.post('archive_timeline',{archive_file_id:fileId,event_type:event,detail,metadata,actor_id:actor});}
 function json(value,status){return new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
 
-export const __test = Object.freeze({SID_RETURN_SCHEMA,buildProviderSchema,executeModel,executeWithSingleRetry,validateOutput,diagnostic,sanitizeProviderMessage});
+export const __test = Object.freeze({SID_RETURN_SCHEMA,executeModel,executeWithSingleRetry,validateOutput,diagnostic,sanitizeProviderMessage});
