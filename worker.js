@@ -1,6 +1,7 @@
 // SID // Full-stack Worker router
 import { onRequestPost as runAnalyst } from './functions/api/analyst-run.js';
 import { onRequestGet as bibleLookup } from './functions/api/bible-lookup.js';
+import { onRequestPost as importResearch } from './functions/api/research-import.js';
 
 const PRODUCTION_ORIGIN = 'https://wildsister.co';
 
@@ -20,6 +21,19 @@ export default {
       } catch (error) {
         console.error('SID ANALYST BOUNDARY ERROR', error);
         return apiResponse({ error: 'ANALYST EXECUTION BOUNDARY FAILED' }, 500, origin);
+      }
+    }
+
+    if (url.pathname === '/api/research-import') {
+      const origin = request.headers.get('Origin');
+      if (origin && origin !== PRODUCTION_ORIGIN) return apiResponse({ error: 'ORIGIN NOT ALLOWED' }, 403, origin);
+      if (request.method === 'OPTIONS') return preflight(origin);
+      if (request.method !== 'POST') return apiResponse({ error: 'METHOD NOT ALLOWED' }, 405, origin);
+      try {
+        return withCors(await importResearch({ request, env, waitUntil: ctx.waitUntil.bind(ctx) }), origin);
+      } catch (error) {
+        console.error('SID RESEARCH IMPORT BOUNDARY ERROR', error);
+        return apiResponse({ error: 'RESEARCH IMPORT BOUNDARY FAILED' }, 500, origin);
       }
     }
 
@@ -70,4 +84,3 @@ function corsHeaders(origin) {
   if (origin === PRODUCTION_ORIGIN) headers['Access-Control-Allow-Origin'] = PRODUCTION_ORIGIN;
   return headers;
 }
-
