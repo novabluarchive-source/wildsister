@@ -164,7 +164,7 @@
       if (kind === "research") {
         const file=formData.get("file");
         if (!(file instanceof File) || !file.size) values.file = null;
-        await global.IntelligenceEngine.importResearch(fileId, values, values.file || file);
+        await global.IntelligenceEngine.importResearch(fileId, values, values.file);
       }
       if (kind === "researchReview") await global.IntelligenceEngine.approveResearchAsset(event.target.dataset.relatedId, values);
       if (kind === "assignment") await global.IntelligenceEngine.createAssignment(fileId, { ...values, plan_id: state.plan.id });
