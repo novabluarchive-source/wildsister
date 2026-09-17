@@ -12,6 +12,7 @@
     nix: "archive_nix_reviews",
     review: "archive_review_queue",
     runs: "archive_analyst_runs",
+    research: "archive_research_assets",
     timeline: "archive_timeline"
   });
 
@@ -99,6 +100,7 @@
     const nixReviews = await readRows(TABLES.nix, () => client().from(TABLES.nix).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }));
     const reviewQueue = await readRows(TABLES.review, () => client().from(TABLES.review).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }));
     const runs = await readRows(TABLES.runs, () => client().from(TABLES.runs).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }));
+    const researchAssets = await readRows(TABLES.research, () => client().from(TABLES.research).select("*").eq("archive_file_id", fileId).order("created_at", { ascending: false }));
     return {
       plan: plans[0] || null,
       assignments,
@@ -107,8 +109,54 @@
       support,
       nixReviews,
       reviewQueue,
-      runs
+      runs,
+      researchAssets
     };
+  }
+
+  async function importResearch(fileId, values, file) {
+    await admin();
+    required(fileId, "ARCHIVE FILE ID");
+    required(values.title, "RESEARCH TITLE");
+    const { data: { session } } = await client().auth.getSession();
+    if (!session) throw new Error("AUTHENTICATION REQUIRED");
+    const form = new FormData();
+    form.set("archive_file_id", fileId);
+    for (const key of ["assignment_id","title","source_url","citation_text","lineage_key","text_content"]) {
+      if (text(values[key])) form.set(key, text(values[key]));
+    }
+    if (file) form.set("file", file, file.name);
+    const response = await fetch(`${SID_BACKEND_BASE}/api/research-import`, {
+      method:"POST",
+      headers:{ Authorization:`Bearer ${session.access_token}` },
+      body:form
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.detail || payload.error || `RESEARCH IMPORT FAILED (${response.status})`);
+    return payload.asset;
+  }
+
+  async function approveResearchAsset(assetId, values) {
+    await admin();
+    const { data, error } = await client().rpc("approve_archive_research_asset", {
+      p_asset_id:assetId,
+      p_source_type:text(values?.source_type || "primary"),
+      p_evidence_type:text(values?.evidence_type || "primary_source"),
+      p_verification_status:text(values?.verification_status || "verified"),
+      p_operator_notes:text(values?.operator_notes)
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  async function rejectResearchAsset(assetId, notes) {
+    await admin();
+    const user = await global.ResearchEngine.currentUser();
+    const asset = await one(client().from(TABLES.research).update({
+      intake_status:"REJECTED",verification_status:"REJECTED",operator_notes:text(notes),reviewed_by:user.id,reviewed_at:new Date().toISOString()
+    }).eq("id",assetId).select("*"));
+    await log(asset.archive_file_id,"research_asset_rejected",asset.title,{research_asset_id:asset.id,lineage_key:asset.lineage_key});
+    return asset;
   }
 
   async function savePlan(fileId, values) {
@@ -445,6 +493,7 @@
     createClaim, addClaimSupport, evaluateClaim, evaluateSupportRows,
     createNixReview, ensureReview, reviewItem, setPromotionEligibility, runAnalyst,
     createProposedClaim, discardProposedClaim, approveProposedSupport,
+    importResearch, approveResearchAsset, rejectResearchAsset,
     promoteReview, acceptNixProjection, log
   });
 })(window);
