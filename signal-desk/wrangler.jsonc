@@ -1,0 +1,14 @@
+{
+  "name": "wildsister-signal-desk",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-24",
+  "workers_dev": false,
+  "preview_urls": false,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wildsister-signal-desk-db",
+      "database_id": "ecc12e7b-255b-41c4-8d66-97e30b8b4157"
+    }
+  ]
+}
